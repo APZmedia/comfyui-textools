@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ComfyUI-APZmedia-textTools',  # Your package name
+    name='ComfyUI-textTools',  # Your package name
     version='0.1.0',  # Initial version
     description='Nodes for applying rich text overlays on images and videos.',
     long_description=open('README.md').read(),  # Assuming a README.md is present
