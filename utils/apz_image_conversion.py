@@ -4,56 +4,48 @@ from PIL import Image
 
 def tensor_to_pil(image_tensor):
     """
-    Convert a PyTorch tensor with shape [B, H, W, C] to a list of PIL images.
+    Convert a PyTorch tensor to a list of PIL images.
+    Handles tensors of shape [B, H, W, C].
     """
-    # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
-    print(f"Input Tensor Shape: {image_tensor.shape}  # This should show the input shape, e.g., [10, 512, 512, 3]")
-
-    if image_np.ndim == 4:  # [B, H, W, C] batch of images
+    # We expect the input tensor to be in [B, H, W, C] format
+    if image_np.ndim == 4:  # Batch of images [B, H, W, C]
         pil_images = []
         for img in image_np:  # img has shape [H, W, C]
             pil_images.append(_single_tensor_to_pil(img))
-        print(f"Converted {len(pil_images)} images to PIL format.  # This should confirm the number of images processed")
         return pil_images
+    elif image_np.ndim == 3:  # Single image case [H, W, C]
+        return [_single_tensor_to_pil(image_np)]
     else:
         raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
 
 def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
-    Handles tensors of shape [H, W, C].
     """
-    if image_np.ndim == 3 and image_np.shape[-1] in [1, 3, 4]:  # [H, W, C] format
-        if image_np.shape[-1] == 1:
-            image_np = np.repeat(image_np, 3, axis=-1)  # Convert grayscale to RGB if needed
+    image_np = np.squeeze(image_np)  # Remove unnecessary dimensions
 
-        if image_np.dtype != np.uint8:
-            image_np = (image_np * 255).astype(np.uint8)  # Scale and convert to uint8
-
-        # Determine the mode based on the number of channels
-        if image_np.shape[-1] == 3:  # RGB
-            mode = 'RGB'
-        elif image_np.shape[-1] == 4:  # RGBA
-            mode = 'RGBA'
-        else:
-            raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
-
-        print(f"Converted image shape for PIL: {image_np.shape}  # This should show the shape [H, W, C] for PIL conversion")
-        return Image.fromarray(image_np, mode=mode)
+    if image_np.ndim == 3 and image_np.shape[-1] == 3:  # [H, W, C] format for RGB
+        mode = 'RGB'
+    elif image_np.ndim == 3 and image_np.shape[-1] == 4:  # [H, W, C] format for RGBA
+        mode = 'RGBA'
     else:
-        raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
+        raise ValueError(f"Unsupported channel configuration: {image_np.shape[-1]}")
+
+    if image_np.dtype != np.uint8:
+        image_np = (image_np * 255).astype(np.uint8)
+
+    return Image.fromarray(image_np, mode=mode)
 
 def pil_to_tensor(image_pil):
     """
-    Convert a list of PIL images back to a PyTorch tensor with shape [B, H, W, C].
+    Convert a PIL image or a list of PIL images back to a PyTorch tensor.
+    If a list of images is provided, it returns a batch of tensors with shape [B, C, H, W].
     """
     if isinstance(image_pil, list):
         tensors = [pil_to_single_tensor(img) for img in image_pil]
-        tensor_stack = torch.stack(tensors)  # Stack tensors into a batch
-        print(f"Stacked tensor shape: {tensor_stack.shape}  # This should show the shape [B, C, H, W] after stacking")
-        return tensor_stack
+        return torch.cat(tensors, dim=0)  # Concatenate along batch dimension
     else:
         return pil_to_single_tensor(image_pil)
 
@@ -62,11 +54,8 @@ def pil_to_single_tensor(image_pil):
     Helper function to convert a single PIL image to a PyTorch tensor.
     """
     image_np = np.array(image_pil).astype(np.float32) / 255.0
-
-    if image_np.ndim == 2:  # Grayscale image, expand dims to [H, W, 1]
-        image_np = np.expand_dims(image_np, axis=-1)  # Add channel dimension for grayscale images
-
+    if image_np.ndim == 2:  # Grayscale image
+        image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
     image_np = np.transpose(image_np, (2, 0, 1))  # Convert [H, W, C] to [C, H, W]
     image_tensor = torch.from_numpy(image_np).unsqueeze(0)  # Add batch dimension [1, C, H, W]
-    print(f"Converted PIL image to tensor shape: {image_tensor.shape}  # This should show the shape [1, C, H, W] for the tensor")
     return image_tensor
