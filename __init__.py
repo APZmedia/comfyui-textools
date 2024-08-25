@@ -30,12 +30,10 @@ except Exception as e:
 
 # Utilities should be imported as needed, but not registered as nodes
 try:
-    from .utils import colors_translator
-    from .utils import font_manager
-    from .utils import rich_text_parser
-    from .utils import text_parsing
-    from .utils import text_wrapper
-    from .utils import text_wrapping
+    from .utils import apz_font_manager
+    from .utils import apz_rich_text_parser
+    from .utils import apz_image_conversion
+    from .utils import apz_text_wrapper
     logger.info("Successfully imported utility modules.")
 except Exception as e:
     logger.error("Failed to import utility modules.", exc_info=True)
