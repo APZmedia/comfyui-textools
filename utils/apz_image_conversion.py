@@ -54,7 +54,7 @@ def pil_to_tensor(image_pil):
     """
     if isinstance(image_pil, list):
         tensors = [pil_to_single_tensor(img) for img in image_pil]
-        return torch.stack(tensors)  # Stack tensors into a batch
+        return torch.cat(tensors)  # Concatenate tensors along the batch dimension
     else:
         return pil_to_single_tensor(image_pil)
 
@@ -63,17 +63,12 @@ def pil_to_single_tensor(image_pil):
     Helper function to convert a single PIL image to a PyTorch tensor.
     """
     image_np = np.array(image_pil).astype(np.float32) / 255.0
+    print(f"After PIL to NumPy: Data is in {image_np.dtype} format.")
+    
     if image_np.ndim == 2:  # Grayscale image
         image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
     image_np = np.transpose(image_np, (2, 0, 1))  # Convert [H, W, C] to [C, H, W]
-    image_tensor = torch.from_numpy(image_np)  # Return tensor with shape [C, H, W]
-
-    # Check the data type after converting to tensor
-    if image_tensor.dtype == torch.uint8:
-        print("After NumPy to Tensor: Data is in uint8 format.")
-    elif image_tensor.dtype == torch.float32:
-        print("After NumPy to Tensor: Data is in float32 format.")
-    else:
-        print(f"After NumPy to Tensor: Data is in a different format: {image_tensor.dtype}")
-
-    return image_tensor.unsqueeze(0)  # Add batch dimension [1, C, H, W]
+    image_tensor = torch.from_numpy(image_np).unsqueeze(0)  # Add batch dimension [1, C, H, W]
+    
+    print(f"After NumPy to Tensor: Data is in {image_tensor.dtype} format.")
+    return image_tensor
