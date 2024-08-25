@@ -22,7 +22,3 @@ class APZmediaImageRichTextOverlay:
 
         # Save the modified image
         save_image(image, output_path)
-
-# Usage Example
-overlay = APZmediaImageRichTextOverlay(font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
-overlay.add_overlay("input.png", "Hello World", "output.png", font_color="#FF0000", alignment="center", max_width=400)
