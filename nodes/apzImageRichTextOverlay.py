@@ -5,7 +5,8 @@ import numpy as np
 from ..utils.apz_font_manager import FontManager
 from ..utils.apz_rich_text_parser import RichTextParser
 from ..utils.apz_text_wrapper import TextWrapper
-from ..utils.apz_colors_translator import hex_to_rgb, convert_to_tensor
+from ..utils.apz_colors_translator import hex_to_rgb
+from ..utils.image_tensor_utils import pil_to_tensor, tensor_to_pil  # Import the conversion functions
 
 class APZmediaImageRichTextOverlay:
     def __init__(self, device="cpu"):
@@ -45,46 +46,62 @@ class APZmediaImageRichTextOverlay:
     CATEGORY = "image/text"
 
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
-        image_tensor = image
-        image_np = image_tensor.cpu().numpy()
-        image_pil = Image.fromarray((image_np.squeeze(0) * 255).astype(np.uint8))
+        # Convert the input tensor to a PIL image
+        image_pil = tensor_to_pil(image)
 
+        # Debugging: Print the shape of the image after converting to PIL
+        print(f"PIL image size: {image_pil.size}, mode: {image_pil.mode}")
+
+        # Convert hex colors to RGB tuples
         font_color_rgb = hex_to_rgb(font_color)
         italic_font_color_rgb = hex_to_rgb(italic_font_color)
         bold_font_color_rgb = hex_to_rgb(bold_font_color)
 
+        # Calculate effective textbox dimensions
         effective_textbox_width = theTextbox_width - 2 * padding
         effective_textbox_height = theTextbox_height - 2 * padding
 
+        # Initialize FontManager and TextWrapper
         font_manager = FontManager(font, italic_font, bold_font, max_font_size)
         text_wrapper = TextWrapper(font_manager)
 
+        # Adjust font size and wrap text until it fits within the textbox
         for font_size in range(max_font_size, 0, -1):
             line_height = int(font_size * line_height_ratio)
             parsed_text = self.text_parser.parse(theText)
             wrapped_lines, total_text_height = text_wrapper.wrap_text(parsed_text, effective_textbox_width, line_height, font_size)
 
             if total_text_height <= effective_textbox_height:
-                self._draw_text(image_pil, wrapped_lines, alignment, vertical_alignment, font_manager, font_size, line_height, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, box_start_x, box_start_y, padding, effective_textbox_width)
+                self._draw_text(
+                    image_pil, wrapped_lines, alignment, vertical_alignment, font_manager, font_size, line_height,
+                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, box_start_x, box_start_y, padding,
+                    effective_textbox_width, effective_textbox_height
+                )
                 break
 
-        return convert_to_tensor(image_pil)
+        # Convert the modified PIL image back to a tensor
+        image_tensor_out = pil_to_tensor(image_pil)
 
-    def _draw_text(self, image_pil, wrapped_lines, alignment, vertical_alignment, font_manager, font_size, line_height, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, box_start_x, box_start_y, padding, effective_textbox_width):
+        # Debugging: Print the shape of the final image tensor
+        print("Final image tensor shape:", image_tensor_out.shape)
+
+        return image_tensor_out
+
+    def _draw_text(self, image_pil, wrapped_lines, alignment, vertical_alignment, font_manager, font_size, line_height, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, box_start_x, box_start_y, padding, effective_textbox_width, effective_textbox_height):
         draw = ImageDraw.Draw(image_pil)
         y = self._calculate_initial_y(vertical_alignment, box_start_y, padding, effective_textbox_height, len(wrapped_lines) * line_height)
 
-        for line, line_parts in wrapped_lines:
+        for line in wrapped_lines:
             x = self._calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, font_manager, font_size)
-            for chunk, chunk_styles in line_parts:
+            for chunk, chunk_styles in line:
                 current_font = font_manager.get_font_for_style(chunk_styles, font_size)
                 current_font_color_rgb = self._get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
                 draw.text((x, y), chunk, fill=current_font_color_rgb, font=current_font)
                 chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
 
-                if chunk_styles['u']:
+                if chunk_styles.get('u', False):
                     self._draw_underline(draw, x, y, chunk, current_font, current_font_color_rgb)
-                if chunk_styles['s']:
+                if chunk_styles.get('s', False):
                     self._draw_strikeout(draw, x, y, chunk, current_font, current_font_color_rgb)
 
                 x += chunk_width
@@ -109,9 +126,9 @@ class APZmediaImageRichTextOverlay:
             return box_start_x + padding + (effective_textbox_width - line_width) // 2
 
     def _get_font_color(self, chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb):
-        if chunk_styles['b']:
+        if chunk_styles.get('b', False):
             return bold_font_color_rgb
-        elif chunk_styles['i']:
+        elif chunk_styles.get('i', False):
             return italic_font_color_rgb
         else:
             return font_color_rgb
@@ -123,7 +140,3 @@ class APZmediaImageRichTextOverlay:
     def _draw_strikeout(self, draw, x, y, chunk, font, color):
         strikeout_y = y + font.getsize(chunk)[1] // 2
         draw.line((x, strikeout_y, x + font.getbbox(chunk)[2] - font.getbbox(chunk)[0], strikeout_y), fill=color, width=1)
-
-NODE_CLASS_MAPPINGS = {
-    "APZmedia Image Rich Text Overlay": APZmediaImageRichTextOverlay,
-}
