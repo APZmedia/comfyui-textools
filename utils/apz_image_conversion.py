@@ -33,13 +33,14 @@ def _single_tensor_to_pil(image_np):
     if image_np.dtype != np.uint8:
         image_np = (image_np * 255).astype(np.uint8)
 
+    # Ensure image has a shape [H, W, C] or [H, W] for grayscale
+    if image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
+        image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
+    
     # Handle different shapes
     if image_np.ndim == 2:  # Grayscale image
         return Image.fromarray(image_np, mode='L')
     elif image_np.ndim == 3:
-        if image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
-            image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
-        # At this point, image_np should be [H, W, C]
         if image_np.shape[2] == 1:  # Single channel, grayscale
             return Image.fromarray(image_np.squeeze(), mode='L')
         elif image_np.shape[2] == 3:  # RGB
