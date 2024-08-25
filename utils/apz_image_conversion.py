@@ -5,17 +5,13 @@ from PIL import Image
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a PIL image.
-    The tensor is expected to have shape [C, H, W] or [H, W].
+    The tensor is expected to have shape [C, H, W] or [H, W, C].
     """
 
     # Debugging: Print the initial shape and dtype
     print(f"Initial tensor shape: {image_tensor.shape}, dtype: {image_tensor.dtype}")
 
-    # Squeeze unnecessary dimensions
-    image_tensor = image_tensor.squeeze()  # This will remove dimensions of size 1
-    print(f"Squeezed tensor shape: {image_tensor.shape}")
-
-    # Convert to numpy array
+    # Ensure the tensor is on the CPU and squeeze out any singleton dimensions
     image_np = image_tensor.cpu().numpy()
 
     # Convert to uint8 if necessary
@@ -25,8 +21,10 @@ def tensor_to_pil(image_tensor):
     # Handle grayscale and RGB images
     if image_np.ndim == 2:  # Grayscale image
         return Image.fromarray(image_np, mode='L')
-    elif image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # RGB or RGBA image
-        image_np = np.moveaxis(image_np, 0, -1)  # Move channel to last dimension
+    elif image_np.ndim == 3:
+        if image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
+            image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
+        # At this point, image_np should be [H, W, C]
         if image_np.shape[2] == 1:  # Single channel, grayscale
             return Image.fromarray(image_np.squeeze(), mode='L')
         elif image_np.shape[2] == 3:  # RGB
