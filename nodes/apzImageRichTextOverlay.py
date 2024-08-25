@@ -41,75 +41,76 @@ class APZmediaImageRichTextOverlay:
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
-        original_shape = image.shape
-        original_dtype = image.dtype
+  def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
+    original_shape = image.shape
+    original_dtype = image.dtype
 
-        # Convert tensor to PIL images (handling batch of images)
-        pil_images = tensor_to_pil(image)
-        print(f"Input Tensor Shape: {image.shape}")
+    # Convert tensor to PIL images (handling batch of images)
+    pil_images = tensor_to_pil(image)
+    print(f"Input Tensor Shape: {image.shape}")
 
-        processed_images = []
-        for idx, image_pil in enumerate(pil_images):
-            print(f"Processing Image {idx + 1}/{len(pil_images)}")
+    processed_images = []
+    for idx, image_pil in enumerate(pil_images):
+        print(f"Processing Image {idx + 1}/{len(pil_images)}")
 
-            # Process each PIL image
-            font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
-            italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
-            bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+        # Process each PIL image
+        font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+        italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+        bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
 
-            effective_textbox_width = theTextbox_width - 2 * padding
-            effective_textbox_height = theTextbox_height - 2 * padding
+        effective_textbox_width = theTextbox_width - 2 * padding
+        effective_textbox_height = theTextbox_height - 2 * padding
 
-            font_manager = FontManager(font, italic_font, bold_font, max_font_size)
-            font_size = max_font_size
+        font_manager = FontManager(font, italic_font, bold_font, max_font_size)
+        font_size = max_font_size
 
-            while font_size >= 1:
-                loaded_font = font_manager.load_font(font, font_size)
-                line_height = int(font_size * line_height_ratio)
-                parsed_text = parse_rich_text(theText)
-                wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height)
+        while font_size >= 1:
+            loaded_font = font_manager.load_font(font, font_size)
+            line_height = int(font_size * line_height_ratio)
+            parsed_text = parse_rich_text(theText)
+            wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height)
 
-                if total_text_height <= effective_textbox_height:
-                    draw = ImageDraw.Draw(image_pil)
-                    y = self._calculate_initial_y(vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height)
+            if total_text_height <= effective_textbox_height:
+                draw = ImageDraw.Draw(image_pil)
+                y = self._calculate_initial_y(vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height)
 
-                    for line, line_parts in wrapped_lines:
-                        x = self._calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, loaded_font)
-                        for chunk, chunk_styles in line_parts:
-                            current_font = font_manager.get_font_for_style(chunk_styles, font_size)
-                            current_font_color_rgb = self._get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
-                            draw.text((x, y), chunk, fill=current_font_color_rgb, font=current_font)
-                            chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
+                for line, line_parts in wrapped_lines:
+                    x = self._calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, loaded_font)
+                    for chunk, chunk_styles in line_parts:
+                        current_font = font_manager.get_font_for_style(chunk_styles, font_size)
+                        current_font_color_rgb = self._get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
+                        draw.text((x, y), chunk, fill=current_font_color_rgb, font=current_font)
+                        chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
 
-                            if chunk_styles.get('u', False):
-                                underline_y = y + current_font.getsize(chunk)[1]
-                                draw.line((x, underline_y, x + chunk_width, underline_y), fill=current_font_color_rgb, width=1)
-                            if chunk_styles.get('s', False):
-                                strikeout_y = y + current_font.getsize(chunk)[1] // 2
-                                draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
+                        if chunk_styles.get('u', False):
+                            underline_y = y + current_font.getsize(chunk)[1]
+                            draw.line((x, underline_y, x + chunk_width, underline_y), fill=current_font_color_rgb, width=1)
+                        if chunk_styles.get('s', False):
+                            strikeout_y = y + current_font.getsize(chunk)[1] // 2
+                            draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
 
-                            x += chunk_width
+                        x += chunk_width
 
-                        y += line_height
+                    y += line_height
 
-                    break
+                break
 
-                font_size -= 1
+            font_size -= 1
 
-            # Convert processed PIL image back to tensor with batch dimension
-            processed_image = pil_to_single_tensor(image_pil)
-            print(f"Processed PIL image to tensor shape: {processed_image.shape}")
-            processed_images.append(processed_image)
+        # Convert processed PIL image back to tensor
+        processed_image = pil_to_single_tensor(image_pil)
+        print(f"Processed PIL image to tensor shape: {processed_image.shape}")
+        processed_images.append(processed_image)
 
-        # Stack all processed images along the batch dimension
-        processed_image = torch.stack(processed_images)
-        print(f"Final output tensor shape: {processed_image.shape}")
+    # Stack all processed images along the batch dimension
+    processed_image = torch.cat(processed_images, dim=0)  # Concatenating along the batch dimension
+    print(f"Final output tensor shape: {processed_image.shape}")
 
-        # Ensure the output tensor has the original shape and data type
-        processed_image = processed_image.to(original_dtype)
+    # Ensure the output tensor has the original shape and data type
+    processed_image = processed_image.to(original_dtype)
 
-        return processed_image,
+    return processed_image,
+
 
     def _calculate_initial_y(self, vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height):
         if vertical_alignment == "top":
