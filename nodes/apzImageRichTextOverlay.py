@@ -12,7 +12,36 @@ class APZmediaImageRichTextOverlay:
         print("APZmediaImageRichTextOverlay initialized")
         self.device = device
 
-    # _alignments, INPUT_TYPES, RETURN_TYPES, FUNCTION, CATEGORY remain unchanged
+    _alignments = ["left", "right", "center"]
+    _vertical_alignments = ["top", "middle", "bottom"]
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "theText": ("STRING", {"multiline": True, "default": "Hello <b>World</b> <i>This is italic</i>"}),
+                "theTextbox_width": ("INT", {"default": 200, "min": 1}),
+                "theTextbox_height": ("INT", {"default": 200, "min": 1}),
+                "max_font_size": ("INT", {"default": 30, "min": 1, "max": 256, "step": 1}),
+                "font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"}),
+                "italic_font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"}),
+                "bold_font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"}),
+                "alignment": (cls._alignments, {"default": "center"}),
+                "vertical_alignment": (cls._vertical_alignments, {"default": "middle"}),
+                "font_color": ("STRING", {"default": "#000000"}),
+                "italic_font_color": ("STRING", {"default": "#000000"}),
+                "bold_font_color": ("STRING", {"default": "#000000"}),
+                "box_start_x": ("INT", {"default": 0}),
+                "box_start_y": ("INT", {"default": 0}),
+                "padding": ("INT", {"default": 50}),
+                "line_height_ratio": ("FLOAT", {"default": 1.2, "min": 1.0}),  # Ratio for line height relative to font size
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "apz_add_text_overlay"
+    CATEGORY = "image/text"
 
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
         original_shape = image.shape
