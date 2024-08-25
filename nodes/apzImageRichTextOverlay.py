@@ -19,7 +19,7 @@ class APZmediaImageRichTextOverlay:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "images": ("IMAGE",),  # Updated to accept a single image or a batch of images
+                "image": ("IMAGE",),  # Corrected the input name back to "image"
                 "theText": ("STRING", {"multiline": True, "default": "Hello <b>World</b> <i>This is italic</i>"}),
                 "theTextbox_width": ("INT", {"default": 200, "min": 1}),
                 "theTextbox_height": ("INT", {"default": 200, "min": 1}),
@@ -39,20 +39,20 @@ class APZmediaImageRichTextOverlay:
             }
         }
 
-    RETURN_TYPES = ("IMAGE",)  # This will now dynamically handle batch or single image return
+    RETURN_TYPES = ("IMAGE",)
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-    def apz_add_text_overlay(self, images, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
+    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
         # Check if we have a batch of images or a single image
-        is_batch = images.ndim == 4
+        is_batch = image.ndim == 4
 
         if not is_batch:
-            images = images.unsqueeze(0)  # Convert single image to a batch of 1
+            image = image.unsqueeze(0)  # Convert single image to a batch of 1
 
         processed_images = []
-        for image in images:
-            image_pil = tensor_to_pil(image)
+        for img in image:
+            image_pil = tensor_to_pil(img)
             font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
