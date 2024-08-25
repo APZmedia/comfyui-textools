@@ -47,6 +47,7 @@ class APZmediaImageRichTextOverlay:
 
         # Convert tensor to PIL images (handling batch or single image)
         pil_images = tensor_to_pil(image)
+        print("Input Tensor Shape:", image.shape)
 
         # Ensure pil_images is a list (in case a single image was provided)
         if not isinstance(pil_images, list):
