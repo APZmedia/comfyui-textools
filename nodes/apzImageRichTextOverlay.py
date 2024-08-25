@@ -57,7 +57,8 @@ class APZmediaImageRichTextOverlay:
             if img.shape[0] == 1:
                 img = img.squeeze(0)  # Remove single color channel dimension for grayscale
 
-            image_pil = tensor_to_pil(img)
+            image_pil = tensor_to_pil(img)  # Convert tensor to PIL Image
+
             font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
@@ -101,7 +102,7 @@ class APZmediaImageRichTextOverlay:
 
                 font_size -= 1
 
-            processed_image = pil_to_tensor(image_pil)
+            processed_image = pil_to_tensor(image_pil)  # Convert PIL Image back to tensor
             processed_images.append(processed_image)
 
         if not is_batch:
