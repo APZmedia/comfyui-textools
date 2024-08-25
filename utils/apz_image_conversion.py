@@ -5,53 +5,32 @@ from PIL import Image
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a list of PIL images.
-    Handles tensors of shape [C, H, W], [H, W, C], and [B, C, H, W].
+    Handles tensors of shape [B, C, H, W].
     """
     # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
     # Handle batch of images
-    if image_np.ndim == 4:  # [B, C, H, W] or [B, H, W, C] format
+    if image_np.ndim == 4:  # [B, C, H, W] format
         pil_images = []
         for img in image_np:
             pil_images.append(_single_tensor_to_pil(img))
         return pil_images
-
-    # Handle single image
-    return _single_tensor_to_pil(image_np)
-
+    else:
+        raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
 
 def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
     """
-    # Remove unnecessary dimensions
-    if image_np.ndim == 4:
-        image_np = np.squeeze(image_np)
-
-    # Convert to uint8 if necessary
-    if image_np.dtype != np.uint8:
-        image_np = (image_np * 255).astype(np.uint8)
-
-    # Ensure image has a shape [H, W, C] or [H, W] for grayscale
-    if image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
+    # Check if the image is in [C, H, W] format
+    if image_np.shape[0] == 3:  # Assume [C, H, W] format for RGB
         image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
-    
-    # Handle different shapes
-    if image_np.ndim == 2:  # Grayscale image
-        return Image.fromarray(image_np, mode='L')
-    elif image_np.ndim == 3:
-        if image_np.shape[2] == 1:  # Single channel, grayscale
-            return Image.fromarray(image_np.squeeze(), mode='L')
-        elif image_np.shape[2] == 3:  # RGB
-            return Image.fromarray(image_np, mode='RGB')
-        elif image_np.shape[2] == 4:  # RGBA
-            return Image.fromarray(image_np, mode='RGBA')
     else:
-        raise ValueError(f"Unsupported image shape for conversion to PIL: {image_np.shape}")
+        raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
 
-    raise ValueError(f"Failed to convert tensor with shape {image_np.shape} to PIL image")
-
+    # Convert the numpy array to a PIL Image
+    return Image.fromarray((image_np * 255).astype(np.uint8), mode='RGB')
 
 def pil_to_tensor(image_pil):
     """
