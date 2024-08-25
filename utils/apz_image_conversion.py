@@ -4,35 +4,40 @@ from PIL import Image
 
 def tensor_to_pil(image_tensor):
     """
-    Convert a PyTorch tensor to a list of PIL images.
+    Convert a PyTorch tensor to a PIL image.
     Handles tensors of shape [B, C, H, W] or [C, H, W].
     Returns a single PIL image if input is a single image, or a list of PIL images if input is a batch.
     """
     # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
-    # If the input is a single image, add a batch dimension (to unify handling)
-    if image_np.ndim == 3:  # [C, H, W]
-        image_np = np.expand_dims(image_np, 0)  # Convert to [1, C, H, W]
-
-    # Handle batch of images
-    pil_images = []
-    for img in image_np:  # img has shape [C, H, W]
-        pil_images.append(_single_tensor_to_pil(img))
-
-    # If only one image, return the image itself instead of a list
-    if len(pil_images) == 1:
-        return pil_images[0]
-    else:
+    # Handle different shapes and add missing dimensions
+    if image_np.ndim == 4:  # [B, C, H, W]
+        # Batch of images, process each one
+        pil_images = []
+        for img in image_np:  # img has shape [C, H, W]
+            pil_images.append(_single_tensor_to_pil(img))
         return pil_images
+
+    elif image_np.ndim == 3:  # [C, H, W]
+        # Single image, directly process
+        return _single_tensor_to_pil(image_np)
+
+    elif image_np.ndim == 2:  # [H, W]
+        # Grayscale image without channel dimension, add one
+        image_np = np.expand_dims(image_np, axis=0)
+        return _single_tensor_to_pil(image_np)
+
+    else:
+        raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
 
 def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
     Handles tensors of shape [C, H, W] or [H, W, C].
     """
-    # If the image is in [C, H, W] format (channel-first), move channels to the last dimension
-    if image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
+    # Convert [C, H, W] to [H, W, C] if necessary
+    if image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
         image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
 
     # Determine the mode based on the number of channels
