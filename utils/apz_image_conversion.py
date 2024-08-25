@@ -5,15 +5,17 @@ from PIL import Image
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a PIL image.
-    The tensor is expected to have shape [1, 1, H, W] for grayscale or [1, 3, H, W] for RGB.
+    The tensor is expected to have shape [C, H, W] or [H, W].
     """
-    # Squeeze unnecessary dimensions
-    if image_tensor.ndim == 4:
-        image_tensor = image_tensor.squeeze(0)  # Remove the batch dimension
-    if image_tensor.shape[0] == 1:
-        image_tensor = image_tensor.squeeze(0)  # Remove the channel dimension for grayscale images
 
-    # Ensure the tensor is in CPU and convert to numpy array
+    # Debugging: Print the initial shape and dtype
+    print(f"Initial tensor shape: {image_tensor.shape}, dtype: {image_tensor.dtype}")
+
+    # Squeeze unnecessary dimensions
+    image_tensor = image_tensor.squeeze()  # This will remove dimensions of size 1
+    print(f"Squeezed tensor shape: {image_tensor.shape}")
+
+    # Convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
     # Convert to uint8 if necessary
@@ -23,12 +25,18 @@ def tensor_to_pil(image_tensor):
     # Handle grayscale and RGB images
     if image_np.ndim == 2:  # Grayscale image
         return Image.fromarray(image_np, mode='L')
-    elif image_np.shape[2] == 3:  # RGB image
-        return Image.fromarray(image_np, mode='RGB')
-    elif image_np.shape[2] == 4:  # RGBA image
-        return Image.fromarray(image_np, mode='RGBA')
+    elif image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # RGB or RGBA image
+        image_np = np.moveaxis(image_np, 0, -1)  # Move channel to last dimension
+        if image_np.shape[2] == 1:  # Single channel, grayscale
+            return Image.fromarray(image_np.squeeze(), mode='L')
+        elif image_np.shape[2] == 3:  # RGB
+            return Image.fromarray(image_np, mode='RGB')
+        elif image_np.shape[2] == 4:  # RGBA
+            return Image.fromarray(image_np, mode='RGBA')
     else:
-        raise ValueError(f"Unsupported image shape: {image_np.shape}")
+        raise ValueError(f"Unsupported image shape for conversion to PIL: {image_np.shape}")
+
+    raise ValueError(f"Failed to convert tensor with shape {image_tensor.shape} to PIL image")
 
 def pil_to_tensor(image_pil):
     """
