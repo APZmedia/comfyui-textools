@@ -1,6 +1,6 @@
 from PIL import ImageDraw
 import torch
-from ..utils.image_processor import tensor_to_pil, pil_to_tensor
+from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
 from ..utils.apz_rich_text_parser import parse_rich_text
 from ..utils.apz_text_wrapper import wrap_text
 from ..utils.apz_font_manager import FontManager
