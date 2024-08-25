@@ -84,7 +84,7 @@ class APZmediaImageRichTextOverlay:
                                 draw.line((x, underline_y, x + chunk_width, underline_y), fill=current_font_color_rgb, width=1)
                             if chunk_styles.get('s', False):
                                 strikeout_y = y + current_font.getsize(chunk)[1] // 2
-                                draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill current_font_color_rgb, width=1)
+                                draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
 
                             x += chunk_width
 
