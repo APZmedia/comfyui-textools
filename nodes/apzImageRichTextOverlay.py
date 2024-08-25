@@ -45,16 +45,14 @@ class APZmediaImageRichTextOverlay:
         original_shape = image.shape
         original_dtype = image.dtype
 
-        # Convert tensor to PIL images (handling batch or single image)
+        # Convert tensor to PIL images (handling batch of images)
         pil_images = tensor_to_pil(image)
         print("Input Tensor Shape:", image.shape)
 
-        # Ensure pil_images is a list (in case a single image was provided)
-        if not isinstance(pil_images, list):
-            pil_images = [pil_images]
-
         processed_images = []
         for image_pil in pil_images:
+            # Process each PIL image
+            # Example: Add text overlay, etc.
             font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
@@ -98,16 +96,14 @@ class APZmediaImageRichTextOverlay:
 
                 font_size -= 1
 
-            processed_image = pil_to_single_tensor(image_pil)  # Convert processed PIL image back to tensor
+            # Convert processed PIL image back to tensor with batch dimension
+            processed_image = pil_to_single_tensor(image_pil)
             processed_images.append(processed_image)
 
-        # If only one image, ensure it remains in batch format [1, C, H, W]
-        if len(processed_images) == 1:
-            processed_image = processed_images[0].unsqueeze(0)
-        else:
-            processed_image = torch.stack(processed_images)
+        # Concatenate all processed images along the batch dimension
+        processed_image = torch.cat(processed_images, dim=0)
 
-        # Convert back to the original data type and reshape to match the original input shape
+        # Ensure the output tensor has the original shape and data type
         processed_image = processed_image.to(original_dtype)
 
         return processed_image,
