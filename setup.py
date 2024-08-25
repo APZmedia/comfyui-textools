@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ComfyUI-textTools', 
-    version='0.1.0', 
+    name='ComfyUI-APZmedia-textTools',  # Your package name
+    version='0.1.0',  # Initial version
     description='Nodes for applying rich text overlays on images and videos.',
-    long_description=open('README.md').read(), 
+    long_description=open('README.md').read(),  # Assuming a README.md is present
     long_description_content_type='text/markdown',
-    author='Pablo Apiolazza', 
+    author='Pablo Apiolazza',  # Replace with your name
     author_email='pablo@apzmedia.com',  # Replace with your email
     url='https://github.com/APZmedia/comfyui-textools',  # Replace with your GitHub or project URL
     packages=find_packages(),  # Automatically find packages in your directory
