@@ -47,12 +47,13 @@ class APZmediaImageRichTextOverlay:
 
         # Convert tensor to PIL images (handling batch of images)
         pil_images = tensor_to_pil(image)
-        print("Input Tensor Shape:", image.shape)
+        print(f"Input Tensor Shape: {image.shape}")
 
         processed_images = []
-        for image_pil in pil_images:
+        for idx, image_pil in enumerate(pil_images):
+            print(f"Processing Image {idx + 1}/{len(pil_images)}")
+
             # Process each PIL image
-            # Example: Add text overlay, etc.
             font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
@@ -98,10 +99,12 @@ class APZmediaImageRichTextOverlay:
 
             # Convert processed PIL image back to tensor with batch dimension
             processed_image = pil_to_single_tensor(image_pil)
+            print(f"Processed PIL image to tensor shape: {processed_image.shape}")
             processed_images.append(processed_image)
 
-        # Concatenate all processed images along the batch dimension
-        processed_image = torch.cat(processed_images, dim=0)
+        # Stack all processed images along the batch dimension
+        processed_image = torch.stack(processed_images)
+        print(f"Final output tensor shape: {processed_image.shape}")
 
         # Ensure the output tensor has the original shape and data type
         processed_image = processed_image.to(original_dtype)
@@ -132,3 +135,4 @@ class APZmediaImageRichTextOverlay:
             return italic_font_color_rgb
         else:
             return font_color_rgb
+
