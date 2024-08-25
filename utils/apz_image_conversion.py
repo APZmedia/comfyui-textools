@@ -63,9 +63,16 @@ def pil_to_single_tensor(image_pil):
     """
     Helper function to convert a single PIL image to a PyTorch tensor.
     """
-    image_np = np.array(image_pil).astype(np.float32) / 255.0
+    image_np = np.array(image_pil)
     print(f"After PIL to NumPy: Data is in {image_np.dtype} format.")
-    
+
+    # If the data is float32, convert it to uint8
+    if image_np.dtype == np.float32 or image_np.dtype == np.float64:
+        print("Converting float data to uint8.")
+        image_np = (image_np * 255).astype(np.uint8)
+    elif image_np.dtype != np.uint8:
+        raise ValueError(f"Unexpected data type: {image_np.dtype}")
+
     if image_np.ndim == 2:  # Grayscale image
         image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
     
