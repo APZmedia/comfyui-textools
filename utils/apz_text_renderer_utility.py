@@ -1,8 +1,8 @@
 # apz_text_renderer_utility.py
 
 from PIL import ImageDraw
-from .text_box_utility import TextBoxUtility
-from .color_utility import ColorUtility
+from ..utils.apz_text_box_utility import TextBoxUtility
+from ..utils.apz_color_utility import ColorUtility
 
 class TextRendererUtility:
     @staticmethod
