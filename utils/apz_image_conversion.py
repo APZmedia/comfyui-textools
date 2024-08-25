@@ -23,16 +23,23 @@ def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
     """
-    # Handle [C, H, W] format
-    if image_np.ndim == 3 and image_np.shape[0] == 3:  # [C, H, W] for RGB
+    image_np = np.squeeze(image_np)  # Remove unnecessary dimensions
+
+    if image_np.ndim == 3 and image_np.shape[0] == 3:  # [C, H, W] format for RGB
         image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
 
-    # Handle already correct [H, W, C] format
-    if image_np.ndim == 3 and image_np.shape[-1] == 3:  # [H, W, C] for RGB
-        # Convert the numpy array to a PIL Image
-        return Image.fromarray((image_np * 255).astype(np.uint8), mode='RGB')
+    if image_np.ndim == 3 and image_np.shape[-1] == 3:  # [H, W, C] format for RGB
+        mode = 'RGB'
+    elif image_np.ndim == 3 and image_np.shape[-1] == 4:  # [H, W, C] format for RGBA
+        mode = 'RGBA'
     else:
-        raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
+        raise ValueError(f"Unsupported channel configuration: {image_np.shape[-1]}")
+
+    if image_np.dtype != np.uint8:
+        image_np = (image_np * 255).astype(np.uint8)
+
+    return Image.fromarray(image_np, mode=mode)
+
 def pil_to_tensor(image_pil):
     """
     Convert a PIL image or a list of PIL images to a PyTorch tensor.
@@ -44,14 +51,13 @@ def pil_to_tensor(image_pil):
     else:
         return pil_to_single_tensor(image_pil)
 
-
 def pil_to_single_tensor(image_pil):
     """
     Helper function to convert a single PIL image to a PyTorch tensor.
     """
     image_np = np.array(image_pil).astype(np.float32) / 255.0
     if image_np.ndim == 2:  # Grayscale image
-        image_np = np.expand_dims(image_np, axis=2)
+        image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
     image_np = np.transpose(image_np, (2, 0, 1))  # Convert [H, W, C] to [C, H, W]
     image_tensor = torch.from_numpy(image_np).unsqueeze(0)  # Add batch dimension [1, C, H, W]
     return image_tensor
