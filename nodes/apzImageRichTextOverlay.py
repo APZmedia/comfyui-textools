@@ -1,8 +1,8 @@
 from PIL import Image
-from utils.image_utils import open_image, save_image
-from utils.text_overlay import add_text_overlay
-from utils.font_manager import FontManager
-from utils.color_translator import hex_to_rgb
+from ..utils.image_utils import open_image, save_image
+from ..utils.text_overlay import add_text_overlay
+from ..utils.font_manager import FontManager
+from ..utils.color_translator import hex_to_rgb
 
 class APZmediaImageRichTextOverlay:
     def __init__(self, font_path, font_size=30, bold_font_path=None, italic_font_path=None, device="cpu"):
