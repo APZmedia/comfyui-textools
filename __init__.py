@@ -1,4 +1,4 @@
-from .apzImageTextOverlay import APZmediaImageRichTextOverlay
+from .nodes.apzImageRichTextOverlay import APZmediaImageRichTextOverlay
 
 NODE_CLASS_MAPPINGS = {
     "APZmediaImageRichTextOverlay": APZmediaImageRichTextOverlay
