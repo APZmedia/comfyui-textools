@@ -5,17 +5,17 @@ from PIL import Image
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a list of PIL images.
-    Handles tensors of shape [B, C, H, W].
+    Handles tensors of shape [B, C, H, W] or [B, H, W, C].
     """
-    # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
-    # Handle batch of images
-    if image_np.ndim == 4:  # [B, C, H, W] format
+    if image_np.ndim == 4:  # [B, C, H, W] or [B, H, W, C] format
         pil_images = []
         for img in image_np:
             pil_images.append(_single_tensor_to_pil(img))
         return pil_images
+    elif image_np.ndim == 3:  # Single image case [C, H, W] or [H, W, C]
+        return _single_tensor_to_pil(image_np)
     else:
         raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
 
@@ -23,15 +23,16 @@ def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
     """
-    # Check if the image is in [C, H, W] format
-    if image_np.shape[0] == 3:  # Assume [C, H, W] format for RGB
+    # Handle [C, H, W] format
+    if image_np.ndim == 3 and image_np.shape[0] == 3:  # [C, H, W] for RGB
         image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
+
+    # Handle already correct [H, W, C] format
+    if image_np.ndim == 3 and image_np.shape[-1] == 3:  # [H, W, C] for RGB
+        # Convert the numpy array to a PIL Image
+        return Image.fromarray((image_np * 255).astype(np.uint8), mode='RGB')
     else:
         raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
-
-    # Convert the numpy array to a PIL Image
-    return Image.fromarray((image_np * 255).astype(np.uint8), mode='RGB')
-
 def pil_to_tensor(image_pil):
     """
     Convert a PIL image or a list of PIL images to a PyTorch tensor.
