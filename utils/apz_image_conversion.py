@@ -5,20 +5,20 @@ from PIL import Image
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a PIL image.
-    The tensor is expected to have shape [C, H, W] or [H, W, C].
+    Handles tensors of shape [C, H, W], [H, W, C], and [B, C, H, W].
     """
-
-    # Debugging: Print the initial shape and dtype
-    print(f"Initial tensor shape: {image_tensor.shape}, dtype: {image_tensor.dtype}")
-
-    # Ensure the tensor is on the CPU and squeeze out any singleton dimensions
+    # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
+
+    # Remove unnecessary dimensions
+    if image_np.ndim == 4:
+        image_np = np.squeeze(image_np)
 
     # Convert to uint8 if necessary
     if image_np.dtype != np.uint8:
         image_np = (image_np * 255).astype(np.uint8)
 
-    # Handle grayscale and RGB images
+    # Handle different shapes
     if image_np.ndim == 2:  # Grayscale image
         return Image.fromarray(image_np, mode='L')
     elif image_np.ndim == 3:
@@ -35,6 +35,7 @@ def tensor_to_pil(image_tensor):
         raise ValueError(f"Unsupported image shape for conversion to PIL: {image_np.shape}")
 
     raise ValueError(f"Failed to convert tensor with shape {image_tensor.shape} to PIL image")
+
 
 def pil_to_tensor(image_pil):
     """
