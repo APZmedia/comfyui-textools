@@ -2,13 +2,14 @@ from PIL import Image, ImageDraw
 import torch
 import numpy as np
 
-from utils.font_manager import FontManager
-from utils.rich_text_parser import RichTextParser
-from utils.text_wrapper import TextWrapper
-from utils.image_helpers import hex_to_rgb, convert_to_tensor
+from ..utils.apz_font_manager import FontManager
+from ..utils.apz_rich_text_parser import RichTextParser
+from ..utils.apz_text_wrapper import TextWrapper
+from ..utils.apz_colors_translator import hex_to_rgb, convert_to_tensor
 
 class APZmediaImageRichTextOverlay:
     def __init__(self, device="cpu"):
+        print("APZmediaImageRichTextOverlay initialized")
         self.device = device
         self.text_parser = RichTextParser()
 
