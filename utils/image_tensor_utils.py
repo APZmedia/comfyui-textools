@@ -32,6 +32,34 @@ def tensor_to_pil(image_tensor):
     if len(image_tensor.shape) == 4:
         image_tensor = image_tensor.squeeze(0)  # Remove batch dimension
 
+    # Check for unexpected shapes
+    if image_tensor.shape[0] == 1:  # Grayscale image
+        image_tensor = image_tensor.repeat(3, 1, 1)  # Convert to RGB by repeating channels
+
+    elif image_tensor.shape[0] != 3:  # If not RGB or Grayscale, handle it
+        raise ValueError(f"Unexpected number of channels: {image_tensor.shape[0]}")
+
+    # Ensure the tensor is [C, H, W], then convert to [H, W, C]
+    image_np = image_tensor.permute(1, 2, 0).cpu().numpy()
+
+    # Debugging: Print the final shape of the numpy array before converting to PIL
+    print("Numpy array shape before converting to PIL:", image_np.shape)
+
+    # Convert numpy array back to PIL Image
+    image_pil = Image.fromarray((image_np * 255).astype(np.uint8))
+
+    return image_pil
+
+    """
+    Convert a PyTorch tensor to a PIL image.
+    The tensor is expected to have shape [1, C, H, W] or [C, H, W].
+    """
+    # Debugging: Print the initial shape of the tensor
+    print(f"Tensor shape before conversion: {image_tensor.shape}")
+
+    if len(image_tensor.shape) == 4:
+        image_tensor = image_tensor.squeeze(0)  # Remove batch dimension
+
     # Debugging: Check for grayscale images and other shapes
     if image_tensor.shape[0] == 1:  # Grayscale image
         image_tensor = image_tensor.repeat(3, 1, 1)  # Convert to RGB by repeating channels
