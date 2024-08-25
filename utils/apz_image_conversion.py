@@ -4,13 +4,12 @@ from PIL import Image
 
 def tensor_to_pil(image_tensor):
     """
-    Convert a PyTorch tensor to a list of PIL images.
-    Handles tensors of shape [B, H, W, C] (batch of images).
+    Convert a PyTorch tensor with shape [B, C, H, W] or [B, H, W, C] to a list of PIL images.
     """
     image_np = image_tensor.cpu().numpy()
-    print(f"Input Tensor Shape: {image_tensor.shape}")
+    print(f"Input Tensor Shape: {image_tensor.shape}")  # Debugging: Show the shape of the input tensor
 
-    if image_np.ndim == 4:  # [B, H, W, C] format
+    if image_np.ndim == 4:  # Handle batch of images
         pil_images = []
         for img in image_np:
             pil_images.append(_single_tensor_to_pil(img))
@@ -21,32 +20,24 @@ def tensor_to_pil(image_tensor):
 def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
-    Handles tensors of shape [H, W, C].
+    Handles tensors of shape [C, H, W] or [H, W, C].
     """
-    print(f"Converted image shape for PIL: {image_np.shape}")
-    
-    # Ensure data is in [H, W, C] and float32
-    if image_np.ndim == 3 and image_np.shape[-1] in [1, 3, 4]:
-        pass  # Valid shape
+    print(f"Original image shape: {image_np.shape}")  # Debugging
+
+    # Convert float images in [0, 1] range to uint8 images in [0, 255] range
+    if image_np.dtype == np.float32 or image_np.dtype == np.float64:
+        print("Converting to uint8 format.")  # Debugging
+        image_np = (image_np * 255).astype(np.uint8)
+
+    if image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
+        image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
+
+    if image_np.ndim == 3 and image_np.shape[-1] in [1, 3, 4]:  # [H, W, C] format
+        mode = 'L' if image_np.shape[-1] == 1 else 'RGB' if image_np.shape[-1] == 3 else 'RGBA'
     else:
         raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
 
-    # Convert to uint8 if necessary
-    if image_np.dtype != np.uint8:
-        print("Converting to uint8 format.")
-        image_np = (image_np * 255).astype(np.uint8)
-
-    # Determine the mode based on the number of channels
-    if image_np.shape[-1] == 1:  # Grayscale
-        image_np = image_np.squeeze(-1)
-        mode = 'L'
-    elif image_np.shape[-1] == 3:  # RGB
-        mode = 'RGB'
-    elif image_np.shape[-1] == 4:  # RGBA
-        mode = 'RGBA'
-    else:
-        raise ValueError(f"Unsupported channel configuration: {image_np.shape[-1]}")
-
+    print(f"Before PIL Conversion: Data is in {image_np.dtype} format.")  # Debugging
     return Image.fromarray(image_np, mode=mode)
 
 def pil_to_tensor(image_pil):
