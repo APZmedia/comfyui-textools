@@ -1,4 +1,6 @@
 # font_manager.py
+from PIL import ImageFont 
+
 class FontManager:
     def __init__(self, regular_font_path, italic_font_path, bold_font_path, max_font_size):
         self.regular_font_path = regular_font_path
