@@ -11,7 +11,8 @@ class FontLoaderUtility:
     def find_fitting_font_size(self, theText, effective_textbox_width, effective_textbox_height, line_height_ratio):
         font_size = self.max_font_size
         while font_size >= 1:
-            loaded_font = self.font_manager.load_font(self.font_manager.font, font_size)
+            # Use regular font as a baseline for size fitting
+            loaded_font = self.font_manager.get_regular_font(font_size)
             line_height = int(font_size * line_height_ratio)
             parsed_text = parse_rich_text(theText)
             wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height)
