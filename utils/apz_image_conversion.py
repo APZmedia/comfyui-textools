@@ -51,7 +51,7 @@ def _single_tensor_to_pil(image_np):
 
 def pil_to_tensor(image_pil):
     """
-    Convert a list of PIL images back to a PyTorch tensor with shape [B, C, H, W].
+    Convert a list of PIL images back to a PyTorch tensor with shape [B, H, W, C].
     """
     if isinstance(image_pil, list):
         tensors = [pil_to_single_tensor(img) for img in image_pil]
