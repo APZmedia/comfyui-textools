@@ -97,20 +97,17 @@ class APZmediaImageRichTextOverlay:
 
                 font_size -= 1
 
-            processed_image = pil_to_tensor(image_pil)  # Convert processed PIL image back to tensor
+            processed_image = pil_to_single_tensor(image_pil)  # Convert processed PIL image back to tensor
             processed_images.append(processed_image)
 
+        # If only one image, ensure it remains in batch format [1, C, H, W]
         if len(processed_images) == 1:
-            processed_image = processed_images[0]
+            processed_image = processed_images[0].unsqueeze(0)
         else:
             processed_image = torch.stack(processed_images)
 
-        # Reshape processed image to match the original input shape
-        processed_image = processed_image.view(original_shape)
-
-        # Convert back to the original data type
-        if processed_image.dtype != original_dtype:
-            processed_image = processed_image.to(original_dtype)
+        # Convert back to the original data type and reshape to match the original input shape
+        processed_image = processed_image.to(original_dtype)
 
         return processed_image,
 

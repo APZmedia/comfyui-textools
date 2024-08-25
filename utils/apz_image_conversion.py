@@ -15,7 +15,7 @@ def tensor_to_pil(image_tensor):
             pil_images.append(_single_tensor_to_pil(img))
         return pil_images
     elif image_np.ndim == 3:  # Single image case [C, H, W] or [H, W, C]
-        return _single_tensor_to_pil(image_np)
+        return [_single_tensor_to_pil(image_np)]  # Return as a list with one PIL image
     else:
         raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
 
@@ -59,5 +59,5 @@ def pil_to_single_tensor(image_pil):
     if image_np.ndim == 2:  # Grayscale image
         image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
     image_np = np.transpose(image_np, (2, 0, 1))  # Convert [H, W, C] to [C, H, W]
-    image_tensor = torch.from_numpy(image_np).unsqueeze(0)  # Add batch dimension [1, C, H, W]
+    image_tensor = torch.from_numpy(image_np)  # No need to unsqueeze if handling single images
     return image_tensor
