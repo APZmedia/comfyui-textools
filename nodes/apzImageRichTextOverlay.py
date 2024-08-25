@@ -19,7 +19,7 @@ class APZmediaImageRichTextOverlay:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "image": ("IMAGE",),
+                "images": ("IMAGE",),  # Updated to accept a single image or a batch of images
                 "theText": ("STRING", {"multiline": True, "default": "Hello <b>World</b> <i>This is italic</i>"}),
                 "theTextbox_width": ("INT", {"default": 200, "min": 1}),
                 "theTextbox_height": ("INT", {"default": 200, "min": 1}),
@@ -39,57 +39,70 @@ class APZmediaImageRichTextOverlay:
             }
         }
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE",)  # This will now dynamically handle batch or single image return
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
-        image_pil = tensor_to_pil(image)
-        font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
-        italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
-        bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+    def apz_add_text_overlay(self, images, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
+        # Check if we have a batch of images or a single image
+        is_batch = images.ndim == 4
 
-        effective_textbox_width = theTextbox_width - 2 * padding
-        effective_textbox_height = theTextbox_height - 2 * padding
+        if not is_batch:
+            images = images.unsqueeze(0)  # Convert single image to a batch of 1
 
-        font_manager = FontManager(font, italic_font, bold_font, max_font_size)
-        font_size = max_font_size
+        processed_images = []
+        for image in images:
+            image_pil = tensor_to_pil(image)
+            font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+            italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+            bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
 
-        while font_size >= 1:
-            loaded_font = font_manager.load_font(font, font_size)
-            line_height = int(font_size * line_height_ratio)
-            parsed_text = parse_rich_text(theText)
-            wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height)
+            effective_textbox_width = theTextbox_width - 2 * padding
+            effective_textbox_height = theTextbox_height - 2 * padding
 
-            if total_text_height <= effective_textbox_height:
-                draw = ImageDraw.Draw(image_pil)
-                y = self._calculate_initial_y(vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height)
+            font_manager = FontManager(font, italic_font, bold_font, max_font_size)
+            font_size = max_font_size
 
-                for line, line_parts in wrapped_lines:
-                    x = self._calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, loaded_font)
-                    for chunk, chunk_styles in line_parts:
-                        current_font = font_manager.get_font_for_style(chunk_styles, font_size)
-                        current_font_color_rgb = self._get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
-                        draw.text((x, y), chunk, fill=current_font_color_rgb, font=current_font)
-                        chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
+            while font_size >= 1:
+                loaded_font = font_manager.load_font(font, font_size)
+                line_height = int(font_size * line_height_ratio)
+                parsed_text = parse_rich_text(theText)
+                wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height)
 
-                        if chunk_styles.get('u', False):
-                            underline_y = y + current_font.getsize(chunk)[1]
-                            draw.line((x, underline_y, x + chunk_width, underline_y), fill=current_font_color_rgb, width=1)
-                        if chunk_styles.get('s', False):
-                            strikeout_y = y + current_font.getsize(chunk)[1] // 2
-                            draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
+                if total_text_height <= effective_textbox_height:
+                    draw = ImageDraw.Draw(image_pil)
+                    y = self._calculate_initial_y(vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height)
 
-                        x += chunk_width
+                    for line, line_parts in wrapped_lines:
+                        x = self._calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, loaded_font)
+                        for chunk, chunk_styles in line_parts:
+                            current_font = font_manager.get_font_for_style(chunk_styles, font_size)
+                            current_font_color_rgb = self._get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
+                            draw.text((x, y), chunk, fill=current_font_color_rgb, font=current_font)
+                            chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
 
-                    y += line_height
+                            if chunk_styles.get('u', False):
+                                underline_y = y + current_font.getsize(chunk)[1]
+                                draw.line((x, underline_y, x + chunk_width, underline_y), fill=current_font_color_rgb, width=1)
+                            if chunk_styles.get('s', False):
+                                strikeout_y = y + current_font.getsize(chunk)[1] // 2
+                                draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
 
-                break
+                            x += chunk_width
 
-            font_size -= 1
+                        y += line_height
 
-        image_tensor_out = pil_to_tensor(image_pil)
-        return (image_tensor_out,)
+                    break
+
+                font_size -= 1
+
+            processed_image = pil_to_tensor(image_pil)
+            processed_images.append(processed_image)
+
+        if not is_batch:
+            return processed_images[0],  # Return single image
+
+        return torch.stack(processed_images),
 
     def _calculate_initial_y(self, vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height):
         if vertical_alignment == "top":
