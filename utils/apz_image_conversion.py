@@ -5,36 +5,48 @@ from PIL import Image
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a list of PIL images.
-    Handles tensors of shape [B, C, H, W] or [B, H, W, C].
+    Handles tensors of shape [B, C, H, W] or [C, H, W].
+    Returns a single PIL image if input is a single image, or a list of PIL images if input is a batch.
     """
+    # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
-    if image_np.ndim == 4:  # [B, C, H, W] or [B, H, W, C] format
-        pil_images = []
-        for img in image_np:
-            pil_images.append(_single_tensor_to_pil(img))
-        return pil_images
-    elif image_np.ndim == 3:  # Single image case [C, H, W] or [H, W, C]
-        return [_single_tensor_to_pil(image_np)]  # Return as a list with one PIL image
+    # If the input is a single image, add a batch dimension (to unify handling)
+    if image_np.ndim == 3:  # [C, H, W]
+        image_np = np.expand_dims(image_np, 0)  # Convert to [1, C, H, W]
+
+    # Handle batch of images
+    pil_images = []
+    for img in image_np:  # img has shape [C, H, W]
+        pil_images.append(_single_tensor_to_pil(img))
+
+    # If only one image, return the image itself instead of a list
+    if len(pil_images) == 1:
+        return pil_images[0]
     else:
-        raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
+        return pil_images
 
 def _single_tensor_to_pil(image_np):
     """
     Helper function to convert a single image tensor (numpy array) to a PIL image.
+    Handles tensors of shape [C, H, W] or [H, W, C].
     """
-    image_np = np.squeeze(image_np)  # Remove unnecessary dimensions
-
-    if image_np.ndim == 3 and image_np.shape[0] == 3:  # [C, H, W] format for RGB
+    # If the image is in [C, H, W] format (channel-first), move channels to the last dimension
+    if image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
         image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
 
-    if image_np.ndim == 3 and image_np.shape[-1] == 3:  # [H, W, C] format for RGB
+    # Determine the mode based on the number of channels
+    if image_np.shape[-1] == 1:  # Grayscale
+        image_np = image_np.squeeze(-1)
+        mode = 'L'
+    elif image_np.shape[-1] == 3:  # RGB
         mode = 'RGB'
-    elif image_np.ndim == 3 and image_np.shape[-1] == 4:  # [H, W, C] format for RGBA
+    elif image_np.shape[-1] == 4:  # RGBA
         mode = 'RGBA'
     else:
-        raise ValueError(f"Unsupported channel configuration: {image_np.shape[-1]}")
+        raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
 
+    # Convert to uint8 if necessary
     if image_np.dtype != np.uint8:
         image_np = (image_np * 255).astype(np.uint8)
 
