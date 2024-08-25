@@ -140,3 +140,4 @@ class APZmediaImageRichTextOverlay:
     def _draw_strikeout(self, draw, x, y, chunk, font, color):
         strikeout_y = y + font.getsize(chunk)[1] // 2
         draw.line((x, strikeout_y, x + font.getbbox(chunk)[2] - font.getbbox(chunk)[0], strikeout_y), fill=color, width=1)
+s
