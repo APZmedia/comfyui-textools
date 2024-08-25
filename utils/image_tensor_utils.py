@@ -24,23 +24,38 @@ def pil_to_tensor(image_pil):
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor to a PIL image.
-    The tensor is expected to have shape [C, H, W].
+    The tensor is expected to have shape [1, C, H, W] or [C, H, W].
     """
-    # Ensure the tensor has shape [C, H, W]
-    if image_tensor.ndim == 4:
-        image_tensor = image_tensor.squeeze(0)  # Remove the batch dimension
+    # Debugging: Print the initial shape of the tensor
+    print(f"Tensor shape before conversion: {image_tensor.shape}")
 
-    # Convert tensor to numpy array and scale to [0, 255]
-    image_np = image_tensor.mul(255).byte().cpu().numpy()
+    if len(image_tensor.shape) == 4:
+        image_tensor = image_tensor.squeeze(0)  # Remove batch dimension
 
-    # Handle grayscale images (single channel)
-    if image_np.shape[0] == 1:
-        image_np = image_np[0]  # Remove channel dimension [1, H, W] -> [H, W]
+    # Debugging: Check for grayscale images and other shapes
+    if image_tensor.shape[0] == 1:  # Grayscale image
+        image_tensor = image_tensor.repeat(3, 1, 1)  # Convert to RGB by repeating channels
+
+    elif image_tensor.shape[0] == 3:  # RGB image
+        pass  # No change needed
+
     else:
-        image_np = np.transpose(image_np, (1, 2, 0))  # Convert [C, H, W] -> [H, W, C]
+        print(f"Unexpected shape encountered: {image_tensor.shape}")
+        # Attempt to reshape if the shape is incorrect
+        if image_tensor.shape[1] == 1 and image_tensor.shape[0] > 1:
+            image_tensor = image_tensor.squeeze(0)
+        elif image_tensor.shape[0] == 1 and image_tensor.shape[1] == 1:
+            # Handle the case (1, 1, H, W) or similar
+            image_tensor = image_tensor.squeeze(0).squeeze(0)
 
-    # Ensure the numpy array is in uint8 format
-    image_np = image_np.astype(np.uint8)
+    # Reorder dimensions from [C, H, W] to [H, W, C]
+    image_np = image_tensor.permute(1, 2, 0).cpu().numpy()
+
+    # Scale the numpy array to [0, 255] and convert to uint8
+    image_np = (image_np * 255).astype(np.uint8)
+
+    # Debugging: Print final shape before conversion to PIL
+    print("Numpy array shape before converting to PIL:", image_np.shape)
 
     # Convert numpy array back to PIL Image
     image_pil = Image.fromarray(image_np)
