@@ -1,4 +1,5 @@
 # apzImageRichTextOverlay.py
+
 from PIL import ImageDraw
 import torch
 import numpy as np
@@ -19,7 +20,7 @@ class APZmediaImageRichTextOverlay:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "image": ("IMAGE",),  # Corrected the input name back to "image"
+                "image": ("IMAGE",),
                 "theText": ("STRING", {"multiline": True, "default": "Hello <b>World</b> <i>This is italic</i>"}),
                 "theTextbox_width": ("INT", {"default": 200, "min": 1}),
                 "theTextbox_height": ("INT", {"default": 200, "min": 1}),
