@@ -1,31 +1,34 @@
 # font_manager.py
-from PIL import ImageFont
-
 class FontManager:
-    def __init__(self, font, italic_font, bold_font, max_font_size, default_font=None):
-        self.font = font
-        self.italic_font = italic_font
-        self.bold_font = bold_font
+    def __init__(self, regular_font_path, italic_font_path, bold_font_path, max_font_size):
+        self.regular_font_path = regular_font_path
+        self.italic_font_path = italic_font_path
+        self.bold_font_path = bold_font_path
         self.max_font_size = max_font_size
-        self.default_font = default_font or "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+        # Dictionary to cache loaded fonts
+        self.font_cache = {}
 
     def load_font(self, font_path, font_size):
-        try:
-            return ImageFont.truetype(font_path, font_size)
-        except IOError:
-            print(f"Warning: Cannot load font at {font_path}. Falling back to default font.")
-            try:
-                return ImageFont.truetype(self.default_font, font_size)
-            except IOError:
-                raise RuntimeError("Cannot load default font. Ensure the font path is correct.")
+        # Load font from cache if available
+        if (font_path, font_size) not in self.font_cache:
+            font = ImageFont.truetype(font_path, font_size)
+            self.font_cache[(font_path, font_size)] = font
+        return self.font_cache[(font_path, font_size)]
 
-    def get_font_for_style(self, style_flags, font_size):
-        bold = style_flags.get('b', False)
-        italic = style_flags.get('i', False)
+    def get_regular_font(self, font_size):
+        return self.load_font(self.regular_font_path, font_size)
 
-        if bold:
-            return self.load_font(self.bold_font, font_size)
-        elif italic:
-            return self.load_font(self.italic_font, font_size)
+    def get_italic_font(self, font_size):
+        return self.load_font(self.italic_font_path, font_size)
+
+    def get_bold_font(self, font_size):
+        return self.load_font(self.bold_font_path, font_size)
+
+    def get_font_for_style(self, style, font_size):
+        if 'b' in style:
+            return self.get_bold_font(font_size)
+        elif 'i' in style:
+            return self.get_italic_font(font_size)
         else:
-            return self.load_font(self.font, font_size)
+            return self.get_regular_font(font_size)
