@@ -1,32 +1,33 @@
+# rich_text_parser.py
 import re
 
-class RichTextParser:
-    def __init__(self):
-        self.tag_re = re.compile(r'<(/?)(b|i|u|s)>')
+def parse_rich_text(theText):
+    tag_re = re.compile(r'<(/?)(b|i|u|s)>')
+    parts = []
+    current_pos = 0
+    styles = {'b': False, 'i': False, 'u': False, 's': False}
+    style_stack = []
 
-    def parse(self, text):
-        parts, current_pos, styles, style_stack = [], 0, {'b': False, 'i': False, 'u': False, 's': False}, []
+    for match in tag_re.finditer(theText):
+        start, end = match.span()
+        tag_type, tag_name = match.groups()
 
-        for match in self.tag_re.finditer(text):
-            start, end = match.span()
-            tag_type, tag_name = match.groups()
+        if start > current_pos:
+            parts.append((theText[current_pos:start], styles.copy()))
 
-            if start > current_pos:
-                parts.append((text[current_pos:start], styles.copy()))
+        if tag_type == '':
+            style_stack.append(styles.copy())
+            styles[tag_name] = True
+        else:
+            if style_stack:
+                styles = style_stack.pop()
 
-            if tag_type == '':
-                style_stack.append(styles.copy())
-                styles[tag_name] = True
-            else:
-                if style_stack:
-                    styles = style_stack.pop()
+        current_pos = end
 
-            current_pos = end
+    if current_pos < len(theText):
+        parts.append((theText[current_pos:], styles.copy()))
 
-        if current_pos < len(text):
-            parts.append((text[current_pos:], styles.copy()))
+    if not parts:
+        parts.append((theText, styles.copy()))
 
-        if not parts:
-            parts.append((text, styles.copy()))
-
-        return parts
+    return parts

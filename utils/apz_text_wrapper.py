@@ -1,34 +1,63 @@
-class TextWrapper:
-    def __init__(self, font_manager):
-        self.font_manager = font_manager
+# text_wrapper.py
+def wrap_text(parsed_text, font, max_width, line_height):
+    wrapped_lines = []
+    current_line = ""
+    line_parts = []
 
-    def wrap_text(self, parsed_text, apz_max_width, line_height, font_size):
-        wrapped_lines, current_line, line_parts = [], "", []
+    for text, styles in parsed_text:
+        words = text.split(' ')
+        for i, word in enumerate(words):
+            if '\n' in word:
+                subwords = word.split('\n')
+                for j, subword in enumerate(subwords):
+                    if j > 0:
+                        wrapped_lines.append((current_line, line_parts))
+                        current_line = ""
+                        line_parts = []
+                    if current_line:
+                        test_line = current_line + ' ' + subword
+                    else:
+                        test_line = subword
+                    w = font.getbbox(test_line)[2] - font.getbbox(test_line)[0]
 
-        for text, styles in parsed_text:
-            words = text.split(' ')
-            for word in words:
-                current_line, line_parts = self._handle_word_wrap(current_line, line_parts, word, styles, apz_max_width, font_size)
-
-            if text.endswith(' '):
-                current_line += ' '
-                line_parts.append((' ', styles))
-
-        if current_line:
-            wrapped_lines.append((current_line, line_parts))
-
-        total_height = len(wrapped_lines) * line_height
-        return wrapped_lines, total_height
-
-    def _handle_word_wrap(self, current_line, line_parts, word, styles, apz_max_width, font_size):
-        font = self.font_manager.get_font_for_style(styles, font_size)
-        subwords = word.split('\n')
-        for subword in subwords:
-            test_line = f"{current_line} {subword}".strip()
-            if font.getbbox(test_line)[2] - font.getbbox(test_line)[0] <= apz_max_width:
-                current_line = test_line
-                line_parts.append((subword, styles))
+                    if w <= max_width:
+                        current_line = test_line
+                        if current_line.strip():
+                            line_parts.append((subword, styles))
+                        if i < len(words) - 1 or j < len(subwords) - 1:
+                            line_parts.append((' ', styles))
+                    else:
+                        wrapped_lines.append((current_line, line_parts))
+                        current_line = subword
+                        line_parts = [(subword, styles)]
+                        if i < len(words) - 1 or j < len(subwords) - 1:
+                            line_parts.append((' ', styles))
             else:
-                return current_line, line_parts
+                if current_line:
+                    test_line = current_line + ' ' + word
+                else:
+                    test_line = word
+                w = font.getbbox(test_line)[2] - font.getbbox(test_line)[0]
 
-        return current_line, line_parts
+                if w <= max_width:
+                    current_line = test_line
+                    if current_line.strip():
+                        line_parts.append((word, styles))
+                    if i < len(words) - 1:
+                        line_parts.append((' ', styles))
+                else:
+                    wrapped_lines.append((current_line, line_parts))
+                    current_line = word
+                    line_parts = [(word, styles)]
+                    if i < len(words) - 1:
+                        line_parts.append((' ', styles))
+
+        if text.endswith(' '):
+            current_line += ' '
+            line_parts.append((' ', styles))
+
+    if current_line:
+        wrapped_lines.append((current_line, line_parts))
+
+    total_height = len(wrapped_lines) * line_height
+    return wrapped_lines, total_height
