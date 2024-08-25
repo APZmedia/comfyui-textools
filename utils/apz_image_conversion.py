@@ -63,25 +63,31 @@ def pil_to_single_tensor(image_pil):
     """
     Helper function to convert a single PIL image to a PyTorch tensor.
     """
+    # Convert PIL image to NumPy array
     image_np = np.array(image_pil)
-    print(f"After PIL to NumPy: Data is in {image_np.dtype} format.")
+    print('Original Data Type:', image_np.dtype)
 
-    # If the data is float32, convert it to uint8
+    # Convert image data to float32 if it's not already in the correct format
     if image_np.dtype == np.float32 or image_np.dtype == np.float64:
         print("Converting float data to uint8.")
         image_np = (image_np * 255).astype(np.uint8)
-    elif image_np.dtype != np.uint8:
-        raise ValueError(f"Unexpected data type: {image_np.dtype}")
+    elif image_np.dtype == np.uint8:
+        print("Data is already in uint8 format.")
+    else:
+        print(f"Unexpected data type: {image_np.dtype}, converting to float32.")
+        image_np = image_np.astype(np.float32)
 
-    if image_np.ndim == 2:  # Grayscale image
+    # Ensure grayscale images have a channel dimension
+    if image_np.ndim == 2:  # Grayscale image [H, W]
         image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
-    
-    # Convert [H, W, C] to [C, H, W]
+
+    # Convert [H, W, C] to [C, H, W] format
     image_np = np.transpose(image_np, (2, 0, 1))
     print(f"Shape after transpose (C, H, W): {image_np.shape}")
-    
-    # Add batch dimension [1, C, H, W]
-    image_tensor = torch.from_numpy(image_np).unsqueeze(0)
+
+    # Convert NumPy array to PyTorch tensor
+    image_tensor = torch.from_numpy(image_np).unsqueeze(0)  # Add batch dimension [1, C, H, W]
     print(f"Converted PIL image to tensor shape: {image_tensor.shape}")
-    
+
     return image_tensor
+    
