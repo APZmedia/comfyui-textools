@@ -1,9 +1,6 @@
-# apzImageRichTextOverlay.py
-
 from PIL import ImageDraw
 import torch
-import numpy as np
-from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
+from ..utils.image_processor import tensor_to_pil, pil_to_tensor
 from ..utils.apz_rich_text_parser import parse_rich_text
 from ..utils.apz_text_wrapper import wrap_text
 from ..utils.apz_font_manager import FontManager
@@ -45,20 +42,15 @@ class APZmediaImageRichTextOverlay:
     CATEGORY = "image/text"
 
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
-        # Check if we have a batch of images or a single image
-        is_batch = image.ndim == 4
+        # Convert tensor to PIL images (handling batch or single image)
+        pil_images = tensor_to_pil(image)
 
-        if not is_batch:
-            image = image.unsqueeze(0)  # Convert single image to a batch of 1
+        # Ensure pil_images is a list (in case a single image was provided)
+        if not isinstance(pil_images, list):
+            pil_images = [pil_images]
 
         processed_images = []
-        for img in image:
-            img = img.squeeze(0)  # Remove batch dimension
-            if img.shape[0] == 1:
-                img = img.squeeze(0)  # Remove single color channel dimension for grayscale
-
-            image_pil = tensor_to_pil(img)  # Convert tensor to PIL Image
-
+        for image_pil in pil_images:
             font_color_rgb = tuple(int(font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             italic_font_color_rgb = tuple(int(italic_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
             bold_font_color_rgb = tuple(int(bold_font_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
@@ -92,7 +84,7 @@ class APZmediaImageRichTextOverlay:
                                 draw.line((x, underline_y, x + chunk_width, underline_y), fill=current_font_color_rgb, width=1)
                             if chunk_styles.get('s', False):
                                 strikeout_y = y + current_font.getsize(chunk)[1] // 2
-                                draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
+                                draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill current_font_color_rgb, width=1)
 
                             x += chunk_width
 
@@ -102,10 +94,10 @@ class APZmediaImageRichTextOverlay:
 
                 font_size -= 1
 
-            processed_image = pil_to_tensor(image_pil)  # Convert PIL Image back to tensor
+            processed_image = pil_to_tensor(image_pil)  # Convert processed PIL image back to tensor
             processed_images.append(processed_image)
 
-        if not is_batch:
+        if len(processed_images) == 1:
             return processed_images[0],  # Return single image
 
         return torch.stack(processed_images),

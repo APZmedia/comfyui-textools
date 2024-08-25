@@ -4,12 +4,27 @@ from PIL import Image
 
 def tensor_to_pil(image_tensor):
     """
-    Convert a PyTorch tensor to a PIL image.
+    Convert a PyTorch tensor to a list of PIL images.
     Handles tensors of shape [C, H, W], [H, W, C], and [B, C, H, W].
     """
     # Ensure the tensor is on the CPU and convert to numpy array
     image_np = image_tensor.cpu().numpy()
 
+    # Handle batch of images
+    if image_np.ndim == 4:  # [B, C, H, W] or [B, H, W, C] format
+        pil_images = []
+        for img in image_np:
+            pil_images.append(_single_tensor_to_pil(img))
+        return pil_images
+
+    # Handle single image
+    return _single_tensor_to_pil(image_np)
+
+
+def _single_tensor_to_pil(image_np):
+    """
+    Helper function to convert a single image tensor (numpy array) to a PIL image.
+    """
     # Remove unnecessary dimensions
     if image_np.ndim == 4:
         image_np = np.squeeze(image_np)
@@ -34,12 +49,24 @@ def tensor_to_pil(image_tensor):
     else:
         raise ValueError(f"Unsupported image shape for conversion to PIL: {image_np.shape}")
 
-    raise ValueError(f"Failed to convert tensor with shape {image_tensor.shape} to PIL image")
+    raise ValueError(f"Failed to convert tensor with shape {image_np.shape} to PIL image")
 
 
 def pil_to_tensor(image_pil):
     """
-    Convert a PIL image to a PyTorch tensor.
+    Convert a PIL image or a list of PIL images to a PyTorch tensor.
+    If a list of images is provided, it returns a batch of tensors.
+    """
+    if isinstance(image_pil, list):
+        tensors = [pil_to_single_tensor(img) for img in image_pil]
+        return torch.stack(tensors)  # Stack tensors into a batch
+    else:
+        return pil_to_single_tensor(image_pil)
+
+
+def pil_to_single_tensor(image_pil):
+    """
+    Helper function to convert a single PIL image to a PyTorch tensor.
     """
     image_np = np.array(image_pil).astype(np.float32) / 255.0
     if image_np.ndim == 2:  # Grayscale image
