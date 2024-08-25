@@ -41,7 +41,7 @@ class APZmediaImageRichTextOverlay:
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-  def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
+    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
     original_shape = image.shape
     original_dtype = image.dtype
 
@@ -110,7 +110,6 @@ class APZmediaImageRichTextOverlay:
     processed_image = processed_image.to(original_dtype)
 
     return processed_image,
-
 
     def _calculate_initial_y(self, vertical_alignment, box_start_y, padding, effective_textbox_height, total_text_height):
         if vertical_alignment == "top":
