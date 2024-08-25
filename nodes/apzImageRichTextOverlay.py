@@ -1,5 +1,6 @@
 # main_class.py
 
+from PIL import ImageDraw
 from ..utils.apz_text_box_utility import TextBoxUtility
 from ..utils.apz_color_utility import ColorUtility
 from ..utils.apz_font_loader_utility import FontLoaderUtility
