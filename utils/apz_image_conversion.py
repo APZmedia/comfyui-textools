@@ -21,6 +21,8 @@ def tensor_to_pil(image_tensor):
     pil_images = []
     for img in image_tensor:
         img_np = img.numpy()  # Convert to NumPy array
+        print(f"Shape of img_np: {img_np.shape}")  # Print the shape of the NumPy array to the console
+        img_np = img_np.astype(np.uint8)  # Convert to uint8 if necessary
         pil_image = Image.fromarray(img_np,'RGB')  # Convert to PIL Image
         pil_images.append(pil_image)
 
