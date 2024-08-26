@@ -1,6 +1,6 @@
 # main_class.py
 
-import torch
+import
 from PIL import ImageDraw
 from ..utils.apz_text_box_utility import TextBoxUtility
 from ..utils.apz_color_utility import ColorUtility
@@ -44,11 +44,6 @@ class APZmediaImageRichTextOverlay:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
-
-class APZmediaImageRichTextOverlay:
-    def __init__(self, device="cpu"):
-        print("APZmediaImageRichTextOverlay initialized")
-        self.device = device
 
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
         original_shape = image.shape
