@@ -52,33 +52,11 @@ def pil_to_tensor(image_pil):
 
 def pil_to_single_tensor(image_pil):
     """
-    Helper function to convert a single PIL image to a PyTorch tensor.
+    Convert a single PIL image to a torch tensor.
+    The resulting tensor will have the shape (3, H, W) for RGB images.
     """
-    # Convert PIL image to NumPy array
-    image_np = np.array(image_pil)
-    print('Original Data Type:', image_np.dtype)
-
-    # Convert image data to float32 if it's not already in the correct format
-    if image_np.dtype == np.float32 or image_np.dtype == np.float64:
-        print("Converting float data to uint8.")
-        image_np = (image_np * 255).astype(np.uint8)
-    elif image_np.dtype == np.uint8:
-        print("Data is already in uint8 format.")
-    else:
-        print(f"Unexpected data type: {image_np.dtype}, converting to float32.")
-        image_np = image_np.astype(np.float32)
-
-    # Ensure grayscale images have a channel dimension
-    if image_np.ndim == 2:  # Grayscale image [H, W]
-        image_np = np.expand_dims(image_np, axis=2)  # Expand dimensions to [H, W, 1]
-
-    # Convert [H, W, C] to [C, H, W] format
-    image_np = np.transpose(image_np, (2, 0, 1))
-    print(f"Shape after transpose (C, H, W): {image_np.shape}")
-
-    # Convert NumPy array to PyTorch tensor
-    image_tensor = torch.from_numpy(image_np).unsqueeze(0)  # Add batch dimension [1, C, H, W]
-    print(f"Converted PIL image to tensor shape: {image_tensor.shape}")
-
-    return image_tensor
+    image_pil = image_pil.convert("RGB")  # Ensure the image is in RGB mode
+    image_array = np.array(image_pil)  # Convert to numpy array
+    tensor = torch.from_numpy(image_array).permute(2, 0, 1).float() / 255.0  # Convert to tensor and normalize
+    return tensor.unsqueeze(0)  # Add a batch dimension
     

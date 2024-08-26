@@ -1,5 +1,6 @@
 # main_class.py
 
+import torch
 from PIL import ImageDraw
 from ..utils.apz_text_box_utility import TextBoxUtility
 from ..utils.apz_color_utility import ColorUtility
