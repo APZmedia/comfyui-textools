@@ -45,6 +45,11 @@ class APZmediaImageRichTextOverlay:
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
+class APZmediaImageRichTextOverlay:
+    def __init__(self, device="cpu"):
+        print("APZmediaImageRichTextOverlay initialized")
+        self.device = device
+
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
         original_shape = image.shape
         original_dtype = image.dtype
@@ -78,13 +83,11 @@ class APZmediaImageRichTextOverlay:
                     font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
                 )
 
-            processed_image = pil_to_single_tensor(image_pil)
+            processed_image = pil_to_tensor(image_pil, original_dtype)
             print(f"Processed PIL image to tensor shape: {processed_image.shape}")
             processed_images.append(processed_image)
 
-        processed_image = torch.cat(processed_images, dim=0)
-        print(f"Final output tensor shape: {processed_image.shape}")
+        final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
+        print(f"Final output tensor shape: {final_tensor.shape}")
 
-        processed_image = processed_image.to(original_dtype)
-
-        return processed_image,
+        return final_tensor,

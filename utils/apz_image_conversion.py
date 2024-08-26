@@ -2,6 +2,10 @@ import torch
 import numpy as np
 from PIL import Image
 
+import torch
+import numpy as np
+from PIL import Image
+
 def tensor_to_pil(image_tensor):
     """
     Convert a PyTorch tensor with shape [B, C, H, W] or [B, H, W, C] to a list of PIL images.
@@ -25,38 +29,55 @@ def _single_tensor_to_pil(image_np):
     print(f"Original image shape: {image_np.shape}")  # Debugging
 
     # Convert float images in [0, 1] range to uint8 images in [0, 255] range
-    if image_np.dtype == np.float32 or image_np.dtype == np.float64:
+    if image_np.dtype in [np.float32, np.float64]:
         print("Converting to uint8 format.")  # Debugging
         image_np = (image_np * 255).astype(np.uint8)
 
+    # Handle different channel configurations
     if image_np.ndim == 3 and image_np.shape[0] in [1, 3, 4]:  # [C, H, W] format
+        print("Transposing from [C, H, W] to [H, W, C].")  # Debugging
         image_np = np.moveaxis(image_np, 0, -1)  # Convert to [H, W, C]
 
-    if image_np.ndim == 3 and image_np.shape[-1] in [1, 3, 4]:  # [H, W, C] format
-        mode = 'L' if image_np.shape[-1] == 1 else 'RGB' if image_np.shape[-1] == 3 else 'RGBA'
+    # Determine the correct mode for PIL image
+    if image_np.ndim == 3 and image_np.shape[-1] == 1:  # Grayscale
+        mode = 'L'
+        image_np = image_np.squeeze(-1)  # Remove the channel dimension for grayscale
+    elif image_np.ndim == 3 and image_np.shape[-1] == 3:  # RGB
+        mode = 'RGB'
+    elif image_np.ndim == 3 and image_np.shape[-1] == 4:  # RGBA
+        mode = 'RGBA'
     else:
         raise ValueError(f"Unsupported channel configuration: {image_np.shape}")
 
-    print(f"Before PIL Conversion: Data is in {image_np.dtype} format.")  # Debugging
+    print(f"Before PIL Conversion: Data is in {image_np.dtype} format, mode: {mode}.")  # Debugging
     return Image.fromarray(image_np, mode=mode)
 
-def pil_to_tensor(image_pil):
+def pil_to_tensor(image_pil, original_dtype=None):
     """
     Convert a list of PIL images back to a PyTorch tensor with shape [B, C, H, W].
+    Ensures the tensor has the same dtype as the original if provided.
     """
     if isinstance(image_pil, list):
-        tensors = [pil_to_single_tensor(img) for img in image_pil]
+        tensors = [pil_to_single_tensor(img, original_dtype) for img in image_pil]
         return torch.cat(tensors)  # Concatenate tensors along the batch dimension
     else:
-        return pil_to_single_tensor(image_pil)
+        return pil_to_single_tensor(image_pil, original_dtype)
 
-def pil_to_single_tensor(image_pil):
+def pil_to_single_tensor(image_pil, original_dtype=None):
     """
     Convert a single PIL image to a torch tensor.
-    The resulting tensor will have the shape (3, H, W) for RGB images.
+    The resulting tensor will have the shape (3, H, W) for RGB images and will be cast back to original dtype if provided.
     """
     image_pil = image_pil.convert("RGB")  # Ensure the image is in RGB mode
     image_array = np.array(image_pil)  # Convert to numpy array
     tensor = torch.from_numpy(image_array).permute(2, 0, 1).float() / 255.0  # Convert to tensor and normalize
-    return tensor.unsqueeze(0)  # Add a batch dimension
-    
+    tensor = tensor.unsqueeze(0)  # Add a batch dimension
+
+    # Convert back to original dtype if necessary
+    if original_dtype is not None:
+        if original_dtype == torch.uint8:
+            tensor = (tensor * 255).to(original_dtype)
+        else:
+            tensor = tensor.to(original_dtype)
+
+    return tensor
