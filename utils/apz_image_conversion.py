@@ -5,21 +5,41 @@ from PIL import Image
 import torch
 import numpy as np
 from PIL import Image
+from PIL import Image
+import torch
 
 def tensor_to_pil(image_tensor):
     """
-    Convert a PyTorch tensor with shape [B, C, H, W] or [B, H, W, C] to a list of PIL images.
+    Converts a PyTorch tensor with shape [B, H, W, C] to a list of PIL images.
     """
-    image_np = image_tensor.cpu().numpy()
-    print(f"Input Tensor Shape: {image_tensor.shape}")  # Debugging: Show the shape of the input tensor
-
-    if image_np.ndim == 4:  # Handle batch of images
-        pil_images = []
-        for img in image_np:
-            pil_images.append(_single_tensor_to_pil(img))
-        return pil_images
+    # Log the initial shape and dtype of the input tensor
+    print(f"Initial tensor shape: {image_tensor.shape}, dtype: {image_tensor.dtype}")
+    
+    # Ensure the tensor is in the correct format
+    if image_tensor.dtype != torch.uint8:
+        print("Converting tensor to uint8 format and scaling pixel values to [0, 255].")
+        image_tensor = (image_tensor * 255).type(torch.uint8)  # Convert to uint8 if needed
     else:
-        raise ValueError(f"Unsupported image shape for conversion: {image_np.shape}")
+        print("Tensor is already in uint8 format.")
+
+    # Iterate over the batch dimension and convert each image
+    pil_images = []
+    for i in range(image_tensor.size(0)):
+        print(f"Processing image {i+1}/{image_tensor.size(0)}...")
+        
+        # Extract the individual image from the batch and convert to [H, W, C]
+        img_np = image_tensor[i].cpu().numpy()  # Convert to NumPy array
+        print(f"Converted tensor to NumPy array with shape: {img_np.shape}")
+
+        pil_image = Image.fromarray(img_np)
+        print(f"Converted NumPy array to PIL image with mode: {pil_image.mode}, size: {pil_image.size}")
+        
+        pil_images.append(pil_image)
+    
+    print(f"Total {len(pil_images)} images converted to PIL format.")
+    
+    return pil_images
+
 
 def _single_tensor_to_pil(image_np):
     """
