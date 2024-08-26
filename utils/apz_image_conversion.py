@@ -21,6 +21,7 @@ def tensor_to_pil(image_tensor):
     pil_images = []
     for img in image_tensor:
         img_np = img.numpy()  # Convert to NumPy array
+        img_np = np.squeeze(img_np, axis=2)
         pil_image = Image.fromarray(img_np)  # Convert to PIL Image
         pil_images.append(pil_image)
 

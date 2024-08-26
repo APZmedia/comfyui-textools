@@ -78,7 +78,7 @@ class APZmediaImageRichTextOverlay:
                     font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
                 )
 
-            processed_image = pil_to_tensor(image_pil, original_dtype)
+            processed_image = pil_to_tensor(image_pil)
             print(f"Processed PIL image to tensor shape: {processed_image.shape}")
             processed_images.append(processed_image)
 
