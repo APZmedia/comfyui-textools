@@ -51,6 +51,8 @@ class APZmediaImageRichTextOverlay:
 
         pil_images = tensor_to_pil(image)
         print(f"Input Tensor Shape: {image.shape}")
+        print(f"Input Tensor Shape: {image.dtype}")
+
 
         color_utility = ColorUtility()
         font_color_rgb = color_utility.hex_to_rgb(font_color)
