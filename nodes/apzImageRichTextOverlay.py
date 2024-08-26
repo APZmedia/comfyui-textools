@@ -1,12 +1,12 @@
 # main_class.py
 
-import
+import torch  # This was missing in the original snippet
 from PIL import ImageDraw
 from ..utils.apz_text_box_utility import TextBoxUtility
 from ..utils.apz_color_utility import ColorUtility
 from ..utils.apz_font_loader_utility import FontLoaderUtility
 from ..utils.apz_text_renderer_utility import TextRendererUtility
-from ..utils.apz_image_conversion import tensor_to_pil, pil_to_single_tensor
+from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor  # Ensure correct function names are used
 from ..utils.apz_font_manager import FontManager
 
 class APZmediaImageRichTextOverlay:
