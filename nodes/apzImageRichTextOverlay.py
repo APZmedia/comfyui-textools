@@ -75,16 +75,18 @@ class APZmediaImageRichTextOverlay:
             effective_textbox_width = theTextbox_width - 2 * padding
             effective_textbox_height = theTextbox_height - 2 * padding
 
+            # Adjust the starting Y position to include padding
+            box_top = box_start_y + padding
+            box_left = box_start_x + padding
+            box_right = box_left + effective_textbox_width
+            box_bottom = box_top + effective_textbox_height
+
             draw = ImageDraw.Draw(image_pil, "RGBA")
 
             # Draw the bounding box if the option is enabled
             if show_bounding_box == "true":
                 bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color) + (int(line_opacity * 255),)
                 box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
-                box_left = box_start_x + padding
-                box_top = box_start_y
-                box_right = box_start_x + padding + effective_textbox_width
-                box_bottom = box_start_y + effective_textbox_height
 
                 # Draw filled background box
                 draw.rectangle([box_left, box_top, box_right, box_bottom], fill=box_background_rgb)
@@ -97,7 +99,7 @@ class APZmediaImageRichTextOverlay:
 
             if font_size:
                 TextRendererUtility.render_text(
-                    draw, wrapped_lines, box_start_x, box_start_y, padding,
+                    draw, wrapped_lines, box_start_x + padding, box_start_y + padding, padding,
                     effective_textbox_width, effective_textbox_height, font_manager,
                     color_utility, alignment, vertical_alignment, line_height_ratio,
                     font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
