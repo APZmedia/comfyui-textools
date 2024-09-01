@@ -79,7 +79,7 @@ class APZmediaImageRichTextOverlay:
 
             # Draw the bounding box if the option is enabled
             if show_bounding_box == "true":
-                bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color)
+                bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color) + (int(line_opacity * 255),)
                 box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
                 box_left = box_start_x + padding
                 box_top = box_start_y
@@ -92,6 +92,7 @@ class APZmediaImageRichTextOverlay:
                 # Draw the outline box with specified line opacity
                 draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=line_width)
                 print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color}, line opacity {line_opacity}, and background opacity {box_opacity}")
+
 
             font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
 
