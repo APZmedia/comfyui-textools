@@ -51,36 +51,3 @@ ComfyUI-textools includes several custom nodes, such as:
 4. **Text Box**: Draws a box around the text with the specified padding and line height ratio.
 5.  **Output**: Returns the image with the text overlay applied.
 
-## Usage Example
-
-### APZmedia Image Rich Text Overlay
-
-```python
-from comfyui_textools.nodes.APZmediaImageRichTextOverlay import APZmediaImageRichTextOverlay
-import torch
-
-image_tensor = torch.randn(1, 3, 256, 256)  # Example image tensor
-
-overlay_node = APZmediaImageRichTextOverlay()
-
-result = overlay_node.apz_add_text_overlay(
-    image=image_tensor,
-    theText="Hello <b>World</b>",
-    theTextbox_width=200,
-    theTextbox_height=100,
-    max_font_size=30,
-    font="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    italic_font="/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
-    bold_font="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    alignment="center",
-    vertical_alignment="middle",
-    font_color="#000000",
-    italic_font_color="#000000",
-    bold_font_color="#000000",
-    box_start_x=0,
-    box_start_y=0,
-    padding=10,
-    line_height_ratio=1.2
-)
-
-# The result is an image tensor with the applied text overlay.
