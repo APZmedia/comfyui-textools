@@ -31,7 +31,7 @@ class TextRendererUtility:
             elif alignment == "center":
                 current_x = box_start_x + (effective_textbox_width - line_width) // 2
             elif alignment == "right":
-                current_x = box_start_x + effective_textbox_width - line_width - padding
+                current_x = box_start_x + effective_textbox_width - line_width  # Subtract padding only once
 
             for chunk, chunk_styles in line_parts:
                 current_font = font_manager.get_font_for_style(chunk_styles, wrapped_lines[0][1][0][1]['size'])
