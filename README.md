@@ -16,13 +16,6 @@ ComfyUI-textools includes several custom nodes, such as:
 - **Alignment Options**: Supports text alignment (left, right, center) and vertical alignment (top, middle, bottom).
 - **Text Wrapping**: Automatically wraps text within a defined box area.
 
-### APZmedia Clean File Name Node
-- **Input Text**: Accepts a string input to be sanitized for use as a file name.
-- **Replacement Character**: Allows specification of a character to replace invalid characters.
-- **Invalid Characters**: Removes a predefined set of invalid characters that are not allowed in file names.
-- **Character Limit**: Truncates the cleaned text to a specified maximum length.
-- **Prefix**: Optionally prepend a prefix to the cleaned file name for consistency.
-
 ## Input Types
 
 ### APZmedia Image Rich Text Overlay
@@ -44,13 +37,6 @@ ComfyUI-textools includes several custom nodes, such as:
 - **padding (INT)**: Padding inside the text box.
 - **line_height_ratio (FLOAT)**: Ratio for line height relative to font size.
 
-### APZmedia Clean File Name Node
-- **input_text (STRING)**: The text to be cleaned.
-- **replacement_char (STRING)**: Character to replace invalid characters (default: `-`).
-- **invalid_chars (STRING)**: A string containing characters to be removed (default: ` #%&{}\\<>*?/ $!'\":@+|=.`, emojis, and alt codes).
-- **char_limit (INT)**: Maximum length of the output string (default: 255).
-- **prefix (STRING)**: A prefix to prepend to the cleaned file name.
-
 ## Output Types
 
 ### APZmedia Image Rich Text Overlay
@@ -65,12 +51,6 @@ ComfyUI-textools includes several custom nodes, such as:
 1. **Text Wrapping**: Automatically wraps the provided text within the specified width and height.
 2. **Rich Text Processing**: Processes tags like `<b>` for bold and `<i>` for italic, applying the appropriate styles.
 3. **Text Overlay**: Draws the text onto the image with the specified alignment and font settings.
-
-### APZmedia Clean File Name Node
-1. **Replace Spaces**: Replaces all spaces in the input text with the specified replacement character.
-2. **Remove Invalid Characters**: Strips out all characters defined in the `invalid_chars` string.
-3. **Truncate Text**: Truncates the cleaned text to the defined `char_limit`.
-4. **Prepend Prefix**: If a prefix is provided, it is added to the beginning of the cleaned file name.
 
 ## Usage Example
 
