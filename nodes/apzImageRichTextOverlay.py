@@ -65,6 +65,8 @@ class APZmediaImageRichTextOverlay:
             # Calculate box coordinates
             box_left, box_top, box_right, box_bottom = BoxUtility.calculate_box_coordinates(box_start_x, box_start_y, theTextbox_width, theTextbox_height)
 
+            
+
             draw = ImageDraw.Draw(image_pil, "RGBA")
 
             # Draw the bounding box if the option is enabled
