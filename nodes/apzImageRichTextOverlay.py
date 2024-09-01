@@ -41,6 +41,7 @@ class APZmediaImageRichTextOverlay:
                 "show_bounding_box": (["false", "true"], {"default": "false"}),  # Toggle defined like the alignment
                 "bounding_box_color": ("STRING", {"default": "#FF0000"}),  # Default to red
                 "line_width": ("INT", {"default": 3, "min": 1, "max": 10}),  # Line width in pixels
+                "line_opacity": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.1}),  # Opacity for the line
                 "box_background_color": ("STRING", {"default": "#FFFFFF"}),  # Background color default to white
                 "box_opacity": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.1}),  # Opacity percentage
             }
@@ -88,9 +89,9 @@ class APZmediaImageRichTextOverlay:
                 # Draw filled background box
                 draw.rectangle([box_left, box_top, box_right, box_bottom], fill=box_background_rgb)
 
-                # Draw the outline box
+                # Draw the outline box with specified line opacity
                 draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=line_width)
-                print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color} and opacity {box_opacity}")
+                print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color}, line opacity {line_opacity}, and background opacity {box_opacity}")
 
             font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
 
