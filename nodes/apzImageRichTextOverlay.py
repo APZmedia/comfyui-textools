@@ -51,71 +51,62 @@ class APZmediaImageRichTextOverlay:
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-    
-    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, box_background_color, box_opacity, line_width):
-    original_shape = image.shape
-    original_dtype = image.dtype
+    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, box_background_color, box_opacity):
+        original_shape = image.shape
+        original_dtype = image.dtype
 
-    pil_images = tensor_to_pil(image)
-    print(f"Input Tensor Shape: {image.shape}")
-    print(f"Input Tensor Shape: {image.dtype}")
+        pil_images = tensor_to_pil(image)
+        print(f"Input Tensor Shape: {image.shape}")
+        print(f"Input Tensor Shape: {image.dtype}")
 
-    color_utility = ColorUtility()
-    font_color_rgb = color_utility.hex_to_rgb(font_color)
-    italic_font_color_rgb = color_utility.hex_to_rgb(italic_font_color)
-    bold_font_color_rgb = color_utility.hex_to_rgb(bold_font_color)
+        color_utility = ColorUtility()
+        font_color_rgb = color_utility.hex_to_rgb(font_color)
+        italic_font_color_rgb = color_utility.hex_to_rgb(italic_font_color)
+        bold_font_color_rgb = color_utility.hex_to_rgb(bold_font_color)
 
-    font_manager = FontManager(font, italic_font, bold_font, max_font_size)
-    font_loader = FontLoaderUtility(font_manager, max_font_size)
+        font_manager = FontManager(font, italic_font, bold_font, max_font_size)
+        font_loader = FontLoaderUtility(font_manager, max_font_size)
 
-    processed_images = []
-    for idx, image_pil in enumerate(pil_images):
-        print(f"Processing Image {idx + 1}/{len(pil_images)}")
+        processed_images = []
+        for idx, image_pil in enumerate(pil_images):
+            print(f"Processing Image {idx + 1}/{len(pil_images)}")
 
-        effective_textbox_width = theTextbox_width - 2 * padding
-        effective_textbox_height = theTextbox_height - 2 * padding
+            effective_textbox_width = theTextbox_width - 2 * padding
+            effective_textbox_height = theTextbox_height - 2 * padding
 
-        # Adjust box_start_y based on vertical alignment
-        if vertical_alignment == "top":
-            box_start_y = padding
-        elif vertical_alignment == "middle":
-            box_start_y = (image_pil.height - effective_textbox_height) // 2
-        elif vertical_alignment == "bottom":
-            box_start_y = image_pil.height - effective_textbox_height - padding
+            draw = ImageDraw.Draw(image_pil, "RGBA")
 
-        draw = ImageDraw.Draw(image_pil, "RGBA")
+            # Draw the bounding box if the option is enabled
+            if show_bounding_box == "true":
+                bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color)
+                box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
+                box_left = box_start_x + padding
+                box_top = box_start_y
+                box_right = box_start_x + padding + effective_textbox_width
+                box_bottom = box_start_y + effective_textbox_height
 
-        # Draw the bounding box if the option is enabled
-        if show_bounding_box == "true":
-            bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color)
-            box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
-            box_left = box_start_x + padding
-            box_top = box_start_y
-            box_right = box_start_x + padding + effective_textbox_width
-            box_bottom = box_start_y + effective_textbox_height
+                # Draw filled background box
+                draw.rectangle([box_left, box_top, box_right, box_bottom], fill=box_background_rgb)
 
-            # Draw filled background box
-            draw.rectangle([box_left, box_top, box_right, box_bottom], fill=box_background_rgb)
+                # Draw the outline box
+                draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=line_width)
+                print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color} and opacity {box_opacity}")
 
-            # Draw the outline box
-            draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=line_width)
-            print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color} and opacity {box_opacity}")
+            font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
 
-        font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
+            if font_size:
+                TextRendererUtility.render_text(
+                    draw, wrapped_lines, box_start_x, box_start_y, padding,
+                    effective_textbox_width, effective_textbox_height, font_manager,
+                    color_utility, alignment, vertical_alignment, line_height_ratio,
+                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
+                )
 
-        if font_size:
-            TextRendererUtility.render_text(
-                draw, wrapped_lines, box_start_x, box_start_y, padding,
-                effective_textbox_width, effective_textbox_height, font_manager,
-                color_utility, alignment, vertical_alignment, line_height_ratio,
-                font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
-            )
+            processed_image = pil_to_tensor(image_pil)
+            print(f"Processed PIL image to tensor shape: {processed_image.shape}")
+            processed_images.append(processed_image)
 
-        processed_image = pil_to_tensor(image_pil)
-        print(f"Processed PIL image to tensor shape: {processed_image.shape}")
-        processed_images.append(processed_image)
+        final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
+        print(f"Final output tensor shape: {final_tensor.shape}")
 
-    final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
-    print(f"Final output tensor shape: {final_tensor.shape}")
-
-    return final_tensor,
+        return final_tensor,
