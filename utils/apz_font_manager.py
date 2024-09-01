@@ -37,12 +37,12 @@ class FontManager:
         return self.load_font(self.bold_font_path, font_size)
 
     def get_font_for_style(self, style, font_size):
-        if 'b' in style:
+        if style.get('b', False):
             print(f"Selected Bold Font for style '{style}' with size: {font_size}")
             return self.get_bold_font(font_size)
-        elif 'i' in style:
-            print(f"Selected Bold Font for style '{style}' with size: {font_size}")
+        elif style.get('i', False):
+            print(f"Selected Italic Font for style '{style}' with size: {font_size}")
             return self.get_italic_font(font_size)
         else:
-            print(f"Selected Bold Font for style '{style}' with size: {font_size}")
+            print(f"Selected Regular Font for style '{style}' with size: {font_size}")
             return self.get_regular_font(font_size)
