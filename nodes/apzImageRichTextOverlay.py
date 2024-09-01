@@ -38,7 +38,7 @@ class APZmediaImageRichTextOverlay:
                 "box_start_y": ("INT", {"default": 0}),
                 "padding": ("INT", {"default": 50}),
                 "line_height_ratio": ("FLOAT", {"default": 1.2, "min": 1.0}),  # Ratio for line height relative to font size
-                "show_bounding_box": ("BOOL", {"default": False}),
+                "show_bounding_box": (["false", "true"], {"default": "false"}),  # Toggle defined like the alignment
                 "bounding_box_color": ("STRING", {"default": "#FF0000"}),  # Default to red
             }
         }
