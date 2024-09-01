@@ -51,7 +51,7 @@ class APZmediaImageRichTextOverlay:
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, box_background_color, box_opacity):
+    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color):
         original_shape = image.shape
         original_dtype = image.dtype
 
@@ -74,7 +74,7 @@ class APZmediaImageRichTextOverlay:
             effective_textbox_width = theTextbox_width - 2 * padding
             effective_textbox_height = theTextbox_height - 2 * padding
 
-            draw = ImageDraw.Draw(image_pil, "RGBA")
+            draw = ImageDraw.Draw(image_pil)
 
             # Draw the bounding box if the option is enabled
             if show_bounding_box == "true":
@@ -91,6 +91,7 @@ class APZmediaImageRichTextOverlay:
                 # Draw the outline box
                 draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=line_width)
                 print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color} and opacity {box_opacity}")
+
 
             font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
 
@@ -110,3 +111,4 @@ class APZmediaImageRichTextOverlay:
         print(f"Final output tensor shape: {final_tensor.shape}")
 
         return final_tensor,
+    
