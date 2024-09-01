@@ -42,15 +42,14 @@ ComfyUI-textools includes several custom nodes, such as:
 ### APZmedia Image Rich Text Overlay
 - **image (IMAGE)**: The image with the applied text overlay.
 
-### APZmedia Clean File Name Node
-- **cleaned_text (STRING)**: The sanitized and truncated text string suitable for use as a file name.
-
 ## How It Works
 
 ### APZmedia Image Rich Text Overlay
 1. **Text Wrapping**: Automatically wraps the provided text within the specified width and height.
 2. **Rich Text Processing**: Processes tags like `<b>` for bold and `<i>` for italic, applying the appropriate styles.
 3. **Text Overlay**: Draws the text onto the image with the specified alignment and font settings.
+4. **Text Box**: Draws a box around the text with the specified padding and line height ratio.
+5.  **Output**: Returns the image with the text overlay applied.
 
 ## Usage Example
 
