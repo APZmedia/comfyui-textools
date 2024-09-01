@@ -10,13 +10,17 @@ class TextRendererUtility:
 
         # Assuming the first font size is correct for all lines
         font_size = wrapped_lines[0][1][0][1]['size']
+
+        # Calculate the initial Y position based on vertical alignment
         y = TextBoxUtility.calculate_initial_y(vertical_alignment, box_start_y, padding, effective_textbox_height, len(wrapped_lines) * int(font_size * line_height_ratio))
-        
+
         for line, line_parts in wrapped_lines:
             # Use the first part of the line to get the default font for alignment calculations
             default_font = font_manager.get_font_for_style(line_parts[0][1], font_size)
-            x = TextBoxUtility.calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, default_font)
             
+            # Calculate the initial X position based on horizontal alignment
+            x = TextBoxUtility.calculate_initial_x(alignment, box_start_x, padding, effective_textbox_width, line, default_font)
+
             for chunk, chunk_styles in line_parts:
                 current_font = font_manager.get_font_for_style(chunk_styles, font_size)
                 current_font_color_rgb = color_utility.get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
@@ -31,4 +35,6 @@ class TextRendererUtility:
                     draw.line((x, strikeout_y, x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
 
                 x += chunk_width
+
+            # Move to the next line
             y += int(font_size * line_height_ratio)
