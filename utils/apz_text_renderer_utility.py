@@ -29,7 +29,7 @@ class TextRendererUtility:
             if alignment == "left":
                 current_x = box_start_x + padding
             elif alignment == "center":
-                current_x = box_start_x + (effective_textbox_width - line_width) // 2
+                current_x = box_start_x + padding + (effective_textbox_width - line_width) // 2
             elif alignment == "right":
                 current_x = box_start_x + padding + (effective_textbox_width - line_width)
 
