@@ -89,3 +89,4 @@ class APZmediaImageRichTextOverlay:
 
         final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
         return final_tensor,
+#try
