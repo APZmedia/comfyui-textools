@@ -17,9 +17,9 @@ class TextRendererUtility:
         if vertical_alignment == "top":
             current_y = box_start_y + padding
         elif vertical_alignment == "middle":
-            current_y = box_start_y + (effective_textbox_height - total_text_height) // 2
+            current_y = box_start_y + padding + (effective_textbox_height - total_text_height) // 2
         elif vertical_alignment == "bottom":
-            current_y = box_start_y + effective_textbox_height - total_text_height
+            current_y = box_start_y + padding + (effective_textbox_height - total_text_height)
 
         for line, line_parts in wrapped_lines:
             # Calculate the total width of the line
