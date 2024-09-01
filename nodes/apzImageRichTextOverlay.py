@@ -1,11 +1,11 @@
 import torch
 from PIL import ImageDraw
-from ..utils.apz_text_box_utility import TextBoxUtility
 from ..utils.apz_color_utility import ColorUtility
 from ..utils.apz_font_loader_utility import FontLoaderUtility
 from ..utils.apz_text_renderer_utility import TextRendererUtility
 from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
 from ..utils.apz_font_manager import FontManager
+from ..utils.apz_box_utility import BoxUtility
 
 class APZmediaImageRichTextOverlay:
     def __init__(self, device="cpu"):
@@ -62,8 +62,8 @@ class APZmediaImageRichTextOverlay:
 
         processed_images = []
         for idx, image_pil in enumerate(pil_images):
-            effective_textbox_width = theTextbox_width - 2 * padding
-            effective_textbox_height = theTextbox_height - 2 * padding
+            # Calculate box coordinates
+            box_left, box_top, box_right, box_bottom = BoxUtility.calculate_box_coordinates(box_start_x, box_start_y, theTextbox_width, theTextbox_height)
 
             draw = ImageDraw.Draw(image_pil, "RGBA")
 
@@ -71,23 +71,15 @@ class APZmediaImageRichTextOverlay:
             if show_bounding_box == "true":
                 bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color) + (int(line_opacity * 255),)
                 box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
-
-                # Draw filled background box
-                box_left = box_start_x
-                box_top = box_start_y
-                box_right = box_start_x + theTextbox_width
-                box_bottom = box_start_y + theTextbox_height
-
-                draw.rectangle([box_left, box_top, box_right, box_bottom], fill=box_background_rgb)
-                draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=line_width)
+                BoxUtility.draw_bounding_box(draw, box_left, box_top, box_right, box_bottom, bounding_box_rgb, box_background_rgb, line_width)
 
             # Find the font size and wrap the lines
-            font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
+            font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, theTextbox_width - 2 * padding, theTextbox_height - 2 * padding, line_height_ratio)
 
             if font_size:
                 TextRendererUtility.render_text(
                     draw, wrapped_lines, box_start_x, box_start_y, padding,
-                    effective_textbox_width, effective_textbox_height, font_manager,
+                    theTextbox_width, theTextbox_height, font_manager,
                     color_utility, alignment, vertical_alignment, line_height_ratio,
                     font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
                 )

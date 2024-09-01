@@ -1,12 +1,14 @@
-from ..utils.apz_text_box_utility import TextBoxUtility
-from ..utils.apz_color_utility import ColorUtility
-from PIL import ImageDraw
+# utils/apz_text_renderer_utility.py
+from ..utils.apz_box_utility import BoxUtility
 
 class TextRendererUtility:
     @staticmethod
-    def render_text(draw, wrapped_lines, box_start_x, box_start_y, padding, effective_textbox_width, effective_textbox_height, font_manager, color_utility, alignment, vertical_alignment, line_height_ratio, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb):
+    def render_text(draw, wrapped_lines, box_start_x, box_start_y, padding, theTextbox_width, theTextbox_height, font_manager, color_utility, alignment, vertical_alignment, line_height_ratio, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb):
         if not wrapped_lines:
             return  # If there's no text to render
+
+        # Calculate effective dimensions
+        effective_textbox_width, effective_textbox_height = BoxUtility.calculate_effective_dimensions(theTextbox_width, theTextbox_height, padding)
 
         # Calculate total text height for vertical alignment purposes
         total_text_height = len(wrapped_lines) * int(wrapped_lines[0][1][0][1]['size'] * line_height_ratio)
@@ -20,12 +22,10 @@ class TextRendererUtility:
             current_y = box_start_y + effective_textbox_height - total_text_height
 
         for line, line_parts in wrapped_lines:
-            # Use the first part of the line to get the default font for alignment calculations
-            default_font = font_manager.get_font_for_style(line_parts[0][1], wrapped_lines[0][1][0][1]['size'])
-
-            # Calculate the line width to adjust X position for right and center alignments
+            # Calculate the total width of the line
             line_width = sum(font_manager.get_font_for_style(chunk_styles, wrapped_lines[0][1][0][1]['size']).getbbox(chunk)[2] for chunk, chunk_styles in line_parts)
 
+            # Adjust the X position based on alignment
             if alignment == "left":
                 current_x = box_start_x + padding
             elif alignment == "center":
