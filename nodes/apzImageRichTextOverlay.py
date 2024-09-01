@@ -48,14 +48,13 @@ class APZmediaImageRichTextOverlay:
     FUNCTION = "apz_add_text_overlay"
     CATEGORY = "image/text"
 
-    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio):
+    def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color):
         original_shape = image.shape
         original_dtype = image.dtype
 
         pil_images = tensor_to_pil(image)
         print(f"Input Tensor Shape: {image.shape}")
         print(f"Input Tensor Shape: {image.dtype}")
-
 
         color_utility = ColorUtility()
         font_color_rgb = color_utility.hex_to_rgb(font_color)
@@ -72,10 +71,21 @@ class APZmediaImageRichTextOverlay:
             effective_textbox_width = theTextbox_width - 2 * padding
             effective_textbox_height = theTextbox_height - 2 * padding
 
+            draw = ImageDraw.Draw(image_pil)
+
+            # Draw the bounding box if the option is enabled
+            if show_bounding_box:
+                bounding_box_rgb = color_utility.hex_to_rgb(bounding_box_color)
+                box_left = box_start_x + padding
+                box_top = box_start_y + padding
+                box_right = box_start_x + padding + effective_textbox_width
+                box_bottom = box_start_y + padding + effective_textbox_height
+                draw.rectangle([box_left, box_top, box_right, box_bottom], outline=bounding_box_rgb, width=3)
+                print(f"Bounding box drawn at: Left={box_left}, Top={box_top}, Right={box_right}, Bottom={box_bottom} with color {bounding_box_color}")
+
             font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, effective_textbox_width, effective_textbox_height, line_height_ratio)
 
             if font_size:
-                draw = ImageDraw.Draw(image_pil)
                 TextRendererUtility.render_text(
                     draw, wrapped_lines, box_start_x, box_start_y, padding,
                     effective_textbox_width, effective_textbox_height, font_manager,
