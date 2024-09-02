@@ -81,8 +81,8 @@ class APZmediaImageRichTextOverlay:
 
             if font_size:
                 TextRendererUtility.render_text(
-                    draw, wrapped_lines, effective_box_left, effective_box_top, padding,
-                    effective_box_right - effective_box_left, effective_box_bottom - effective_box_top, font_manager,
+                    draw, wrapped_lines, box_left, box_top, padding,
+                    box_right - box_left, box_bottom - box_top, font_manager,
                     color_utility, alignment, vertical_alignment, line_height_ratio,
                     font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
                 )
