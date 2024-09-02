@@ -74,7 +74,7 @@ class APZmediaImageRichTextOverlay:
             if show_bounding_box == "true":
                 effective_box_rgb = color_utility.hex_to_rgb(bounding_box_color) + (int(line_opacity * 255),)
                 box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
-                BoxUtility.draw_bounding_box(draw, box_left, box_top, box_right, box_bottom, effective_box_rgb, box_background_rgb, line_width)
+                BoxUtility.draw_bounding_box(draw, effective_box_left, effective_box_top, effective_box_right, effective_box_bottom, effective_box_rgb, box_background_rgb, line_width)
                 
             # Find the font size and wrap the lines
             font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, theTextbox_width - 2 * padding, theTextbox_height - 2 * padding, line_height_ratio)
