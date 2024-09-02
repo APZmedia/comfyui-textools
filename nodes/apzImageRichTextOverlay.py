@@ -65,7 +65,8 @@ class APZmediaImageRichTextOverlay:
             # Calculate box coordinates
             box_left, box_top, box_right, box_bottom = BoxUtility.calculate_box_coordinates(box_start_x, box_start_y, theTextbox_width, theTextbox_height)
 
-            
+            # Calculate the effective box coordinates considering padding
+            effective_box_left, effective_box_top, effective_box_right, effective_box_bottom = BoxUtility.calculate_effective_box_coordinates(box_start_x, box_start_y, theTextbox_width, theTextbox_height, padding)
 
             draw = ImageDraw.Draw(image_pil, "RGBA")
 
@@ -73,15 +74,15 @@ class APZmediaImageRichTextOverlay:
             if show_bounding_box == "true":
                 effective_box_rgb = color_utility.hex_to_rgb(bounding_box_color) + (int(line_opacity * 255),)
                 box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
-                BoxUtility.draw_bounding_box(draw, effective_box_left, effective_box_top, effective_box_right, effective_box_bottom, effective_box_rgb, box_background_rgb, line_width)
+                BoxUtility.draw_bounding_box(draw, box_left, box_top, box_right, box_bottom, effective_box_rgb, box_background_rgb, line_width)
                 
             # Find the font size and wrap the lines
             font_size, wrapped_lines, total_text_height = font_loader.find_fitting_font_size(theText, theTextbox_width - 2 * padding, theTextbox_height - 2 * padding, line_height_ratio)
 
             if font_size:
                 TextRendererUtility.render_text(
-                    draw, wrapped_lines, box_start_x, box_start_y, padding,
-                    theTextbox_width, theTextbox_height, font_manager,
+                    draw, wrapped_lines, effective_box_left, effective_box_top, padding,
+                    effective_box_right - effective_box_left, effective_box_bottom - effective_box_top, font_manager,
                     color_utility, alignment, vertical_alignment, line_height_ratio,
                     font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
                 )
@@ -91,4 +92,3 @@ class APZmediaImageRichTextOverlay:
 
         final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
         return final_tensor,
-#try
