@@ -50,6 +50,8 @@ try:
         entry_points={
             'comfyui.custom_nodes': [
                 'APZmediaImageRichTextOverlay = nodes.apzImageRichTextOverlay:APZmediaImageRichTextOverlay',
+                'APZmediaImageRichTextOverlayV2 = nodes.apzImageRichTextOverlayV2:APZmediaImageRichTextOverlayV2',
+                'APZmediaImageMarkdownTextOverlay = nodes.apzImageMarkdownTextOverlay:APZmediaImageMarkdownTextOverlay',
             ]
         }
     )

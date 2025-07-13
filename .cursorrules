@@ -1,0 +1,63 @@
+{
+  "rules": {
+    "context_initialization": {
+      "description": "Starting point for each interaction",
+      "steps": [
+        "ALWAYS read `.notes/project_overview.md` and `.notes/task_list.md`",
+        "Review `.notes/directory_structure.md` for codebase understanding",
+        "Check `.notes/meeting_notes.md` for recent decisions and context"
+      ]
+    },
+    "operational_protocol": {
+      "description": "How to approach tasks",
+      "before_action": [
+        "Create a MECE task breakdown",
+        "Understand ComfyUI node architecture and requirements",
+        "Review existing node implementations for consistency"
+      ],
+      "code_changes": [
+        "Read relevant code sections before editing",
+        "Preserve existing functionality and API contracts",
+        "Maintain type safety and error handling",
+        "Follow ComfyUI node development patterns",
+        "Ensure proper input/output validation for nodes"
+      ]
+    },
+    "safety_requirements": [
+      "NEVER break type safety",
+      "ALWAYS maintain proper error handling",
+      "ALWAYS document new code and node parameters",
+      "NEVER modify ComfyUI core functionality",
+      "ALWAYS validate node inputs and outputs",
+      "ALWAYS test node functionality before committing"
+    ],
+    "priorities": [
+      {
+        "source": ".notes/",
+        "weight": 1.0
+      },
+      {
+        "source": "nodes/",
+        "weight": 0.9
+      },
+      {
+        "source": "setup.py",
+        "weight": 0.8
+      }
+    ],
+    "modes": {
+      "base": {
+        "description": "For routine tasks like bug fixes and documentation updates"
+      },
+      "enhanced": {
+        "description": "For complex problems like new node development or architecture changes"
+      }
+    },
+    "project_directives": {
+      "name": "joshua-brand-assets-loader",
+      "ai_first": true,
+      "framework": "comfyui",
+      "type": "node_extension"
+    }
+  }
+} 
