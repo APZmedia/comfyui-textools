@@ -1,5 +1,5 @@
 # utils/apz_text_renderer_utility.py
-from ..utils.apz_box_utility import BoxUtility
+from .apz_box_utility import BoxUtility
 
 class TextRendererUtility:
     @staticmethod

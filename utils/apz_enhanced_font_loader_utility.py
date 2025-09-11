@@ -1,8 +1,8 @@
 # enhanced_font_loader_utility.py
 
-from ..utils.apz_rich_text_parser import parse_rich_text
-from ..utils.apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
-from ..utils.apz_text_wrapper import wrap_text
+from .apz_rich_text_parser import parse_rich_text
+from .apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
+from .apz_text_wrapper import wrap_text
 import logging
 
 class EnhancedFontLoaderUtility:

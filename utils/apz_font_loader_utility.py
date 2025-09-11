@@ -1,7 +1,7 @@
 # font_loader_utility.py
 
-from ..utils.apz_rich_text_parser import parse_rich_text
-from ..utils.apz_text_wrapper import wrap_text
+from .apz_rich_text_parser import parse_rich_text
+from .apz_text_wrapper import wrap_text
 
 class FontLoaderUtility:
     def __init__(self, font_manager, max_font_size):
