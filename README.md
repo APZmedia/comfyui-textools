@@ -12,9 +12,33 @@ ComfyUI-textools includes several custom nodes, such as:
 
 ## Features
 
+### URL Support for Fonts
+All text overlay nodes now support both local file paths and signed URLs for font files:
+
+- **Local Paths**: Works exactly as before with local font files
+- **Signed URLs**: Automatically downloads fonts from URLs and caches them locally
+- **Mixed Usage**: You can use local paths for some fonts and URLs for others
+- **Automatic Caching**: Downloaded fonts are cached to avoid re-downloading
+- **Cleanup**: Old cached files are automatically cleaned up
+- **No Input Changes**: No changes needed to node inputs or structure
+
+**Examples:**
+```
+Local paths:
+font: "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+Signed URLs:
+font: "https://your-cdn.com/fonts/regular.ttf?signature=abc123"
+
+Mixed usage:
+font: "/local/path/regular.ttf"
+italic_font: "https://cdn.com/italic.ttf?signature=xyz"
+```
+
 ### APZmedia Image Rich Text Overlay
 - **Rich Text Support**: Allows the addition of bold, italic, underline, and strike-through text on images.
-- **Customizable Fonts**: Supports different fonts for regular, bold, and italic text from a specific url so you can use your already installed fonts.
+- **Customizable Fonts**: Supports different fonts for regular, bold, and italic text from local paths or signed URLs.
+- **URL Support**: Automatically downloads fonts from signed URLs and caches them locally for optimal performance.
 - **Alignment Options**: Supports text alignment (left, right, center) and vertical alignment (top, middle, bottom).
 - **Text Wrapping**: Automatically wraps text within a defined box area.
 

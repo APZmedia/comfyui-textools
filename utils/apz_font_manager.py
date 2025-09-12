@@ -1,17 +1,37 @@
 # font_manager.py
 from PIL import ImageFont 
+from .apz_url_file_utility import URLFileUtility
 
 class FontManager:
     def __init__(self, regular_font_path, italic_font_path, bold_font_path, max_font_size):
-        self.regular_font_path = regular_font_path
-        self.italic_font_path = italic_font_path
-        self.bold_font_path = bold_font_path
         self.max_font_size = max_font_size
+        
+        # Initialize URL file utility for handling URLs
+        self.url_utility = URLFileUtility()
+        
+        # Convert paths/URLs to local paths
+        try:
+            self.regular_font_path = self.url_utility.get_local_path(regular_font_path)
+        except Exception as e:
+            print(f"Warning: Could not resolve regular font path '{regular_font_path}': {e}")
+            self.regular_font_path = regular_font_path
+            
+        try:
+            self.italic_font_path = self.url_utility.get_local_path(italic_font_path)
+        except Exception as e:
+            print(f"Warning: Could not resolve italic font path '{italic_font_path}': {e}")
+            self.italic_font_path = italic_font_path
+            
+        try:
+            self.bold_font_path = self.url_utility.get_local_path(bold_font_path)
+        except Exception as e:
+            print(f"Warning: Could not resolve bold font path '{bold_font_path}': {e}")
+            self.bold_font_path = bold_font_path
 
         # Print statements to confirm paths
-        print(f"Initialized FontManager with Regular Font: {regular_font_path}")
-        print(f"Italic Font: {italic_font_path}")
-        print(f"Bold Font: {bold_font_path}")
+        print(f"Initialized FontManager with Regular Font: {self.regular_font_path}")
+        print(f"Italic Font: {self.italic_font_path}")
+        print(f"Bold Font: {self.bold_font_path}")
 
         # Dictionary to cache loaded fonts
         self.font_cache = {}

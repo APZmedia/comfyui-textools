@@ -69,6 +69,11 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import apz_text_wrapper: {e}")
 
+try:
+    from .apz_url_file_utility import *
+except ImportError as e:
+    print(f"Warning: Could not import apz_url_file_utility: {e}")
+
 # Make specific classes and functions available for import
 try:
     from .apz_error_handler_utility import ErrorHandlerUtility as apz_error_handler
@@ -105,6 +110,12 @@ try:
 except ImportError:
     apz_text_renderer_utility = None
 
+try:
+    from .apz_url_file_utility import URLFileUtility as apz_url_file_utility, get_local_file_path
+except ImportError:
+    apz_url_file_utility = None
+    get_local_file_path = None
+
 __all__ = [
     'apz_error_handler',
     'apz_font_manager', 
@@ -113,11 +124,14 @@ __all__ = [
     'apz_image_conversion',
     'apz_text_wrapper',
     'apz_text_renderer_utility',
+    'apz_url_file_utility',
+    'get_local_file_path',
     'ErrorHandlerUtility',
     'FontManager',
     'RichTextParser',
     'MarkdownParser',
     'ImageConversionUtility',
     'TextWrapper',
-    'TextRendererUtility'
+    'TextRendererUtility',
+    'URLFileUtility'
 ]
