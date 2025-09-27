@@ -1,4 +1,5 @@
 # font_manager.py
+import os
 from PIL import ImageFont 
 from .apz_url_file_utility import URLFileUtility
 from .apz_emoji_support import create_emoji_support
@@ -11,22 +12,32 @@ class FontManager:
         self.url_utility = URLFileUtility()
         
         # Convert paths/URLs to local paths
-        try:
-            self.regular_font_path = self.url_utility.get_local_path(regular_font_path)
-        except Exception as e:
-            print(f"Warning: Could not resolve regular font path '{regular_font_path}': {e}")
+        # Only resolve URLs, not local paths
+        if regular_font_path.startswith(('http://', 'https://')):
+            try:
+                self.regular_font_path = self.url_utility.get_local_path(regular_font_path)
+            except Exception as e:
+                print(f"Warning: Could not resolve regular font URL '{regular_font_path}': {e}")
+                self.regular_font_path = regular_font_path
+        else:
             self.regular_font_path = regular_font_path
             
-        try:
-            self.italic_font_path = self.url_utility.get_local_path(italic_font_path)
-        except Exception as e:
-            print(f"Warning: Could not resolve italic font path '{italic_font_path}': {e}")
+        if italic_font_path.startswith(('http://', 'https://')):
+            try:
+                self.italic_font_path = self.url_utility.get_local_path(italic_font_path)
+            except Exception as e:
+                print(f"Warning: Could not resolve italic font URL '{italic_font_path}': {e}")
+                self.italic_font_path = italic_font_path
+        else:
             self.italic_font_path = italic_font_path
             
-        try:
-            self.bold_font_path = self.url_utility.get_local_path(bold_font_path)
-        except Exception as e:
-            print(f"Warning: Could not resolve bold font path '{bold_font_path}': {e}")
+        if bold_font_path.startswith(('http://', 'https://')):
+            try:
+                self.bold_font_path = self.url_utility.get_local_path(bold_font_path)
+            except Exception as e:
+                print(f"Warning: Could not resolve bold font URL '{bold_font_path}': {e}")
+                self.bold_font_path = bold_font_path
+        else:
             self.bold_font_path = bold_font_path
 
         # Print statements to confirm paths
@@ -46,7 +57,24 @@ class FontManager:
         # Load font from cache if available
         if (font_path, font_size) not in self.font_cache:
             print(f"Loading font from path: {font_path} with size: {font_size}")
-            font = ImageFont.truetype(font_path, font_size)
+            
+            # Check if font_path is a URL that needs to be resolved
+            actual_font_path = font_path
+            if font_path.startswith(('http://', 'https://')):
+                try:
+                    actual_font_path = self.url_utility.get_local_path(font_path)
+                    print(f"Resolved URL to local path: {actual_font_path}")
+                except Exception as e:
+                    print(f"Warning: Could not resolve font URL '{font_path}': {e}")
+                    # Fall back to default font or raise error
+                    raise OSError(f"Cannot load font from URL: {font_path}")
+            
+            # Check if the resolved path exists
+            if not os.path.exists(actual_font_path):
+                print(f"Warning: Font file does not exist: {actual_font_path}")
+                raise OSError(f"Font file not found: {actual_font_path}")
+            
+            font = ImageFont.truetype(actual_font_path, font_size)
             self.font_cache[(font_path, font_size)] = font
         return self.font_cache[(font_path, font_size)]
     
