@@ -49,6 +49,7 @@ class EmojiSupport:
         
         # Prioritize bundled fonts
         bundled_fonts = [
+            os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),  # Working Windows emoji font
             os.path.join(bundled_fonts_dir, "NotoColorEmoji.ttf"),
             os.path.join(bundled_fonts_dir, "NotoColorEmoji-Regular.ttf"),  # Alternative filename
             os.path.join(bundled_fonts_dir, "Twemoji.woff2"),
@@ -78,7 +79,7 @@ class EmojiSupport:
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
             ]
         
-        # Combine custom, bundled, and system fonts
+        # Combine custom, bundled, and system fonts (prioritize bundled fonts)
         all_fonts = custom_fonts + bundled_fonts + system_fonts
         
         # Filter to existing fonts
