@@ -1,25 +1,22 @@
-ComfyUI-textools Emoji Font Setup
-================================
+ComfyUI-textools Bundled Emoji Font
+===================================
 
-This directory is for bundled emoji fonts.
+This directory contains the bundled Noto Color Emoji font for consistent emoji rendering.
 
-TO ADD EMOJI FONTS:
-==================
+Current Font:
+- NotoColorEmoji-Regular.ttf (Google's Noto Color Emoji)
 
-1. Download Noto Color Emoji from Google Fonts:
-   https://fonts.google.com/noto/specimen/Noto+Color+Emoji
-   
-2. Save the font file as: NotoColorEmoji.ttf
-   
-3. Place it in this directory (fonts/emoji/)
+This font provides comprehensive Unicode emoji support including:
+- Basic emojis (😀 🎉 🚀 🎨)
+- Extended emoji sets
+- Regional flag emojis
+- Skin tone variations
+- Gender variations
 
-The ComfyUI-textools nodes will automatically detect and use
-the bundled emoji font for consistent rendering across platforms.
+The font is automatically used by ComfyUI-textools nodes when emoji support is enabled.
+It provides consistent emoji rendering across all platforms (Windows, macOS, Linux).
 
-CURRENT STATUS:
-==============
-
-No emoji fonts are currently bundled. The system will use
-fallback system fonts for emoji rendering.
-
-For best results, add the Noto Color Emoji font file to this directory.
+For more information:
+- Google Fonts: https://fonts.google.com/noto/specimen/Noto+Color+Emoji
+- GitHub: https://github.com/googlefonts/noto-emoji
+- License: Open Font License (free to distribute)

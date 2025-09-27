@@ -52,6 +52,7 @@ class APZmediaImageMarkdownTextOverlay:
                 "hashtag_color": ("STRING", {"default": "#0066CC"}),  # Color for hashtags
                 "enable_hashtag_support": (["false", "true"], {"default": "true"}),  # Enable hashtag support
                 "enable_emoji_support": (["false", "true"], {"default": "true"}),  # Enable emoji support
+                "custom_emoji_font_url": ("STRING", {"default": "", "multiline": False}),  # Optional custom emoji font URL
             }
         }
 
@@ -60,7 +61,7 @@ class APZmediaImageMarkdownTextOverlay:
     FUNCTION = "apz_add_markdown_text_overlay"
     CATEGORY = "image/text"
 
-    def apz_add_markdown_text_overlay(self, image, theText, markdown_mode, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, hashtag_color, enable_hashtag_support, enable_emoji_support):
+    def apz_add_markdown_text_overlay(self, image, theText, markdown_mode, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url):
         pil_images = tensor_to_pil(image)
         color_utility = ColorUtility()
 
@@ -69,8 +70,9 @@ class APZmediaImageMarkdownTextOverlay:
         bold_font_color_rgb = color_utility.hex_to_rgb(bold_font_color)
         hashtag_color_rgb = color_utility.hex_to_rgb(hashtag_color)
         
-        # Initialize emoji support
-        emoji_support = create_emoji_support()
+        # Initialize emoji support with custom URL if provided
+        custom_url = custom_emoji_font_url.strip() if custom_emoji_font_url else None
+        emoji_support = create_emoji_support(custom_url)
         
         # Analyze text for hashtags and emojis
         hashtags_found = []

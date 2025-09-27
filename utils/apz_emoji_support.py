@@ -9,7 +9,8 @@ class EmojiSupport:
     Enhanced emoji support with font fallback system.
     """
     
-    def __init__(self):
+    def __init__(self, custom_emoji_font_url=None):
+        self.custom_emoji_font_url = custom_emoji_font_url
         self.emoji_fonts = self._get_emoji_font_paths()
         self.emoji_font_cache = {}
         self.unicode_emoji_pattern = re.compile(
@@ -24,7 +25,7 @@ class EmojiSupport:
     
     def _get_emoji_font_paths(self):
         """
-        Get emoji font paths, prioritizing bundled fonts.
+        Get emoji font paths, prioritizing custom URL fonts, then bundled fonts.
         
         Returns:
             List of potential emoji font paths
@@ -34,7 +35,19 @@ class EmojiSupport:
         project_root = os.path.dirname(script_dir)
         bundled_fonts_dir = os.path.join(project_root, "fonts", "emoji")
         
-        # Prioritize bundled fonts first
+        # Start with custom URL font if provided
+        custom_fonts = []
+        if self.custom_emoji_font_url:
+            try:
+                from .apz_url_file_utility import URLFileUtility
+                url_utility = URLFileUtility()
+                custom_font_path = url_utility.get_local_path(self.custom_emoji_font_url)
+                custom_fonts.append(custom_font_path)
+                print(f"Using custom emoji font from URL: {self.custom_emoji_font_url}")
+            except Exception as e:
+                print(f"Warning: Could not load custom emoji font from URL '{self.custom_emoji_font_url}': {e}")
+        
+        # Prioritize bundled fonts
         bundled_fonts = [
             os.path.join(bundled_fonts_dir, "NotoColorEmoji.ttf"),
             os.path.join(bundled_fonts_dir, "NotoColorEmoji-Regular.ttf"),  # Alternative filename
@@ -65,8 +78,8 @@ class EmojiSupport:
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
             ]
         
-        # Combine bundled and system fonts
-        all_fonts = bundled_fonts + system_fonts
+        # Combine custom, bundled, and system fonts
+        all_fonts = custom_fonts + bundled_fonts + system_fonts
         
         # Filter to existing fonts
         existing_fonts = []
@@ -202,11 +215,14 @@ class EmojiSupport:
         
         return parts
 
-def create_emoji_support():
+def create_emoji_support(custom_emoji_font_url=None):
     """
     Create and return an EmojiSupport instance.
     
+    Args:
+        custom_emoji_font_url: Optional URL to custom emoji font
+        
     Returns:
         EmojiSupport instance
     """
-    return EmojiSupport()
+    return EmojiSupport(custom_emoji_font_url)
