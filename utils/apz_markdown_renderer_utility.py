@@ -92,29 +92,24 @@ class MarkdownRendererUtility:
         current_line_width = 0
         
         for text_part, styles in parsed_parts:
-            # Split text into words for wrapping
-            words = text_part.split()
+            # Get font for this text part
+            font = font_manager.get_font_for_style(styles, font_size, text_part)
             
-            for word in words:
-                # Get font for this word
-                font = font_manager.get_font_for_style(styles, font_size)
-                
-                # Calculate word width (add space if not first word in line)
-                word_with_space = f" {word}" if current_line else word
-                bbox = font.getbbox(word_with_space)
-                word_width = bbox[2] - bbox[0]
-                
-                # Check if word fits on current line
-                if current_line_width + word_width <= max_width:
-                    # Add word to current line
-                    current_line.append((word, styles))
-                    current_line_width += word_width
-                else:
-                    # Start new line
-                    if current_line:
-                        lines.append(current_line)
-                    current_line = [(word, styles)]
-                    current_line_width = font.getbbox(word)[2] - font.getbbox(word)[0]
+            # Calculate text width
+            bbox = font.getbbox(text_part)
+            text_width = bbox[2] - bbox[0]
+            
+            # Check if text fits on current line
+            if current_line_width + text_width <= max_width:
+                # Add text to current line
+                current_line.append((text_part, styles))
+                current_line_width += text_width
+            else:
+                # Start new line
+                if current_line:
+                    lines.append(current_line)
+                current_line = [(text_part, styles)]
+                current_line_width = text_width
         
         # Add the last line
         if current_line:

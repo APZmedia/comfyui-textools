@@ -14,7 +14,7 @@ def parse_markdown(theText):
     # Define markdown patterns and their corresponding styles
     patterns = [
         (r'\*\*(.*?)\*\*', 'b'),      # **bold**
-        (r'\*(.*?)\*', 'i'),          # *italic*
+        (r'(?<!\*)\*(?!\*)([^*]+?)\*(?!\*)', 'i'),  # *italic* (not **bold**)
         (r'__(.*?)__', 'u'),          # __underline__
         (r'~~(.*?)~~', 's'),          # ~~strikethrough~~
     ]
@@ -41,23 +41,35 @@ def parse_markdown(theText):
             # Sort matches by position
             matches.sort(key=lambda x: x[0])
             
-            # Process matches in order
+            # Process matches in order, avoiding overlaps
+            processed_ranges = set()
+            
             for start, end, content, style_type in matches:
+                # Skip if this range overlaps with already processed ranges
+                if any(start < processed_end and end > processed_start 
+                       for processed_start, processed_end in processed_ranges):
+                    continue
+                
                 # Add text before this match
                 if start > current_pos:
-                    parts.append((text_part[current_pos:start], current_styles.copy()))
+                    before_text = text_part[current_pos:start]
+                    if before_text.strip():  # Only add non-empty text
+                        parts.append((before_text, current_styles.copy()))
                 
                 # Push current styles to stack and apply new style
                 style_stack.append(current_styles.copy())
                 current_styles[style_type] = True
                 
                 # Add the styled content
-                parts.append((content, current_styles.copy()))
+                if content.strip():  # Only add non-empty content
+                    parts.append((content, current_styles.copy()))
                 
                 # Pop styles back
                 if style_stack:
                     current_styles = style_stack.pop()
                 
+                # Mark this range as processed
+                processed_ranges.add((start, end))
                 current_pos = end
             
             # Add remaining text
