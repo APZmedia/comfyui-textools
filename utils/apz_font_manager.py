@@ -1,6 +1,7 @@
 # font_manager.py
 from PIL import ImageFont 
 from .apz_url_file_utility import URLFileUtility
+from .apz_emoji_support import create_emoji_support
 
 class FontManager:
     def __init__(self, regular_font_path, italic_font_path, bold_font_path, max_font_size):
@@ -35,6 +36,9 @@ class FontManager:
 
         # Dictionary to cache loaded fonts
         self.font_cache = {}
+        
+        # Initialize emoji support
+        self.emoji_support = create_emoji_support()
 
         
 
@@ -56,13 +60,49 @@ class FontManager:
     def get_bold_font(self, font_size):
         return self.load_font(self.bold_font_path, font_size)
 
-    def get_font_for_style(self, style, font_size):
+    def get_font_for_style(self, style, font_size, text=""):
+        """
+        Get the appropriate font for a given style and text.
+        Now supports emoji font fallback.
+        
+        Args:
+            style: Style dictionary
+            font_size: Font size
+            text: Text to render (for emoji detection)
+            
+        Returns:
+            PIL ImageFont object
+        """
+        # First, get the base font based on style
         if style.get('b', False):
-            # print(f"Selected Bold Font for style '{style}' with size: {font_size}")
-            return self.get_bold_font(font_size)
+            base_font = self.get_bold_font(font_size)
         elif style.get('i', False):
-            # print(f"Selected Italic Font for style '{style}' with size: {font_size}")
-            return self.get_italic_font(font_size)
+            base_font = self.get_italic_font(font_size)
         else:
-            # print(f"Selected Regular Font for style '{style}' with size: {font_size}")
-            return self.get_regular_font(font_size)
+            base_font = self.get_regular_font(font_size)
+        
+        # Check if text contains emojis and get appropriate font
+        if text and self.emoji_support.has_emoji(text):
+            emoji_font = self.emoji_support.get_emoji_font(font_size)
+            if emoji_font and self.emoji_support.test_emoji_support(emoji_font):
+                return emoji_font
+        
+        return base_font
+    
+    def get_font_for_text(self, text, font_size):
+        """
+        Get the best font for rendering text (with emoji support).
+        
+        Args:
+            text: Text to render
+            font_size: Font size
+            
+        Returns:
+            PIL ImageFont object
+        """
+        if self.emoji_support.has_emoji(text):
+            emoji_font = self.emoji_support.get_emoji_font(font_size)
+            if emoji_font and self.emoji_support.test_emoji_support(emoji_font):
+                return emoji_font
+        
+        return self.get_regular_font(font_size)

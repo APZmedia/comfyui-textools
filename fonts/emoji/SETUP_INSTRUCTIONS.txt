@@ -1,0 +1,45 @@
+ComfyUI-textools Emoji Font Setup Instructions
+==============================================
+
+To enable full emoji support, you need to add emoji font files to this directory.
+
+RECOMMENDED FONTS:
+==================
+
+1. Noto Color Emoji (Google)
+   - Download: https://fonts.google.com/noto/specimen/Noto+Color+Emoji
+   - File: NotoColorEmoji.ttf
+   - License: Open Font License (free to distribute)
+
+2. Twemoji (Twitter)
+   - Download: https://github.com/twitter/twemoji
+   - File: Twemoji.woff2 or Twemoji.ttf
+   - License: CC-BY 4.0 (free to distribute)
+
+SETUP STEPS:
+============
+
+1. Download the emoji font files from the sources above
+2. Rename them to match the expected filenames:
+   - NotoColorEmoji.ttf
+   - Twemoji.woff2 (or Twemoji.ttf)
+3. Place them in this directory (fonts/emoji/)
+4. The ComfyUI-textools nodes will automatically detect and use them
+
+ALTERNATIVE: Use System Fonts
+=============================
+
+If you don't want to bundle fonts, the system will fall back to:
+- Windows: Segoe UI Emoji
+- macOS: Apple Color Emoji  
+- Linux: System Noto fonts
+
+The bundled fonts provide more consistent emoji rendering across platforms.
+
+CURRENT STATUS:
+===============
+
+This directory contains placeholder files. Replace them with actual emoji fonts
+for full emoji support, or the system will use fallback fonts.
+
+Last updated: 1758975418.7582226

@@ -1,11 +1,16 @@
 # markdown_parser.py
 import re
+from .apz_hashtag_parser import parse_hashtags
+from .apz_emoji_support import create_emoji_support
 
 def parse_markdown(theText):
     """
     Parse markdown text and convert to style dictionary format.
-    Supports: **bold**, *italic*, __underline__, ~~strikethrough~~
+    Supports: **bold**, *italic*, __underline__, ~~strikethrough~~, #hashtags, and emojis
     """
+    # First, handle hashtags
+    hashtag_parts = parse_hashtags(theText)
+    
     # Define markdown patterns and their corresponding styles
     patterns = [
         (r'\*\*(.*?)\*\*', 'b'),      # **bold**
@@ -14,48 +19,58 @@ def parse_markdown(theText):
         (r'~~(.*?)~~', 's'),          # ~~strikethrough~~
     ]
     
-    parts = []
-    current_pos = 0
-    styles = {'b': False, 'i': False, 'u': False, 's': False}
-    style_stack = []
+    # Process each part for markdown formatting
+    final_parts = []
+    for text_part, styles in hashtag_parts:
+        if styles.get('hashtag', False):
+            # Hashtags are already processed, add as-is
+            final_parts.append((text_part, styles))
+        else:
+            # Process for markdown formatting
+            parts = []
+            current_pos = 0
+            style_stack = []
+            current_styles = styles.copy()
+            
+            # Find all markdown patterns in this text part
+            matches = []
+            for pattern, style_type in patterns:
+                for match in re.finditer(pattern, text_part):
+                    matches.append((match.start(), match.end(), match.group(1), style_type))
+            
+            # Sort matches by position
+            matches.sort(key=lambda x: x[0])
+            
+            # Process matches in order
+            for start, end, content, style_type in matches:
+                # Add text before this match
+                if start > current_pos:
+                    parts.append((text_part[current_pos:start], current_styles.copy()))
+                
+                # Push current styles to stack and apply new style
+                style_stack.append(current_styles.copy())
+                current_styles[style_type] = True
+                
+                # Add the styled content
+                parts.append((content, current_styles.copy()))
+                
+                # Pop styles back
+                if style_stack:
+                    current_styles = style_stack.pop()
+                
+                current_pos = end
+            
+            # Add remaining text
+            if current_pos < len(text_part):
+                parts.append((text_part[current_pos:], current_styles.copy()))
+            
+            # If no parts were created, add the original text
+            if not parts:
+                parts.append((text_part, current_styles.copy()))
+            
+            final_parts.extend(parts)
     
-    # Find all markdown patterns in the text
-    matches = []
-    for pattern, style_type in patterns:
-        for match in re.finditer(pattern, theText):
-            matches.append((match.start(), match.end(), match.group(1), style_type))
-    
-    # Sort matches by position
-    matches.sort(key=lambda x: x[0])
-    
-    # Process matches in order
-    for start, end, content, style_type in matches:
-        # Add text before this match
-        if start > current_pos:
-            parts.append((theText[current_pos:start], styles.copy()))
-        
-        # Push current styles to stack and apply new style
-        style_stack.append(styles.copy())
-        styles[style_type] = True
-        
-        # Add the styled content
-        parts.append((content, styles.copy()))
-        
-        # Pop styles back
-        if style_stack:
-            styles = style_stack.pop()
-        
-        current_pos = end
-    
-    # Add remaining text
-    if current_pos < len(theText):
-        parts.append((theText[current_pos:], styles.copy()))
-    
-    # If no parts were created, return the original text with no styles
-    if not parts:
-        parts.append((theText, styles.copy()))
-    
-    return parts
+    return final_parts
 
 def parse_markdown_with_headers(theText):
     """

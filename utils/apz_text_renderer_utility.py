@@ -34,8 +34,17 @@ class TextRendererUtility:
                 current_x = box_start_x + padding + (effective_textbox_width - line_width)
 
             for chunk, chunk_styles in line_parts:
-                current_font = font_manager.get_font_for_style(chunk_styles, wrapped_lines[0][1][0][1]['size'])
-                current_font_color_rgb = color_utility.get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
+                # Get font with emoji support
+                current_font = font_manager.get_font_for_style(chunk_styles, wrapped_lines[0][1][0][1]['size'], chunk)
+                
+                # Handle hashtag styling (special color for hashtags)
+                if chunk_styles.get('hashtag', False):
+                    # Use a different color for hashtags (e.g., blue)
+                    hashtag_color = (0, 100, 200)  # Blue color for hashtags
+                    current_font_color_rgb = hashtag_color
+                else:
+                    current_font_color_rgb = color_utility.get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
+                
                 draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
                 chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
 

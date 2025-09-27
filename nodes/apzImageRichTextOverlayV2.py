@@ -7,6 +7,8 @@ from ..utils.apz_text_renderer_utility import TextRendererUtility
 from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
 from ..utils.apz_font_manager import FontManager
 from ..utils.apz_box_utility import BoxUtility
+from ..utils.apz_hashtag_parser import parse_hashtags, extract_hashtags, has_hashtags, count_hashtags
+from ..utils.apz_emoji_support import create_emoji_support
 
 class APZmediaImageRichTextOverlayV2:
     def __init__(self, device="cpu"):
@@ -21,7 +23,7 @@ class APZmediaImageRichTextOverlayV2:
         return {
             "required": {
                 "image": ("IMAGE",),
-                "theText": ("STRING", {"multiline": True, "default": "Hello <b>World</b> <i>This is italic</i>"}),
+                "theText": ("STRING", {"multiline": True, "default": "Hello <b>World</b> <i>This is italic</i> with #hashtags and 😀 emojis"}),
                 "theTextbox_width": ("INT", {"default": 200, "min": 1}),
                 "theTextbox_height": ("INT", {"default": 200, "min": 1}),
                 "max_font_size": ("INT", {"default": 30, "min": 1, "max": 256, "step": 1}),
@@ -44,20 +46,41 @@ class APZmediaImageRichTextOverlayV2:
                 "box_background_color": ("STRING", {"default": "#FFFFFF"}),  # Background color default to white
                 "box_opacity": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.1}),
                 "show_error_indicators": (["false", "true"], {"default": "true"}),  # Show error indicators
+                "hashtag_color": ("STRING", {"default": "#0066CC"}),  # Color for hashtags
+                "enable_hashtag_support": (["false", "true"], {"default": "true"}),  # Enable hashtag support
+                "enable_emoji_support": (["false", "true"], {"default": "true"}),  # Enable emoji support
             }
         }
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING", "STRING")
+    RETURN_NAMES = ("image", "hashtags_found", "emojis_found", "processing_info")
     FUNCTION = "apz_add_text_overlay_v2"
     CATEGORY = "image/text"
 
-    def apz_add_text_overlay_v2(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, show_error_indicators):
+    def apz_add_text_overlay_v2(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, show_error_indicators, hashtag_color, enable_hashtag_support, enable_emoji_support):
         pil_images = tensor_to_pil(image)
         color_utility = ColorUtility()
 
         font_color_rgb = color_utility.hex_to_rgb(font_color)
         italic_font_color_rgb = color_utility.hex_to_rgb(italic_font_color)
         bold_font_color_rgb = color_utility.hex_to_rgb(bold_font_color)
+        hashtag_color_rgb = color_utility.hex_to_rgb(hashtag_color)
+        
+        # Initialize emoji support
+        emoji_support = create_emoji_support()
+        
+        # Analyze text for hashtags and emojis
+        hashtags_found = []
+        emojis_found = []
+        processing_info = []
+        
+        if enable_hashtag_support == "true" and has_hashtags(theText):
+            hashtags_found = extract_hashtags(theText)
+            processing_info.append(f"Found {len(hashtags_found)} hashtags: {', '.join(hashtags_found)}")
+        
+        if enable_emoji_support == "true" and emoji_support.has_emoji(theText):
+            emojis_found = emoji_support.extract_emojis(theText)
+            processing_info.append(f"Found {len(emojis_found)} emojis: {', '.join(emojis_found)}")
 
         # Initialize error handler
         error_handler = ErrorHandlerUtility()
@@ -163,4 +186,10 @@ class APZmediaImageRichTextOverlayV2:
             processed_images.append(processed_image)
 
         final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
-        return final_tensor, 
+        
+        # Prepare return information
+        hashtags_str = ", ".join(hashtags_found) if hashtags_found else "None"
+        emojis_str = ", ".join(emojis_found) if emojis_found else "None"
+        info_str = " | ".join(processing_info) if processing_info else "No issues detected"
+        
+        return (final_tensor, hashtags_str, emojis_str, info_str) 

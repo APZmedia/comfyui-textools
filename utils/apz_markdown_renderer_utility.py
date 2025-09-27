@@ -159,10 +159,14 @@ class MarkdownRendererUtility:
         # Render each text part in the line
         current_x = x
         for text_part, styles in line:
-            # Get font and color for this text part
-            font = font_manager.get_font_for_style(styles, font_size)
+            # Get font with emoji support
+            font = font_manager.get_font_for_style(styles, font_size, text_part)
             
-            if styles.get('b', False):
+            # Handle hashtag styling (special color for hashtags)
+            if styles.get('hashtag', False):
+                # Use a different color for hashtags (e.g., blue)
+                color = (0, 100, 200)  # Blue color for hashtags
+            elif styles.get('b', False):
                 color = bold_font_color_rgb
             elif styles.get('i', False):
                 color = italic_font_color_rgb

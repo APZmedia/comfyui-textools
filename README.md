@@ -7,8 +7,8 @@
 ComfyUI-textools includes several custom nodes, such as:
 
 - **APZmedia Image Rich Text Overlay**: A node for overlaying rich text on images with support for bold, italic, underline, and strike-through styles using HTML-like tags.
-- **APZmedia Image Rich Text Overlay V2**: Enhanced version with comprehensive error handling, fallback mechanisms, and visual error indicators.
-- **APZmedia Image Markdown Text Overlay**: A node for overlaying markdown-formatted text on images with support for bold, italic, underline, strikethrough, headers, and lists.
+- **APZmedia Image Rich Text Overlay V2**: Enhanced version with comprehensive error handling, fallback mechanisms, visual error indicators, hashtag support, and emoji support.
+- **APZmedia Image Markdown Text Overlay**: A node for overlaying markdown-formatted text on images with support for bold, italic, underline, strikethrough, headers, lists, hashtags, and emojis.
 
 ## Features
 
@@ -52,6 +52,9 @@ italic_font: "https://cdn.com/italic.ttf?signature=xyz"
 - **Graceful Degradation**: Continues to work even when encountering errors.
 - **Error Indicator Toggle**: Option to show or hide visual error indicators.
 - **Console Feedback**: Reports scaling actions and fallback strategies used.
+- **Hashtag Support**: Automatic detection and styling of hashtags (#hashtag) with special blue coloring.
+- **Emoji Support**: Full Unicode emoji support with automatic font fallback system.
+- **Enhanced Text Processing**: Advanced parsing that handles hashtags, emojis, and formatting simultaneously.
 
 ### APZmedia Image Markdown Text Overlay
 - **Markdown Support**: Supports standard markdown syntax including **bold**, *italic*, __underline__, ~~strikethrough~~, headers (# ## ###), and lists.
@@ -62,6 +65,14 @@ italic_font: "https://cdn.com/italic.ttf?signature=xyz"
 - **Enhanced Error Handling**: Same comprehensive error handling and font scaling as V2 rich text overlay.
 - **Progressive Font Scaling**: Automatically scales font sizes when markdown text doesn't fit.
 - **Smart Fallback Strategies**: Intelligent text processing and truncation when needed.
+- **Hashtag Support**: Automatic detection and styling of hashtags (#hashtag) with special blue coloring.
+- **Emoji Support**: Full Unicode emoji support with automatic font fallback system.
+- **Enhanced Text Processing**: Advanced parsing that handles hashtags, emojis, and formatting simultaneously.
+- **Emoji Font Fallback**: Automatically detects and uses system emoji fonts (Windows Segoe UI Emoji, macOS Apple Color Emoji, Linux Noto Color Emoji).
+- **Hashtag Detection**: Extracts and reports found hashtags for further processing.
+- **Emoji Detection**: Identifies and reports emoji characters in text.
+- **Processing Information**: Returns detailed information about text processing and feature detection.
+- **Cross-Platform Emoji Support**: Works across Windows, macOS, and Linux with appropriate emoji fonts.
 
 ## Input Types
 
@@ -87,6 +98,9 @@ italic_font: "https://cdn.com/italic.ttf?signature=xyz"
 ### APZmedia Image Rich Text Overlay V2
 - **All V1 Parameters**: Includes all parameters from the original rich text overlay.
 - **show_error_indicators (STRING)**: Show visual error indicators (true/false). When enabled, displays error messages directly on the image when text cannot be rendered properly.
+- **hashtag_color (STRING)**: Color for hashtags (default: blue).
+- **enable_hashtag_support (STRING)**: Enable hashtag support (true/false).
+- **enable_emoji_support (STRING)**: Enable emoji support (true/false).
 
 ### APZmedia Image Markdown Text Overlay
 - **image (IMAGE)**: The image to which the text will be applied.
@@ -107,6 +121,9 @@ italic_font: "https://cdn.com/italic.ttf?signature=xyz"
 - **box_start_y (INT)**: Y-coordinate for the text box's starting position.
 - **padding (INT)**: Padding inside the text box.
 - **line_height_ratio (FLOAT)**: Ratio for line height relative to font size.
+- **hashtag_color (STRING)**: Color for hashtags (default: blue).
+- **enable_hashtag_support (STRING)**: Enable hashtag support (true/false).
+- **enable_emoji_support (STRING)**: Enable emoji support (true/false).
 
 ## Output Types
 
@@ -115,9 +132,15 @@ italic_font: "https://cdn.com/italic.ttf?signature=xyz"
 
 ### APZmedia Image Rich Text Overlay V2
 - **image (IMAGE)**: The image with the applied text overlay (with error handling).
+- **hashtags_found (STRING)**: Comma-separated list of hashtags found in the text.
+- **emojis_found (STRING)**: Comma-separated list of emojis found in the text.
+- **processing_info (STRING)**: Detailed information about text processing and feature detection.
 
 ### APZmedia Image Markdown Text Overlay
 - **image (IMAGE)**: The image with the applied markdown text overlay.
+- **hashtags_found (STRING)**: Comma-separated list of hashtags found in the text.
+- **emojis_found (STRING)**: Comma-separated list of emojis found in the text.
+- **processing_info (STRING)**: Detailed information about text processing and feature detection.
 
 ## How It Works
 
@@ -194,6 +217,66 @@ Font scaling fallback: Font scaled to 12 (Reduced by 18)
 - **Disabled**: Uses fallback text without visual indicators
 - **Console Warnings**: Always provides feedback in the console
 
+## Hashtag and Emoji Support
+
+The enhanced text overlay supports modern text features:
+
+### Hashtag Support
+- **Automatic Detection**: Detects hashtags in the format `#hashtag`
+- **Special Styling**: Hashtags are rendered in bold with a distinctive blue color
+- **Extraction**: Returns found hashtags for further processing
+- **Integration**: Works with all text modes (rich text, markdown)
+
+### Emoji Support
+- **Unicode Emojis**: Full support for Unicode emoji characters (😀 🎉 🚀 🎨)
+- **Bundled Fonts**: Includes emoji fonts with the project for consistent rendering
+- **Font Priority System**: 
+  1. **Bundled Fonts** (fonts/emoji/) - Consistent across all platforms
+  2. **System Fonts** - Windows Segoe UI Emoji, macOS Apple Color Emoji, Linux Noto
+  3. **Default Font** - Last resort fallback
+- **Cross-Platform**: Works on Windows, macOS, and Linux
+- **Easy Setup**: Add emoji fonts to `fonts/emoji/` directory for enhanced support
+
+### Example Usage
+```
+Text: "Hello #world! 😀 This is **bold** text with emojis 🎉"
+
+Features detected:
+- Hashtags: #world
+- Emojis: 😀, 🎉
+- Formatting: **bold**
+```
+
+### Bundled Emoji Fonts
+
+ComfyUI-textools includes a bundled emoji font system for consistent emoji rendering:
+
+#### **Font Directory Structure**
+```
+fonts/
+└── emoji/
+    ├── NotoColorEmoji.ttf    # Google's Noto Color Emoji (recommended)
+    ├── Twemoji.woff2        # Twitter's Twemoji font
+    └── README.txt           # Setup instructions
+```
+
+#### **Adding Emoji Fonts**
+1. **Download Noto Color Emoji** from [Google Fonts](https://fonts.google.com/noto/specimen/Noto+Color+Emoji)
+2. **Save as** `NotoColorEmoji.ttf` in the `fonts/emoji/` directory
+3. **Restart ComfyUI** - the nodes will automatically use the bundled font
+
+#### **Benefits of Bundled Fonts**
+- **Consistent Rendering**: Emojis look the same across Windows, macOS, and Linux
+- **No Dependencies**: No need to install system emoji fonts
+- **Reliable Support**: Emojis work even on systems without emoji fonts
+- **Version Control**: Specific emoji font versions for predictable results
+
+#### **Font Priority System**
+The emoji support system uses fonts in this order:
+1. **Bundled fonts** (fonts/emoji/) - Highest priority
+2. **System emoji fonts** - Platform-specific fallback
+3. **Default fonts** - Last resort
+
 ## Markdown Syntax Support
 
 The markdown text overlay supports the following syntax:
@@ -228,26 +311,30 @@ The markdown text overlay supports the following syntax:
 | Visual Error Indicators | ❌ | ✅ | ❌ |
 | Parameter Validation | ❌ | ✅ | ✅ |
 | Console Feedback | ❌ | ✅ | ✅ |
+| Hashtag Support | ❌ | ✅ | ✅ |
+| Emoji Support | ❌ | ✅ | ✅ |
+| Advanced Text Processing | ❌ | ✅ | ✅ |
 | Backward Compatibility | ✅ | ✅ | ✅ |
 
 ### Usage Recommendations
 
 #### **For New Projects**
-- **Rich Text V2**: Recommended for enhanced reliability and error handling
+- **Rich Text V2**: **RECOMMENDED** for modern applications with hashtag and emoji support
 - **Markdown**: Use when you prefer markdown syntax over HTML-like tags
 
 #### **For Existing Projects**
 - **Rich Text V1**: Keep using for stability, migrate to V2 when needed
-- **Rich Text V2**: Use for new features or when encountering text overflow issues
+- **Rich Text V2**: Use for new features, hashtag/emoji support, or when encountering text overflow issues
+- **Markdown**: Migrate to for markdown formatting with hashtag and emoji support
 
 #### **For Production Use**
-- **Rich Text V2**: Recommended for better error handling and reliability
-- **Markdown**: Use for content that benefits from markdown formatting
+- **Rich Text V2**: **RECOMMENDED** for modern applications with hashtag and emoji support
+- **Markdown**: Use for content that benefits from markdown formatting with hashtag and emoji support
 
 #### **For Testing & Development**
 - **Rich Text V1**: Use as baseline for comparison
-- **Rich Text V2**: Use for enhanced features and error handling
-- **Markdown**: Use for markdown-specific content testing
+- **Rich Text V2**: Use for enhanced features, error handling, hashtag and emoji support
+- **Markdown**: Use for markdown-specific content testing with hashtag and emoji support
 
 ## Troubleshooting
 
