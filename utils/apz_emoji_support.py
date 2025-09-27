@@ -49,8 +49,8 @@ class EmojiSupport:
         
         # Prioritize bundled fonts
         bundled_fonts = [
-            os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),  # Working Windows emoji font
-            os.path.join(bundled_fonts_dir, "NotoColorEmoji.ttf"),
+            os.path.join(bundled_fonts_dir, "NotoColorEmoji-Color.ttf"),  # Color emoji font
+            os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),  # Windows emoji font
             os.path.join(bundled_fonts_dir, "NotoColorEmoji-Regular.ttf"),  # Alternative filename
             os.path.join(bundled_fonts_dir, "Twemoji.woff2"),
         ]
@@ -79,7 +79,7 @@ class EmojiSupport:
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
             ]
         
-        # Combine custom, bundled, and system fonts (prioritize bundled fonts)
+        # Combine custom, bundled, and system fonts (prioritize bundled fonts for serverless)
         all_fonts = custom_fonts + bundled_fonts + system_fonts
         
         # Filter to existing fonts
@@ -117,6 +117,7 @@ class EmojiSupport:
     def get_emoji_font(self, font_size):
         """
         Get the best available emoji font for the given size.
+        Handles special cases for color emoji fonts like NotoColorEmoji.
         
         Args:
             font_size: Font size to use
@@ -129,11 +130,21 @@ class EmojiSupport:
         
         for font_path in self.emoji_fonts:
             try:
-                font = ImageFont.truetype(font_path, font_size)
-                self.emoji_font_cache[(font_size, 'emoji')] = font
-                print(f"Loaded emoji font: {font_path} at size {font_size}")
-                return font
-            except (OSError, IOError):
+                # Special handling for NotoColorEmoji - it only works at size 109
+                if "NotoColorEmoji" in font_path:
+                    # Use fixed size 109 for NotoColorEmoji
+                    font = ImageFont.truetype(font_path, 109)
+                    self.emoji_font_cache[(font_size, 'emoji')] = font
+                    print(f"Loaded NotoColorEmoji at fixed size 109 (requested: {font_size})")
+                    return font
+                else:
+                    # Regular font loading for other emoji fonts
+                    font = ImageFont.truetype(font_path, font_size)
+                    self.emoji_font_cache[(font_size, 'emoji')] = font
+                    print(f"Loaded emoji font: {font_path} at size {font_size}")
+                    return font
+            except (OSError, IOError) as e:
+                print(f"Failed to load emoji font {font_path}: {e}")
                 continue
         
         # Fallback to default font
@@ -185,6 +196,21 @@ class EmojiSupport:
                 return emoji_font
         
         return regular_font
+    
+    def get_emoji_scale_factor(self, font_size):
+        """
+        Get the scale factor for emoji fonts that require fixed sizes.
+        
+        Args:
+            font_size: Desired font size
+            
+        Returns:
+            Scale factor to apply to emoji rendering
+        """
+        # NotoColorEmoji only works at size 109, so we need to scale it
+        if any("NotoColorEmoji" in path for path in self.emoji_fonts):
+            return font_size / 109.0
+        return 1.0
     
     def split_text_by_emoji(self, text):
         """

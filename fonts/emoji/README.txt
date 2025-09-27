@@ -4,8 +4,9 @@ ComfyUI-textools Bundled Emoji Fonts
 This directory contains bundled emoji fonts for consistent emoji rendering across all platforms.
 
 Current Fonts:
-- SegoeUIEmoji.ttf (Windows Segoe UI Emoji - Primary)
-- NotoColorEmoji-Regular.ttf (Google's Noto Color Emoji - Fallback)
+- NotoColorEmoji-Color.ttf (Google's Noto Color Emoji - Primary, Color)
+- SegoeUIEmoji.ttf (Windows Segoe UI Emoji - Fallback, Monochrome)
+- NotoColorEmoji-Regular.ttf (Google's Noto Color Emoji - Alternative)
 
 These fonts provide comprehensive Unicode emoji support including:
 - Basic emojis (😀 🎉 🚀 🎨)
@@ -18,9 +19,15 @@ The fonts are automatically used by ComfyUI-textools nodes when emoji support is
 They provide consistent emoji rendering across all platforms (Windows, macOS, Linux).
 
 Font Priority:
-1. SegoeUIEmoji.ttf (Windows emoji font - most reliable)
-2. NotoColorEmoji-Regular.ttf (Google's Noto Color Emoji)
-3. System fonts (fallback)
+1. NotoColorEmoji-Color.ttf (Color emoji font - serverless compatible)
+2. SegoeUIEmoji.ttf (Windows emoji font - monochrome fallback)
+3. NotoColorEmoji-Regular.ttf (Google's Noto Color Emoji - alternative)
+4. System fonts (fallback)
+
+Special Features:
+- NotoColorEmoji uses fixed size 109 with automatic scaling
+- Color emoji support for serverless environments
+- Cross-platform compatibility
 
 For more information:
 - Segoe UI Emoji: Microsoft's Windows emoji font

@@ -168,12 +168,45 @@ class MarkdownRendererUtility:
             else:
                 color = font_color_rgb
             
-            # Draw the text
-            draw.text((current_x, y), text_part, font=font, fill=color)
-            
-            # Move to next position
-            bbox = font.getbbox(text_part)
-            current_x += bbox[2] - bbox[0]
+            # Check if we need to scale the emoji (for NotoColorEmoji)
+            scale_factor = font_manager.emoji_support.get_emoji_scale_factor(font_size)
+            if scale_factor != 1.0 and font_manager.emoji_support.has_emoji(text_part):
+                # Scale the emoji text
+                from PIL import Image, ImageDraw, ImageFont
+                # Create a temporary image to render the emoji at the correct size
+                temp_img = Image.new('RGBA', (1000, 1000), (0, 0, 0, 0))
+                temp_draw = ImageDraw.Draw(temp_img)
+                temp_draw.text((0, 0), text_part, fill=color, font=font)
+                
+                # Get the bounding box of the rendered text
+                bbox = temp_draw.textbbox((0, 0), text_part, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                
+                # Scale down to the desired size
+                scaled_width = int(text_width * scale_factor)
+                scaled_height = int(text_height * scale_factor)
+                
+                if scaled_width > 0 and scaled_height > 0:
+                    # Crop and resize the emoji
+                    cropped = temp_img.crop(bbox)
+                    scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
+                    
+                    # Paste the scaled emoji onto the main image
+                    draw._image.paste(scaled_emoji, (int(current_x), int(y)), scaled_emoji)
+                    current_x += scaled_width
+                else:
+                    # Fallback to regular text rendering
+                    draw.text((current_x, y), text_part, font=font, fill=color)
+                    bbox = font.getbbox(text_part)
+                    current_x += bbox[2] - bbox[0]
+            else:
+                # Regular text rendering
+                draw.text((current_x, y), text_part, font=font, fill=color)
+                
+                # Move to next position
+                bbox = font.getbbox(text_part)
+                current_x += bbox[2] - bbox[0]
     
     @staticmethod
     def calculate_markdown_text_dimensions(text, markdown_mode, font_manager, 
