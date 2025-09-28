@@ -109,6 +109,40 @@ class MarkdownRendererUtility:
             words = text_part.split(' ')
             
             for word in words:
+                # If word contains multiple emojis together (like 😀😀😀), split them
+                if font_manager.emoji_support.has_emoji(word) and len(word) > 1:
+                    # Split emojis that are together
+                    emoji_chars = []
+                    current_text = ""
+                    for char in word:
+                        if font_manager.emoji_support.has_emoji(char):
+                            if current_text:
+                                emoji_chars.append(current_text)
+                                current_text = ""
+                            emoji_chars.append(char)
+                        else:
+                            current_text += char
+                    if current_text:
+                        emoji_chars.append(current_text)
+                    
+                    # Process each emoji character separately
+                    for emoji_char in emoji_chars:
+                        if emoji_char:
+                            # Process this emoji character
+                            font = font_manager.get_font_for_style(styles, font_size, emoji_char)
+                            bbox = font.getbbox(emoji_char)
+                            text_width = bbox[2] - bbox[0]
+                            
+                            if current_line_width + text_width <= max_width:
+                                current_line.append((emoji_char, styles))
+                                current_line_width += text_width
+                            else:
+                                if current_line:
+                                    lines.append(current_line)
+                                current_line = [(emoji_char, styles)]
+                                current_line_width = text_width
+                else:
+                    # Regular word processing
                 # Get font for this word
                 font = font_manager.get_font_for_style(styles, font_size, word)
                 
