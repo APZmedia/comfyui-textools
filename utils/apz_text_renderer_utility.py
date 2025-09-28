@@ -72,8 +72,8 @@ class TextRendererUtility:
                         if emoji_img:
                             # Calculate proper Y position to align with text baseline
                             font_size = wrapped_lines[0][1][0][1]['size']
-                            # Position emoji at baseline, accounting for its height
-                            emoji_y = int(current_y + font_size - emoji_img.height)
+                            # Position emoji slightly lower to align better with text
+                            emoji_y = int(current_y + font_size - emoji_img.height + 5)
                             # Paste emoji PNG onto the image
                             draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
                             chunk_width = font_size  # Use font size as width

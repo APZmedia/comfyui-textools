@@ -57,15 +57,9 @@ class MarkdownRendererUtility:
             parsed_parts = parse_markdown(text)
         
         # Process parsed parts into renderable lines
-        # Use text wrapper to split text into individual words
-        from .apz_text_wrapper import wrap_text
-        font = font_manager.get_regular_font(font_size)
-        wrapped_lines, total_text_height = wrap_text(parsed_parts, font, box_width - 2 * padding, font_size * line_height_ratio, font_manager)
-        
-        # Convert wrapped lines to renderable lines format
-        renderable_lines = []
-        for line, line_parts in wrapped_lines:
-            renderable_lines.append(line_parts)
+        renderable_lines = MarkdownRendererUtility._process_parsed_parts(
+            parsed_parts, box_width - 2 * padding, font_manager, font_size
+        )
         
         # Calculate total height needed
         line_height = font_size * line_height_ratio
@@ -111,25 +105,34 @@ class MarkdownRendererUtility:
         current_line_width = 0
         
         for text_part, styles in parsed_parts:
-            # Get font for this text part
-            font = font_manager.get_font_for_style(styles, font_size, text_part)
+            # Split text part into individual words to handle emojis correctly
+            words = text_part.split(' ')
             
-            # Calculate text width using font metrics
-            # For emojis, we'll handle them as text in the parser, but render as PNG in the final renderer
-            bbox = font.getbbox(text_part)
-            text_width = bbox[2] - bbox[0]
-            
-            # Check if text fits on current line
-            if current_line_width + text_width <= max_width:
-                # Add text to current line
-                current_line.append((text_part, styles))
-                current_line_width += text_width
-            else:
-                # Start new line
-                if current_line:
-                    lines.append(current_line)
-                current_line = [(text_part, styles)]
-                current_line_width = text_width
+            for word in words:
+                # Get font for this word
+                font = font_manager.get_font_for_style(styles, font_size, word)
+                
+                # Calculate text width using font metrics
+                bbox = font.getbbox(word)
+                text_width = bbox[2] - bbox[0]
+                
+                # Check if text fits on current line
+                if current_line_width + text_width <= max_width:
+                    # Add word to current line
+                    current_line.append((word, styles))
+                    current_line_width += text_width
+                else:
+                    # Word doesn't fit, start a new line
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = [(word, styles)]
+                    current_line_width = text_width
+                
+                # Add space width between words (except for the last word in the text part)
+                if word != words[-1]:
+                    space_bbox = font.getbbox(' ')
+                    space_width = space_bbox[2] - space_bbox[0]
+                    current_line_width += space_width
         
         # Add the last line
         if current_line:
@@ -183,8 +186,8 @@ class MarkdownRendererUtility:
                     
                     if emoji_img:
                         # Calculate proper Y position to align with text baseline
-                        # Position emoji at baseline, accounting for its height
-                        emoji_y = int(y + font_size - emoji_img.height)
+                        # Position emoji slightly lower to align better with text
+                        emoji_y = int(y + font_size - emoji_img.height + 5)
                         # Paste emoji PNG onto the image
                         draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
                         chunk_width = font_size  # Use font size as width
