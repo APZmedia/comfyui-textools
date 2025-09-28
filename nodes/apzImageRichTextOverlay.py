@@ -1,8 +1,4 @@
-try:
-    import torch
-    TORCH_AVAILABLE = True
-except ImportError:
-    TORCH_AVAILABLE = False
+import torch
 from PIL import ImageDraw
 from ..utils.apz_color_utility import ColorUtility
 from ..utils.apz_font_loader_utility import FontLoaderUtility
@@ -51,7 +47,7 @@ class APZmediaImageRichTextOverlay:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "apz_add_text_overlay"
-    CATEGORY = "APZmedia/Text"
+    CATEGORY = "image/text"
 
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity):
         pil_images = tensor_to_pil(image)
@@ -94,10 +90,6 @@ class APZmediaImageRichTextOverlay:
             processed_image = pil_to_tensor(image_pil)
             processed_images.append(processed_image)
 
-        if TORCH_AVAILABLE:
-            final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
-        else:
-            # If torch is not available, return the first processed image
-            final_tensor = processed_images[0] if processed_images else None
+        final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
         return final_tensor,
 #IT WORKS

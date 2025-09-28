@@ -3,6 +3,7 @@
 from .apz_rich_text_parser import parse_rich_text
 from .apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
 from .apz_text_wrapper import wrap_text
+from .apz_markdown_renderer_utility import MarkdownRendererUtility
 import logging
 
 class EnhancedFontLoaderUtility:
@@ -85,14 +86,32 @@ class EnhancedFontLoaderUtility:
                 for line, line_parts in wrapped_lines:
                     for chunk, chunk_styles in line_parts:
                         chunk_styles['size'] = font_size
+
+                # Compute render lines with markdown renderer to account for preserved newlines
+                if text_type.startswith("markdown"):
+                    render_lines = MarkdownRendererUtility._process_parsed_parts(
+                        parse_markdown(theText) if text_type == "markdown_basic"
+                        else parse_markdown_with_headers(theText) if text_type == "markdown_headers"
+                        else parse_markdown_extended(theText),
+                        effective_textbox_width,
+                        self.font_manager,
+                        font_size,
+                    )
+                else:
+                    render_lines = []
+                    for aggregated_line, aggregated_parts in wrapped_lines:
+                        render_lines.append([(chunk, styles) for chunk, styles in aggregated_parts])
+
+                logical_line_count = len(render_lines)
+                total_text_height = logical_line_count * line_height
                 
                 # Check if text fits
                 if total_text_height <= effective_textbox_height:
                     # Check if any individual words are too wide
-                    word_warnings = self._check_word_widths(wrapped_lines, font_size, effective_textbox_width)
+                    word_warnings = self._check_word_widths(render_lines, font_size, effective_textbox_width)
                     warnings.extend(word_warnings)
                     
-                    return font_size, wrapped_lines, total_text_height, warnings
+                    return font_size, render_lines, total_text_height, warnings
                     
             except Exception as e:
                 warnings.append(f"Error at font size {font_size}: {str(e)}")
@@ -343,4 +362,4 @@ class EnhancedFontLoaderUtility:
             if width <= target_width and height <= target_height:
                 return size
         
-        return None 
+        return None

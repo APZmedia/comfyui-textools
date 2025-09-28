@@ -21,6 +21,32 @@ class MarkdownRendererUtility:
             except Exception as exc:
                 print(f"Warning: embedded color rendering failed, falling back to standard fill. Error: {exc}")
         draw.text(position, text, font=font, fill=fill)
+
+    @staticmethod
+    def _measure_text_width(text, styles, font_manager, font_size):
+        """
+        Compute the render width for a text chunk, accounting for emojis that may require PNG rendering.
+        """
+        if not text:
+            return 0
+
+        emoji_support = getattr(font_manager, "emoji_support", None)
+        if emoji_support and emoji_support.has_emoji(text):
+            total_width = 0
+            for segment, is_emoji in emoji_support.split_text_by_emoji(text):
+                if not segment:
+                    continue
+                if is_emoji:
+                    total_width += font_size * len(segment)
+                else:
+                    segment_font = font_manager.get_font_for_style(styles, font_size, segment)
+                    bbox = segment_font.getbbox(segment)
+                    total_width += bbox[2] - bbox[0]
+            return total_width
+
+        measure_font = font_manager.get_font_for_style(styles, font_size, text)
+        bbox = measure_font.getbbox(text)
+        return bbox[2] - bbox[0]
     
     @staticmethod
     def render_markdown_text(draw, text, markdown_mode, box_left, box_top, padding, 
