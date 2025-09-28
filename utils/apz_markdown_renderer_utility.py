@@ -105,52 +105,74 @@ class MarkdownRendererUtility:
         current_line_width = 0
         
         for text_part, styles in parsed_parts:
-            # Process the text part character by character to handle spaces correctly
-            for char in text_part:
-                if char == ' ':
-                    # Handle space character
-                    font = font_manager.get_font_for_style(styles, font_size, char)
-                    bbox = font.getbbox(char)
-                    text_width = bbox[2] - bbox[0]
-                    
-                    if current_line_width + text_width <= max_width:
-                        current_line.append((char, styles))
-                        current_line_width += text_width
+            # Split text part into words, preserving spaces
+            words = text_part.split(' ')
+            
+            for i, word in enumerate(words):
+                # Skip empty words
+                if not word:
+                    continue
+                
+                # Handle the word (which may contain emojis)
+                word_width = 0
+                word_chunks = []
+                
+                # Split word into individual characters (emojis and text)
+                chars = []
+                current_text = ""
+                for char in word:
+                    if font_manager.emoji_support.has_emoji(char):
+                        if current_text:
+                            chars.append(current_text)
+                            current_text = ""
+                        chars.append(char)
                     else:
+                        current_text += char
+                if current_text:
+                    chars.append(current_text)
+                
+                # Calculate total word width
+                for char in chars:
+                    if char:
+                        font = font_manager.get_font_for_style(styles, font_size, char)
+                        bbox = font.getbbox(char)
+                        char_width = bbox[2] - bbox[0]
+                        word_width += char_width
+                        word_chunks.append((char, char_width))
+                
+                # Check if word fits on current line
+                if current_line_width + word_width <= max_width:
+                    # Word fits, add it to current line
+                    for char, char_width in word_chunks:
+                        current_line.append((char, styles))
+                        current_line_width += char_width
+                else:
+                    # Word doesn't fit, start new line
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = []
+                    current_line_width = 0
+                    
+                    # Add word to new line
+                    for char, char_width in word_chunks:
+                        current_line.append((char, styles))
+                        current_line_width += char_width
+                
+                # Add space after word (except for the last word in the text part)
+                if i < len(words) - 1:
+                    font = font_manager.get_font_for_style(styles, font_size, word)
+                    space_bbox = font.getbbox(' ')
+                    space_width = space_bbox[2] - space_bbox[0]
+                    
+                    if current_line_width + space_width <= max_width:
+                        current_line.append((' ', styles))
+                        current_line_width += space_width
+                    else:
+                        # Space doesn't fit, start new line
                         if current_line:
                             lines.append(current_line)
-                        current_line = [(char, styles)]
-                        current_line_width = text_width
-                else:
-                    # Handle non-space characters (including emojis)
-                    if font_manager.emoji_support.has_emoji(char):
-                        # Handle emoji character
-                        font = font_manager.get_font_for_style(styles, font_size, char)
-                        bbox = font.getbbox(char)
-                        text_width = bbox[2] - bbox[0]
-                        
-                        if current_line_width + text_width <= max_width:
-                            current_line.append((char, styles))
-                            current_line_width += text_width
-                        else:
-                            if current_line:
-                                lines.append(current_line)
-                            current_line = [(char, styles)]
-                            current_line_width = text_width
-                    else:
-                        # Handle regular text character
-                        font = font_manager.get_font_for_style(styles, font_size, char)
-                        bbox = font.getbbox(char)
-                        text_width = bbox[2] - bbox[0]
-                        
-                        if current_line_width + text_width <= max_width:
-                            current_line.append((char, styles))
-                            current_line_width += text_width
-                        else:
-                            if current_line:
-                                lines.append(current_line)
-                            current_line = [(char, styles)]
-                            current_line_width = text_width
+                        current_line = [(' ', styles)]
+                        current_line_width = space_width
             
         
         # Add the last line
