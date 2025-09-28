@@ -136,7 +136,7 @@ class APZmediaImageMarkdownTextOverlay:
                 box_background_rgb = color_utility.hex_to_rgb(box_background_color) + (int(box_opacity * 255),)
                 BoxUtility.draw_bounding_box(draw, effective_box_left, effective_box_top, effective_box_right, effective_box_bottom, effective_box_rgb, box_background_rgb, line_width)
                 
-            # Find the font size and wrap the lines using processed text with enhanced error handling
+            # Find the font size and wrap the lines using the original text with enhanced error handling
             text_type_map = {
                 "basic": "markdown_basic",
                 "with_headers": "markdown_headers", 
@@ -145,7 +145,7 @@ class APZmediaImageMarkdownTextOverlay:
             text_type = text_type_map.get(markdown_mode, "markdown_basic")
             
             font_size, wrapped_lines, total_text_height, warnings = font_loader.find_fitting_font_size(
-                processed_text, theTextbox_width - 2 * padding, theTextbox_height - 2 * padding, 
+                theText, theTextbox_width - 2 * padding, theTextbox_height - 2 * padding, 
                 line_height_ratio, text_type
             )
 
