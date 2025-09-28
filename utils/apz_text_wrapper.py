@@ -40,22 +40,35 @@ def wrap_text(parsed_text, font, max_width, line_height, font_manager=None):
                         if i < len(words) - 1 or j < len(subwords) - 1:
                             line_parts.append((' ', styles))
             else:
-                if current_line:
-                    test_line = current_line + ' ' + word
-                else:
-                    test_line = word
-                w = _get_word_width(test_line, font, font_manager)
-
-                if w <= max_width:
-                    current_line = test_line
-                    if current_line.strip():
-                        line_parts.append((word, styles))
+                # Calculate word width
+                word_width = _get_word_width(word, font, font_manager)
+                
+                # Calculate space width if there's a next word
+                space_width = 0
+                if i < len(words) - 1:
+                    space_width = _get_word_width(' ', font, font_manager)
+                
+                # Check if word AND space fit on current line
+                current_line_width = _get_word_width(current_line, font, font_manager) if current_line else 0
+                if current_line_width + word_width + space_width <= max_width:
+                    # Word and space fit, add word to current line
+                    if current_line:
+                        current_line += ' ' + word
+                    else:
+                        current_line = word
+                    line_parts.append((word, styles))
+                    
+                    # Add space if there's a next word
                     if i < len(words) - 1:
                         line_parts.append((' ', styles))
                 else:
-                    wrapped_lines.append((current_line, line_parts))
+                    # Word doesn't fit, start new line
+                    if current_line:
+                        wrapped_lines.append((current_line, line_parts))
                     current_line = word
                     line_parts = [(word, styles)]
+                    
+                    # Add space if there's a next word
                     if i < len(words) - 1:
                         line_parts.append((' ', styles))
 
