@@ -57,9 +57,15 @@ class MarkdownRendererUtility:
             parsed_parts = parse_markdown(text)
         
         # Process parsed parts into renderable lines
-        renderable_lines = MarkdownRendererUtility._process_parsed_parts(
-            parsed_parts, box_width - 2 * padding, font_manager, font_size
-        )
+        # Use text wrapper to split text into individual words
+        from .apz_text_wrapper import wrap_text
+        font = font_manager.get_regular_font(font_size)
+        wrapped_lines, total_text_height = wrap_text(parsed_parts, font, box_width - 2 * padding, font_size * line_height_ratio, font_manager)
+        
+        # Convert wrapped lines to renderable lines format
+        renderable_lines = []
+        for line, line_parts in wrapped_lines:
+            renderable_lines.append(line_parts)
         
         # Calculate total height needed
         line_height = font_size * line_height_ratio
