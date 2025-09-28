@@ -105,31 +105,26 @@ class MarkdownRendererUtility:
         current_line_width = 0
         
         for text_part, styles in parsed_parts:
-            # Split text part into individual words to handle emojis correctly
-            words = text_part.split(' ')
-            
-            for word in words:
-                # Skip empty words
-                if not word:
-                    continue
+            # Process the text part character by character to handle spaces correctly
+            for char in text_part:
+                if char == ' ':
+                    # Handle space character
+                    font = font_manager.get_font_for_style(styles, font_size, char)
+                    bbox = font.getbbox(char)
+                    text_width = bbox[2] - bbox[0]
                     
-                # Split word into individual characters (emojis and text)
-                chars = []
-                current_text = ""
-                for char in word:
-                    if font_manager.emoji_support.has_emoji(char):
-                        if current_text:
-                            chars.append(current_text)
-                            current_text = ""
-                        chars.append(char)
+                    if current_line_width + text_width <= max_width:
+                        current_line.append((char, styles))
+                        current_line_width += text_width
                     else:
-                        current_text += char
-                if current_text:
-                    chars.append(current_text)
-                
-                # Process each character/chunk
-                for i, char in enumerate(chars):
-                    if char:
+                        if current_line:
+                            lines.append(current_line)
+                        current_line = [(char, styles)]
+                        current_line_width = text_width
+                else:
+                    # Handle non-space characters (including emojis)
+                    if font_manager.emoji_support.has_emoji(char):
+                        # Handle emoji character
                         font = font_manager.get_font_for_style(styles, font_size, char)
                         bbox = font.getbbox(char)
                         text_width = bbox[2] - bbox[0]
@@ -142,13 +137,21 @@ class MarkdownRendererUtility:
                                 lines.append(current_line)
                             current_line = [(char, styles)]
                             current_line_width = text_width
-                
-                # Add space width between words (except for the last word in the text part)
-                if word != words[-1]:
-                    font = font_manager.get_font_for_style(styles, font_size, word)
-                    space_bbox = font.getbbox(' ')
-                    space_width = space_bbox[2] - space_bbox[0]
-                    current_line_width += space_width
+                    else:
+                        # Handle regular text character
+                        font = font_manager.get_font_for_style(styles, font_size, char)
+                        bbox = font.getbbox(char)
+                        text_width = bbox[2] - bbox[0]
+                        
+                        if current_line_width + text_width <= max_width:
+                            current_line.append((char, styles))
+                            current_line_width += text_width
+                        else:
+                            if current_line:
+                                lines.append(current_line)
+                            current_line = [(char, styles)]
+                            current_line_width = text_width
+            
         
         # Add the last line
         if current_line:
