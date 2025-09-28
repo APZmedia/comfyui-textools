@@ -103,53 +103,59 @@ class MarkdownRendererUtility:
         lines = []
         current_line = []
         current_line_width = 0
-        
+
         for text_part, styles in parsed_parts:
-            # Process the text part, handling spaces and content properly
-            # Split by spaces but preserve the spaces in the result
-            words = text_part.split(' ')
-            
-            for i, word in enumerate(words):
-                # Handle the word (which may be empty if it was a space)
-                if word:
-                    # This is a real word, calculate its width
+            segments = text_part.split('\n')
+            text_part_ends_with_newline = text_part.endswith('\n')
+
+            for segment_index, segment in enumerate(segments):
+                words = segment.split(' ') if segment else []
+
+                for i, word in enumerate(words):
+                    if not word:
+                        continue
+
                     font = font_manager.get_font_for_style(styles, font_size, word)
                     bbox = font.getbbox(word)
                     word_width = bbox[2] - bbox[0]
-                    
-                    # Calculate space width if there's a next word
+
                     space_width = 0
                     if i < len(words) - 1:
                         space_bbox = font.getbbox(' ')
                         space_width = space_bbox[2] - space_bbox[0]
-                    
-                    # Check if word AND space fit on current line
+
                     if current_line_width + word_width + space_width <= max_width:
-                        # Word and space fit, add word to current line
                         current_line.append((word, styles))
                         current_line_width += word_width
-                        
-                        # Add space if there's a next word
+
                         if i < len(words) - 1:
                             current_line.append((' ', styles))
                             current_line_width += space_width
                     else:
-                        # Word doesn't fit, start new line
                         if current_line:
                             lines.append(current_line)
                         current_line = [(word, styles)]
                         current_line_width = word_width
-                        
-                        # Add space if there's a next word
+
                         if i < len(words) - 1:
                             current_line.append((' ', styles))
                             current_line_width += space_width
-            
-        
-        # Add the last line
+
+                newline_requested = segment_index < len(segments) - 1 or (
+                    segment_index == len(segments) - 1 and text_part_ends_with_newline
+                )
+
+                if newline_requested:
+                    lines.append(current_line)
+                    current_line = []
+                    current_line_width = 0
+
         if current_line:
             lines.append(current_line)
-        
+
+        if not lines:
+            lines.append([])
+
         return lines
     
     @staticmethod
