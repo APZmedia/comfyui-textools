@@ -9,6 +9,7 @@ from ..utils.apz_font_manager import FontManager
 from ..utils.apz_box_utility import BoxUtility
 from ..utils.apz_hashtag_parser import parse_hashtags, extract_hashtags, has_hashtags, count_hashtags
 from ..utils.apz_emoji_support import create_emoji_support
+from ..utils.apz_hybrid_emoji_renderer import HybridEmojiRenderer
 
 class APZmediaImageRichTextOverlayV2:
     def __init__(self, device="cpu"):
@@ -128,12 +129,24 @@ class APZmediaImageRichTextOverlayV2:
                     print(f"Warning: {warning}")
 
             if font_size:
-                TextRendererUtility.render_text(
-                    draw, wrapped_lines, box_left, box_top, padding,
-                    box_right - box_left, box_bottom - box_top, font_manager,
-                    color_utility, alignment, vertical_alignment, line_height_ratio,
-                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
-                )
+                # Automatically detect if emojis are present and use best rendering method
+                if enable_emoji_support == "true" and emoji_support.has_emoji(theText):
+                    # Use hybrid emoji renderer for better emoji support
+                    self._render_with_hybrid_emoji(
+                        image_pil, theText, box_left, box_top, box_right, box_bottom,
+                        padding, font_manager, color_utility, alignment, vertical_alignment,
+                        line_height_ratio, font_color_rgb, italic_font_color_rgb, 
+                        bold_font_color_rgb, hashtag_color_rgb, enable_hashtag_support,
+                        enable_emoji_support, custom_emoji_font_url
+                    )
+                else:
+                    # Use standard PIL rendering
+                    TextRendererUtility.render_text(
+                        draw, wrapped_lines, box_left, box_top, padding,
+                        box_right - box_left, box_bottom - box_top, font_manager,
+                        color_utility, alignment, vertical_alignment, line_height_ratio,
+                        font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
+                    )
             else:
                 # Handle case where no font size works - try enhanced scaling fallback
                 success, fallback_font_size, fallback_text, scaling_message = error_handler.handle_font_scaling_fallback(
@@ -194,4 +207,71 @@ class APZmediaImageRichTextOverlayV2:
         emojis_str = ", ".join(emojis_found) if emojis_found else "None"
         info_str = " | ".join(processing_info) if processing_info else "No issues detected"
         
-        return (final_tensor, hashtags_str, emojis_str, info_str) 
+        return (final_tensor, hashtags_str, emojis_str, info_str)
+    
+    def _render_with_hybrid_emoji(self, image_pil, theText, box_left, box_top, box_right, box_bottom,
+                                padding, font_manager, color_utility, alignment, vertical_alignment,
+                                line_height_ratio, font_color_rgb, italic_font_color_rgb, 
+                                bold_font_color_rgb, hashtag_color_rgb, enable_hashtag_support,
+                                enable_emoji_support, custom_emoji_font_url):
+        """
+        Render text using the hybrid emoji renderer for better emoji support.
+        """
+        try:
+            # Create hybrid emoji renderer
+            renderer = HybridEmojiRenderer(box_right - box_left, box_bottom - box_top)
+            
+            # Parse rich text if needed
+            if enable_hashtag_support == "true" and has_hashtags(theText):
+                # Parse hashtags and create text parts
+                text_parts = parse_hashtags(theText)
+            else:
+                # Simple text parts
+                text_parts = [(theText, {})]
+            
+            # Render with hybrid emoji renderer
+            renderer.render_rich_text(
+                text_parts,
+                font_family="Arial",  # Use Arial as base font
+                font_size=24,  # Default font size
+                base_color=font_color_rgb,
+                bold_color=bold_font_color_rgb,
+                italic_color=italic_font_color_rgb,
+                hashtag_color=hashtag_color_rgb,
+                x=padding, y=padding
+            )
+            
+            # Get the rendered image and paste it onto the main image
+            rendered_image = renderer.get_image()
+            
+            # Resize to fit the box if needed
+            box_width = box_right - box_left
+            box_height = box_bottom - box_top
+            if rendered_image.size != (box_width, box_height):
+                rendered_image = rendered_image.resize((box_width, box_height))
+            
+            # Paste the rendered text onto the main image
+            image_pil.paste(rendered_image, (box_left, box_top), rendered_image)
+            
+        except Exception as e:
+            print(f"Hybrid emoji renderer failed: {e}")
+            # Fallback to standard PIL rendering
+            from ..utils.apz_rich_text_parser import parse_rich_text
+            from ..utils.apz_text_renderer_utility import TextRendererUtility
+            
+            # Parse rich text
+            text_parts = parse_rich_text(theText)
+            
+            # Create wrapped lines for standard rendering
+            wrapped_lines = []
+            for text_part, styles in text_parts:
+                wrapped_lines.append([(text_part, styles)])
+            
+            # Use standard text renderer
+            draw = ImageDraw.Draw(image_pil, "RGBA")
+            TextRendererUtility.render_text(
+                draw, wrapped_lines, box_left, box_top, padding,
+                box_right - box_left, box_bottom - box_top, font_manager,
+                color_utility, alignment, vertical_alignment, line_height_ratio,
+                font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
+            ) 

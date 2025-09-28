@@ -45,35 +45,46 @@ class TextRendererUtility:
                 else:
                     current_font_color_rgb = color_utility.get_font_color(chunk_styles, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb)
                 
-                # Check if we need to scale the emoji (for NotoColorEmoji)
-                scale_factor = font_manager.emoji_support.get_emoji_scale_factor(wrapped_lines[0][1][0][1]['size'])
-                if scale_factor != 1.0 and font_manager.emoji_support.has_emoji(chunk):
-                    # Scale the emoji text
-                    from PIL import Image, ImageDraw, ImageFont
-                    # Create a temporary image to render the emoji at the correct size
-                    temp_img = Image.new('RGBA', (1000, 1000), (0, 0, 0, 0))
-                    temp_draw = ImageDraw.Draw(temp_img)
-                    temp_draw.text((0, 0), chunk, fill=current_font_color_rgb, font=current_font)
+                # Check if this is an emoji that needs special handling
+                if font_manager.emoji_support.has_emoji(chunk):
+                    # Get the scale factor for NotoColorEmoji
+                    scale_factor = font_manager.emoji_support.get_emoji_scale_factor(wrapped_lines[0][1][0][1]['size'])
                     
-                    # Get the bounding box of the rendered text
-                    bbox = temp_draw.textbbox((0, 0), chunk, font=current_font)
-                    text_width = bbox[2] - bbox[0]
-                    text_height = bbox[3] - bbox[1]
-                    
-                    # Scale down to the desired size
-                    scaled_width = int(text_width * scale_factor)
-                    scaled_height = int(text_height * scale_factor)
-                    
-                    if scaled_width > 0 and scaled_height > 0:
-                        # Crop and resize the emoji
-                        cropped = temp_img.crop(bbox)
-                        scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
+                    if scale_factor != 1.0:
+                        # Render emoji at size 109 and scale down
+                        from PIL import Image, ImageDraw
                         
-                        # Paste the scaled emoji onto the main image
-                        draw._image.paste(scaled_emoji, (int(current_x), int(current_y)), scaled_emoji)
-                        chunk_width = scaled_width
+                        # Get the emoji font (size 109)
+                        emoji_font = font_manager.emoji_support.get_emoji_font(wrapped_lines[0][1][0][1]['size'])
+                        
+                        # Create a temporary image to render the emoji
+                        temp_img = Image.new('RGBA', (150, 150), (0, 0, 0, 0))
+                        temp_draw = ImageDraw.Draw(temp_img)
+                        temp_draw.text((10, 10), chunk, fill=current_font_color_rgb, font=emoji_font)
+                        
+                        # Get the bounding box and crop
+                        bbox = temp_draw.textbbox((10, 10), chunk, font=emoji_font)
+                        if bbox[2] > bbox[0] and bbox[3] > bbox[1]:
+                            cropped = temp_img.crop(bbox)
+                            
+                            # Scale to the desired size
+                            scaled_width = int((bbox[2] - bbox[0]) * scale_factor)
+                            scaled_height = int((bbox[3] - bbox[1]) * scale_factor)
+                            
+                            if scaled_width > 0 and scaled_height > 0:
+                                scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
+                                draw._image.paste(scaled_emoji, (int(current_x), int(current_y)), scaled_emoji)
+                                chunk_width = scaled_width
+                            else:
+                                # Fallback
+                                draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
+                                chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
+                        else:
+                            # Fallback
+                            draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
+                            chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
                     else:
-                        # Fallback to regular text rendering
+                        # Regular emoji rendering
                         draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
                         chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
                 else:

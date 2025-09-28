@@ -49,8 +49,8 @@ class EmojiSupport:
         
         # Prioritize bundled fonts
         bundled_fonts = [
-            os.path.join(bundled_fonts_dir, "NotoColorEmoji-Color.ttf"),  # Color emoji font
-            os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),  # Windows emoji font
+            os.path.join(bundled_fonts_dir, "NotoColorEmoji-Color.ttf"),  # Color emoji font (with scaling)
+            os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),  # Windows emoji font (monochrome fallback)
             os.path.join(bundled_fonts_dir, "NotoColorEmoji-Regular.ttf"),  # Alternative filename
             os.path.join(bundled_fonts_dir, "Twemoji.woff2"),
         ]
@@ -117,7 +117,7 @@ class EmojiSupport:
     def get_emoji_font(self, font_size):
         """
         Get the best available emoji font for the given size.
-        Handles special cases for color emoji fonts like NotoColorEmoji.
+        Handles variable fonts and special cases for color emoji fonts.
         
         Args:
             font_size: Font size to use
@@ -130,19 +130,25 @@ class EmojiSupport:
         
         for font_path in self.emoji_fonts:
             try:
-                # Special handling for NotoColorEmoji - it only works at size 109
+                # Try to load the font at the requested size first
+                font = ImageFont.truetype(font_path, font_size)
+                self.emoji_font_cache[(font_size, 'emoji')] = font
+                print(f"Loaded emoji font: {font_path} at size {font_size}")
+                return font
+            except OSError as e:
+                # If NotoColorEmoji fails at requested size, try size 109 as fallback
                 if "NotoColorEmoji" in font_path:
-                    # Use fixed size 109 for NotoColorEmoji
-                    font = ImageFont.truetype(font_path, 109)
-                    self.emoji_font_cache[(font_size, 'emoji')] = font
-                    print(f"Loaded NotoColorEmoji at fixed size 109 (requested: {font_size})")
-                    return font
+                    try:
+                        font = ImageFont.truetype(font_path, 109)
+                        self.emoji_font_cache[(font_size, 'emoji')] = font
+                        print(f"Loaded NotoColorEmoji at fixed size 109 (requested: {font_size})")
+                        return font
+                    except OSError:
+                        print(f"NotoColorEmoji failed at both sizes: {e}")
+                        continue
                 else:
-                    # Regular font loading for other emoji fonts
-                    font = ImageFont.truetype(font_path, font_size)
-                    self.emoji_font_cache[(font_size, 'emoji')] = font
-                    print(f"Loaded emoji font: {font_path} at size {font_size}")
-                    return font
+                    print(f"Font failed at size {font_size}: {e}")
+                    continue
             except (OSError, IOError) as e:
                 print(f"Failed to load emoji font {font_path}: {e}")
                 continue
@@ -207,9 +213,18 @@ class EmojiSupport:
         Returns:
             Scale factor to apply to emoji rendering
         """
-        # NotoColorEmoji only works at size 109, so we need to scale it
-        if any("NotoColorEmoji" in path for path in self.emoji_fonts):
-            return font_size / 109.0
+        # Check if we're using NotoColorEmoji at fixed size 109
+        # Only apply scaling if the font was actually loaded at size 109
+        for font_path in self.emoji_fonts:
+            if "NotoColorEmoji" in font_path and os.path.exists(font_path):
+                try:
+                    # Try to load at requested size first
+                    test_font = ImageFont.truetype(font_path, font_size)
+                    # If successful, no scaling needed
+                    return 1.0
+                except OSError:
+                    # If it fails, we'll need to use size 109 and scale
+                    return font_size / 109.0
         return 1.0
     
     def split_text_by_emoji(self, text):

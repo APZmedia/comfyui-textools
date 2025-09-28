@@ -11,6 +11,7 @@ from ..utils.apz_markdown_parser import parse_markdown, parse_markdown_with_head
 from ..utils.apz_markdown_renderer_utility import MarkdownRendererUtility
 from ..utils.apz_hashtag_parser import parse_hashtags, extract_hashtags, has_hashtags, count_hashtags
 from ..utils.apz_emoji_support import create_emoji_support
+from ..utils.apz_hybrid_emoji_renderer import HybridEmojiRenderer
 
 class APZmediaImageMarkdownTextOverlay:
     def __init__(self, device="cpu"):
@@ -151,13 +152,24 @@ class APZmediaImageMarkdownTextOverlay:
                     print(f"Warning: {warning}")
 
             if font_size:
-                # Render text with markdown parsing using the dedicated renderer
-                MarkdownRendererUtility.render_markdown_text(
-                    draw, theText, markdown_mode, box_left, box_top, padding,
-                    box_right - box_left, box_bottom - box_top, font_manager,
-                    color_utility, alignment, vertical_alignment, line_height_ratio,
-                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, font_size
-                )
+                # Automatically detect if emojis are present and use best rendering method
+                if enable_emoji_support == "true" and emoji_support.has_emoji(theText):
+                    # Use hybrid emoji renderer for better emoji support
+                    self._render_markdown_with_hybrid_emoji(
+                        image_pil, theText, markdown_mode, box_left, box_top, box_right, box_bottom,
+                        padding, font_manager, color_utility, alignment, vertical_alignment,
+                        line_height_ratio, font_color_rgb, italic_font_color_rgb, 
+                        bold_font_color_rgb, hashtag_color_rgb, enable_hashtag_support,
+                        enable_emoji_support, custom_emoji_font_url
+                    )
+                else:
+                    # Use standard markdown rendering
+                    MarkdownRendererUtility.render_markdown_text(
+                        draw, theText, markdown_mode, box_left, box_top, padding,
+                        box_right - box_left, box_bottom - box_top, font_manager,
+                        color_utility, alignment, vertical_alignment, line_height_ratio,
+                        font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, font_size
+                    )
             else:
                 # Handle case where no font size works - try enhanced scaling fallback
                 success, fallback_font_size, fallback_text, scaling_message = error_handler.handle_font_scaling_fallback(
@@ -211,4 +223,62 @@ class APZmediaImageMarkdownTextOverlay:
         emojis_str = ", ".join(emojis_found) if emojis_found else "None"
         info_str = " | ".join(processing_info) if processing_info else "No issues detected"
         
-        return (final_tensor, hashtags_str, emojis_str, info_str) 
+        return (final_tensor, hashtags_str, emojis_str, info_str)
+    
+    def _render_markdown_with_hybrid_emoji(self, image_pil, theText, markdown_mode, box_left, box_top, box_right, box_bottom,
+                                          padding, font_manager, color_utility, alignment, vertical_alignment,
+                                          line_height_ratio, font_color_rgb, italic_font_color_rgb, 
+                                          bold_font_color_rgb, hashtag_color_rgb, enable_hashtag_support,
+                                          enable_emoji_support, custom_emoji_font_url):
+        """
+        Render markdown text using the hybrid emoji renderer for better emoji support.
+        """
+        try:
+            # Create hybrid emoji renderer
+            renderer = HybridEmojiRenderer(box_right - box_left, box_bottom - box_top)
+            
+            # Parse markdown text
+            if markdown_mode == "basic":
+                text_parts = parse_markdown(theText)
+            elif markdown_mode == "with_headers":
+                text_parts = parse_markdown_with_headers(theText)
+            else:  # extended
+                text_parts = parse_markdown_extended(theText)
+            
+            # Render with hybrid emoji renderer
+            renderer.render_rich_text(
+                text_parts,
+                font_family="Arial",  # Use Arial as base font
+                font_size=24,  # Default font size
+                base_color=font_color_rgb,
+                bold_color=bold_font_color_rgb,
+                italic_color=italic_font_color_rgb,
+                hashtag_color=hashtag_color_rgb,
+                x=padding, y=padding
+            )
+            
+            # Get the rendered image and paste it onto the main image
+            rendered_image = renderer.get_image()
+            
+            # Resize to fit the box if needed
+            box_width = box_right - box_left
+            box_height = box_bottom - box_top
+            if rendered_image.size != (box_width, box_height):
+                rendered_image = rendered_image.resize((box_width, box_height))
+            
+            # Paste the rendered text onto the main image
+            image_pil.paste(rendered_image, (box_left, box_top), rendered_image)
+            
+        except Exception as e:
+            print(f"Hybrid emoji renderer failed: {e}")
+            # Fallback to standard markdown rendering
+            from ..utils.apz_markdown_renderer_utility import MarkdownRendererUtility
+            
+            # Use standard markdown renderer
+            draw = ImageDraw.Draw(image_pil, "RGBA")
+            MarkdownRendererUtility.render_markdown_text(
+                draw, theText, markdown_mode, box_left, box_top, padding,
+                box_right - box_left, box_bottom - box_top, font_manager,
+                color_utility, alignment, vertical_alignment, line_height_ratio,
+                font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, 24
+            ) 
