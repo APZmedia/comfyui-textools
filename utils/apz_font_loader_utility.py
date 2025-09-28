@@ -15,7 +15,7 @@ class FontLoaderUtility:
             loaded_font = self.font_manager.get_regular_font(font_size)
             line_height = int(font_size * line_height_ratio)
             parsed_text = parse_rich_text(theText)
-            wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height)
+            wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, effective_textbox_width, line_height, self.font_manager)
 
             # Attach font size to the style dictionary in wrapped_lines
             for line, line_parts in wrapped_lines:

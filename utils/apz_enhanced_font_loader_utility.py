@@ -79,7 +79,7 @@ class EnhancedFontLoaderUtility:
                 
                 # Wrap text with current font size
                 wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, 
-                                                           effective_textbox_width, line_height)
+                                                           effective_textbox_width, line_height, self.font_manager)
                 
                 # Attach font size to the style dictionary in wrapped_lines
                 for line, line_parts in wrapped_lines:
@@ -132,7 +132,7 @@ class EnhancedFontLoaderUtility:
                 line_height = int(font_size * line_height_ratio)
                 
                 wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, 
-                                                           effective_textbox_width, line_height)
+                                                           effective_textbox_width, line_height, self.font_manager)
                 
                 # Attach font size
                 for line, line_parts in wrapped_lines:
@@ -185,7 +185,7 @@ class EnhancedFontLoaderUtility:
                 line_height = int(font_size * line_height_ratio)
                 
                 wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, 
-                                                           effective_textbox_width, line_height)
+                                                           effective_textbox_width, line_height, self.font_manager)
                 
                 # Attach font size
                 for line, line_parts in wrapped_lines:
@@ -252,7 +252,7 @@ class EnhancedFontLoaderUtility:
             line_height = int(fallback_font_size * 1.2)
             
             # Force wrap to single line if needed
-            wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, 1000, line_height)
+            wrapped_lines, total_text_height = wrap_text(parsed_text, loaded_font, 1000, line_height, self.font_manager)
             
             # Attach font size
             for line, line_parts in wrapped_lines:
@@ -296,7 +296,7 @@ class EnhancedFontLoaderUtility:
             line_height = int(font_size * 1.2)
             
             # Wrap text with very large width to get natural dimensions
-            wrapped_lines, total_height = wrap_text(parsed_text, font, 10000, line_height)
+            wrapped_lines, total_height = wrap_text(parsed_text, font, 10000, line_height, self.font_manager)
             
             # Calculate maximum line width
             max_width = 0
