@@ -51,7 +51,7 @@ class APZmediaImageRichTextOverlay:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "apz_add_text_overlay"
-    CATEGORY = "image/text"
+    CATEGORY = "APZmedia/Text"
 
     def apz_add_text_overlay(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity):
         pil_images = tensor_to_pil(image)

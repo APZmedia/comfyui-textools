@@ -4,17 +4,17 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 from PIL import ImageDraw
-from utils.apz_color_utility import ColorUtility
-from utils.apz_enhanced_font_loader_utility import EnhancedFontLoaderUtility
-from utils.apz_error_handler_utility import ErrorHandlerUtility
-from utils.apz_text_renderer_utility import TextRendererUtility
-from utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
-from utils.apz_font_manager import FontManager
-from utils.apz_box_utility import BoxUtility
-from utils.apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
-from utils.apz_markdown_renderer_utility import MarkdownRendererUtility
-from utils.apz_hashtag_parser import parse_hashtags, extract_hashtags, has_hashtags, count_hashtags
-from utils.apz_emoji_support import create_emoji_support
+from ..utils.apz_color_utility import ColorUtility
+from ..utils.apz_enhanced_font_loader_utility import EnhancedFontLoaderUtility
+from ..utils.apz_error_handler_utility import ErrorHandlerUtility
+from ..utils.apz_text_renderer_utility import TextRendererUtility
+from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
+from ..utils.apz_font_manager import FontManager
+from ..utils.apz_box_utility import BoxUtility
+from ..utils.apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
+from ..utils.apz_markdown_renderer_utility import MarkdownRendererUtility
+from ..utils.apz_hashtag_parser import parse_hashtags, extract_hashtags, has_hashtags, count_hashtags
+from ..utils.apz_emoji_support import create_emoji_support
 
 class APZmediaImageMarkdownTextOverlay:
     def __init__(self, device="cpu"):
@@ -63,7 +63,7 @@ class APZmediaImageMarkdownTextOverlay:
     RETURN_TYPES = ("IMAGE", "STRING", "STRING", "STRING")
     RETURN_NAMES = ("image", "hashtags_found", "emojis_found", "processing_info")
     FUNCTION = "apz_add_markdown_text_overlay"
-    CATEGORY = "image/text"
+    CATEGORY = "APZmedia/Text"
 
     def apz_add_markdown_text_overlay(self, image, theText, markdown_mode, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url):
         pil_images = tensor_to_pil(image)
