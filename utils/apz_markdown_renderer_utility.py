@@ -108,7 +108,8 @@ class MarkdownRendererUtility:
             # Get font for this text part
             font = font_manager.get_font_for_style(styles, font_size, text_part)
             
-            # Calculate text width
+            # Calculate text width using font metrics
+            # For emojis, we'll handle them as text in the parser, but render as PNG in the final renderer
             bbox = font.getbbox(text_part)
             text_width = bbox[2] - bbox[0]
             

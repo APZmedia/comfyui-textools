@@ -1,12 +1,9 @@
 # text_wrapper.py
 def _get_word_width(word, font, font_manager=None):
     """Get the width of a word, handling emojis correctly."""
-    if font_manager and font_manager.emoji_support.has_emoji(word):
-        # For emojis, use the font size as width (since we're using PNG emojis)
-        return font.getbbox('M')[2] - font.getbbox('M')[0]  # Use 'M' as reference
-    else:
-        # For regular text, use normal font metrics
-        return font.getbbox(word)[2] - font.getbbox(word)[0]
+    # For all text (including emojis), use normal font metrics
+    # The PNG rendering will happen in the final renderer
+    return font.getbbox(word)[2] - font.getbbox(word)[0]
 
 def wrap_text(parsed_text, font, max_width, line_height, font_manager=None):
     wrapped_lines = []
