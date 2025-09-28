@@ -105,63 +105,65 @@ class MarkdownRendererUtility:
         current_line_width = 0
         
         for text_part, styles in parsed_parts:
-            # Process the text part as a whole to preserve markdown formatting
-            # But handle spaces that are already included in the text parts
-            if not text_part.strip():
-                # This is a space-only part, handle it as a space
-                font = font_manager.get_font_for_style(styles, font_size, ' ')
-                bbox = font.getbbox(' ')
+            # Process the text part, separating leading spaces, text, and trailing spaces
+            leading_spaces = ''
+            trailing_spaces = ''
+            content = text_part
+            
+            # Extract leading spaces
+            while content.startswith(' '):
+                leading_spaces += ' '
+                content = content[1:]
+            
+            # Extract trailing spaces
+            while content.endswith(' '):
+                trailing_spaces = ' ' + trailing_spaces
+                content = content[:-1]
+            
+            # Add leading spaces
+            for space in leading_spaces:
+                font = font_manager.get_font_for_style(styles, font_size, space)
+                bbox = font.getbbox(space)
                 text_width = bbox[2] - bbox[0]
                 
                 if current_line_width + text_width <= max_width:
-                    current_line.append((' ', styles))
+                    current_line.append((space, styles))
                     current_line_width += text_width
                 else:
                     if current_line:
                         lines.append(current_line)
-                    current_line = [(' ', styles)]
+                    current_line = [(space, styles)]
                     current_line_width = text_width
-            else:
-                # This is a text part with content, split into words
-                words = text_part.split(' ')
+            
+            # Add content if it exists
+            if content:
+                font = font_manager.get_font_for_style(styles, font_size, content)
+                bbox = font.getbbox(content)
+                text_width = bbox[2] - bbox[0]
                 
-                for i, word in enumerate(words):
-                    # Skip empty words (from split)
-                    if not word:
-                        continue
-                    
-                    # Calculate word width using the font with the current styles
-                    font = font_manager.get_font_for_style(styles, font_size, word)
-                    bbox = font.getbbox(word)
-                    word_width = bbox[2] - bbox[0]
-                    
-                    # Check if word fits on current line
-                    if current_line_width + word_width <= max_width:
-                        # Word fits, add it to current line
-                        current_line.append((word, styles))
-                        current_line_width += word_width
-                    else:
-                        # Word doesn't fit, start new line
-                        if current_line:
-                            lines.append(current_line)
-                        current_line = [(word, styles)]
-                        current_line_width = word_width
-                    
-                    # Add space after word (except for the last word in the text part)
-                    if i < len(words) - 1:
-                        # Use the same font style for the space
-                        space_bbox = font.getbbox(' ')
-                        space_width = space_bbox[2] - space_bbox[0]
-                        
-                        if current_line_width + space_width <= max_width:
-                            current_line.append((' ', styles))
-                            current_line_width += space_width
-                        else:
-                            # Space doesn't fit, start new line
-                            if current_line:
-                                lines.append(current_line)
-                            current_line = [(' ', styles)]
-                            current_line_width = space_width
+                if current_line_width + text_width <= max_width:
+                    current_line.append((content, styles))
+                    current_line_width += text_width
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = [(content, styles)]
+                    current_line_width = text_width
+            
+            # Add trailing spaces
+            for space in trailing_spaces:
+                font = font_manager.get_font_for_style(styles, font_size, space)
+                bbox = font.getbbox(space)
+                text_width = bbox[2] - bbox[0]
+                
+                if current_line_width + text_width <= max_width:
+                    current_line.append((space, styles))
+                    current_line_width += text_width
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = [(space, styles)]
+                    current_line_width = text_width
             
         
         # Add the last line
