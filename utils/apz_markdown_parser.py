@@ -53,7 +53,7 @@ def parse_markdown(theText):
                 # Add text before this match
                 if start > current_pos:
                     before_text = text_part[current_pos:start]
-                    if before_text.strip():  # Only add non-empty text
+                    if before_text:  # Add all text, including spaces
                         parts.append((before_text, current_styles.copy()))
                 
                 # Push current styles to stack and apply new style
@@ -61,7 +61,7 @@ def parse_markdown(theText):
                 current_styles[style_type] = True
                 
                 # Add the styled content
-                if content.strip():  # Only add non-empty content
+                if content:  # Add all content, including spaces
                     parts.append((content, current_styles.copy()))
                 
                 # Pop styles back
