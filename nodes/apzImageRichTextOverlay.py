@@ -4,12 +4,12 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 from PIL import ImageDraw
-from utils.apz_color_utility import ColorUtility
-from utils.apz_font_loader_utility import FontLoaderUtility
-from utils.apz_text_renderer_utility import TextRendererUtility
-from utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
-from utils.apz_font_manager import FontManager
-from utils.apz_box_utility import BoxUtility
+from ..utils.apz_color_utility import ColorUtility
+from ..utils.apz_font_loader_utility import FontLoaderUtility
+from ..utils.apz_text_renderer_utility import TextRendererUtility
+from ..utils.apz_image_conversion import tensor_to_pil, pil_to_tensor
+from ..utils.apz_font_manager import FontManager
+from ..utils.apz_box_utility import BoxUtility
 
 class APZmediaImageRichTextOverlay:
     def __init__(self, device="cpu"):
