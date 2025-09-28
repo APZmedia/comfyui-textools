@@ -1,5 +1,5 @@
 # markdown_renderer_utility.py
-from PIL import ImageDraw
+from PIL import Image, ImageDraw
 from .apz_font_manager import FontManager
 from .apz_color_utility import ColorUtility
 from .apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
@@ -8,6 +8,19 @@ class MarkdownRendererUtility:
     """
     Utility class for rendering markdown text with proper styling and layout.
     """
+    
+    @staticmethod
+    def _draw_text_with_color_support(draw, position, text, font, fill, font_manager):
+        use_embedded_color = font_manager.should_use_embedded_color(font)
+        if use_embedded_color:
+            try:
+                draw.text(position, text, font=font, embedded_color=True)
+                return
+            except TypeError:
+                pass
+            except Exception as exc:
+                print(f"Warning: embedded color rendering failed, falling back to standard fill. Error: {exc}")
+        draw.text(position, text, font=font, fill=fill)
     
     @staticmethod
     def render_markdown_text(draw, text, markdown_mode, box_left, box_top, padding, 
@@ -118,31 +131,19 @@ class MarkdownRendererUtility:
         return lines
     
     @staticmethod
-    def _render_line(draw, line, box_left, y, padding, box_width, font_manager, 
-                    color_utility, alignment, font_size, font_color_rgb, 
+    def _render_line(draw, line, box_left, y, padding, box_width, font_manager,
+                    color_utility, alignment, font_size, font_color_rgb,
                     italic_font_color_rgb, bold_font_color_rgb):
         """
         Render a single line of markdown text.
-        
-        Args:
-            draw: PIL ImageDraw object
-            line: List of (text, styles) tuples for this line
-            box_left, y: Position to render the line
-            padding: Internal padding
-            box_width: Width of text box
-            font_manager: FontManager instance
-            color_utility: ColorUtility instance
-            alignment: Horizontal alignment
-            font_size: Base font size
-            font_color_rgb, italic_font_color_rgb, bold_font_color_rgb: Color tuples
         """
         # Calculate total line width
         total_line_width = 0
         for text_part, styles in line:
-            font = font_manager.get_font_for_style(styles, font_size)
-            bbox = font.getbbox(text_part)
+            measure_font = font_manager.get_font_for_style(styles, font_size)
+            bbox = measure_font.getbbox(text_part)
             total_line_width += bbox[2] - bbox[0]
-        
+
         # Calculate starting X position based on alignment
         if alignment == "center":
             x = box_left + (box_width - total_line_width) // 2
@@ -150,77 +151,69 @@ class MarkdownRendererUtility:
             x = box_left + box_width - total_line_width - padding
         else:  # left
             x = box_left + padding
-        
-        # Render each text part in the line
+
         current_x = x
         for text_part, styles in line:
-            # Get font with emoji support
-            font = font_manager.get_font_for_style(styles, font_size, text_part)
-            
-            # Handle hashtag styling (special color for hashtags)
-            if styles.get('hashtag', False):
-                # Use a different color for hashtags (e.g., blue)
-                color = (0, 100, 200)  # Blue color for hashtags
-            elif styles.get('b', False):
+            current_font = font_manager.get_font_for_style(styles, font_size, text_part)
+
+            if styles.get("hashtag", False):
+                color = (0, 100, 200)
+            elif styles.get("b", False):
                 color = bold_font_color_rgb
-            elif styles.get('i', False):
+            elif styles.get("i", False):
                 color = italic_font_color_rgb
             else:
                 color = font_color_rgb
-            
-            # Check if this is an emoji that needs special handling
+
+            chunk_width = None
+
             if font_manager.emoji_support.has_emoji(text_part):
-                # Get the scale factor for NotoColorEmoji
                 scale_factor = font_manager.emoji_support.get_emoji_scale_factor(font_size)
-                
                 if scale_factor != 1.0:
-                    # Render emoji at size 109 and scale down
-                    from PIL import Image, ImageDraw
-                    
-                    # Get the emoji font (size 109)
                     emoji_font = font_manager.emoji_support.get_emoji_font(font_size)
-                    
-                    # Create a temporary image to render the emoji
-                    temp_img = Image.new('RGBA', (150, 150), (0, 0, 0, 0))
-                    temp_draw = ImageDraw.Draw(temp_img)
-                    temp_draw.text((10, 10), text_part, fill=color, font=emoji_font)
-                    
-                    # Get the bounding box and crop
-                    bbox = temp_draw.textbbox((10, 10), text_part, font=emoji_font)
-                    if bbox[2] > bbox[0] and bbox[3] > bbox[1]:
-                        cropped = temp_img.crop(bbox)
-                        
-                        # Scale to the desired size
-                        scaled_width = int((bbox[2] - bbox[0]) * scale_factor)
-                        scaled_height = int((bbox[3] - bbox[1]) * scale_factor)
-                        
-                        if scaled_width > 0 and scaled_height > 0:
-                            scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
-                            draw._image.paste(scaled_emoji, (int(current_x), int(y)), scaled_emoji)
-                            current_x += scaled_width
-                        else:
-                            # Fallback
-                            draw.text((current_x, y), text_part, font=font, fill=color)
-                            bbox = font.getbbox(text_part)
-                            current_x += bbox[2] - bbox[0]
-                    else:
-                        # Fallback
-                        draw.text((current_x, y), text_part, font=font, fill=color)
-                        bbox = font.getbbox(text_part)
-                        current_x += bbox[2] - bbox[0]
-                else:
-                    # Regular emoji rendering
-                    draw.text((current_x, y), text_part, font=font, fill=color)
-                    bbox = font.getbbox(text_part)
-                    current_x += bbox[2] - bbox[0]
+                    if emoji_font:
+                        temp_img = Image.new("RGBA", (150, 150), (0, 0, 0, 0))
+                        temp_draw = ImageDraw.Draw(temp_img)
+                        MarkdownRendererUtility._draw_text_with_color_support(
+                            temp_draw, (10, 10), text_part, emoji_font, color, font_manager
+                        )
+                        bbox = temp_draw.textbbox((10, 10), text_part, font=emoji_font)
+                        if bbox and (bbox[2] > bbox[0]) and (bbox[3] > bbox[1]):
+                            cropped = temp_img.crop(bbox)
+                            scaled_width = int((bbox[2] - bbox[0]) * scale_factor)
+                            scaled_height = int((bbox[3] - bbox[1]) * scale_factor)
+                            if scaled_width > 0 and scaled_height > 0:
+                                scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
+                                draw._image.paste(scaled_emoji, (int(current_x), int(y)), scaled_emoji)
+                                chunk_width = scaled_width
+
+                if chunk_width is None:
+                    bbox = current_font.getbbox(text_part)
+                    MarkdownRendererUtility._draw_text_with_color_support(
+                        draw, (current_x, y), text_part, current_font, color, font_manager
+                    )
+                    chunk_width = bbox[2] - bbox[0]
             else:
-                # Regular text rendering
-                draw.text((current_x, y), text_part, font=font, fill=color)
-                bbox = font.getbbox(text_part)
-                current_x += bbox[2] - bbox[0]
-    
+                bbox = current_font.getbbox(text_part)
+                MarkdownRendererUtility._draw_text_with_color_support(
+                    draw, (current_x, y), text_part, current_font, color, font_manager
+                )
+                chunk_width = bbox[2] - bbox[0]
+
+            if chunk_width is None:
+                chunk_width = 0
+
+            if styles.get("u", False):
+                underline_y = y + current_font.getsize(text_part)[1]
+                draw.line((current_x, underline_y, current_x + chunk_width, underline_y), fill=color, width=1)
+            if styles.get("s", False):
+                strikeout_y = y + current_font.getsize(text_part)[1] // 2
+                draw.line((current_x, strikeout_y, current_x + chunk_width, strikeout_y), fill=color, width=1)
+
+            current_x += chunk_width
+
     @staticmethod
-    def calculate_markdown_text_dimensions(text, markdown_mode, font_manager, 
+    def calculate_markdown_text_dimensions(text, markdown_mode, font_manager,
                                          font_size, line_height_ratio, max_width=None):
         """
         Calculate the dimensions needed to render markdown text.
@@ -269,4 +262,4 @@ class MarkdownRendererUtility:
                 line_width += bbox[2] - bbox[0]
             max_line_width = max(max_line_width, line_width)
         
-        return max_line_width, height 
+        return max_line_width, height

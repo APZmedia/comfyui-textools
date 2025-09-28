@@ -2,7 +2,7 @@
 import re
 import os
 import platform
-from PIL import ImageFont
+from PIL import ImageFont, Image, ImageDraw
 
 class EmojiSupport:
     """
@@ -13,6 +13,17 @@ class EmojiSupport:
         self.custom_emoji_font_url = custom_emoji_font_url
         self.emoji_fonts = self._get_emoji_font_paths()
         self.emoji_font_cache = {}
+        self.font_metadata = {}
+        self._color_font_keywords = (
+            "notocoloremoji",
+            "color emoji",
+            "seguiemj",
+            "segoeuemoji",
+            "twemoji",
+            "apple color emoji",
+        )
+        self.embedded_color_supported = self._detect_embedded_color_support()
+        self._warned_color_without_support = False
         self.unicode_emoji_pattern = re.compile(
             r'[\U0001F600-\U0001F64F]'  # Emoticons
             r'|[\U0001F300-\U0001F5FF]'  # Misc Symbols and Pictographs
@@ -22,6 +33,76 @@ class EmojiSupport:
             r'|[\U00002600-\U000026FF]'  # Miscellaneous symbols
             r'|[\U00002700-\U000027BF]'  # Dingbats
         )
+
+    def _detect_embedded_color_support(self):
+        """
+        Detect whether the current Pillow build supports embedded_color parameter
+        for ImageDraw.text. This is required to render glyph palette colors.
+        """
+        try:
+            test_image = Image.new("RGBA", (4, 4), (0, 0, 0, 0))
+            test_draw = ImageDraw.Draw(test_image)
+            test_font = ImageFont.load_default()
+            # Attempt to draw with embedded_color flag. We do not care about output,
+            # only that the call succeeds without raising a TypeError.
+            test_draw.text((0, 0), " ", font=test_font, embedded_color=True)
+            return True
+        except TypeError:
+            return False
+        except Exception:
+            return False
+
+    def _is_probable_color_font(self, font_path):
+        """
+        Heuristic detection for fonts that embed color glyph palettes.
+        """
+        if not font_path:
+            return False
+        basename = os.path.basename(font_path).lower()
+        return any(keyword in basename for keyword in self._color_font_keywords)
+
+    def _record_font_metadata(self, font_path, font_obj):
+        """
+        Track metadata about loaded emoji fonts so renderers can decide whether to
+        request embedded color glyph rendering.
+        """
+        if font_obj is None:
+            return
+
+        is_color_font = self._is_probable_color_font(font_path)
+        self.font_metadata[id(font_obj)] = {
+            "path": font_path,
+            "is_color_font": is_color_font,
+        }
+
+        if is_color_font and not self.embedded_color_supported and not self._warned_color_without_support:
+            print(
+                "Warning: Emoji font supports color glyphs, but the current Pillow build "
+                "does not expose embedded_color. Falling back to monochrome rendering."
+            )
+            self._warned_color_without_support = True
+
+    def should_use_embedded_color(self, font_obj):
+        """
+        Determine if the provided font should be rendered with embedded color glyphs.
+        """
+        if not self.embedded_color_supported or font_obj is None:
+            return False
+
+        metadata = self.font_metadata.get(id(font_obj))
+        if not metadata:
+            return False
+
+        return metadata.get("is_color_font", False)
+
+    def is_color_font(self, font_obj):
+        """
+        Check if the font was identified as a color emoji font.
+        """
+        metadata = self.font_metadata.get(id(font_obj))
+        if not metadata:
+            return False
+        return metadata.get("is_color_font", False)
     
     def _get_emoji_font_paths(self):
         """
@@ -125,14 +206,19 @@ class EmojiSupport:
         Returns:
             PIL ImageFont object or None if no emoji font available
         """
-        if (font_size, 'emoji') in self.emoji_font_cache:
-            return self.emoji_font_cache[(font_size, 'emoji')]
+        cache_key = (font_size, "emoji")
+        if cache_key in self.emoji_font_cache:
+            cached_font = self.emoji_font_cache[cache_key]
+            if id(cached_font) not in self.font_metadata:
+                self._record_font_metadata(None, cached_font)
+            return cached_font
         
         for font_path in self.emoji_fonts:
             try:
                 # Try to load the font at the requested size first
                 font = ImageFont.truetype(font_path, font_size)
-                self.emoji_font_cache[(font_size, 'emoji')] = font
+                self._record_font_metadata(font_path, font)
+                self.emoji_font_cache[cache_key] = font
                 print(f"Loaded emoji font: {font_path} at size {font_size}")
                 return font
             except OSError as e:
@@ -140,7 +226,8 @@ class EmojiSupport:
                 if "NotoColorEmoji" in font_path:
                     try:
                         font = ImageFont.truetype(font_path, 109)
-                        self.emoji_font_cache[(font_size, 'emoji')] = font
+                        self._record_font_metadata(font_path, font)
+                        self.emoji_font_cache[cache_key] = font
                         print(f"Loaded NotoColorEmoji at fixed size 109 (requested: {font_size})")
                         return font
                     except OSError:
@@ -156,10 +243,11 @@ class EmojiSupport:
         # Fallback to default font
         try:
             font = ImageFont.load_default()
-            self.emoji_font_cache[(font_size, 'emoji')] = font
+            self._record_font_metadata(None, font)
+            self.emoji_font_cache[cache_key] = font
             print(f"Using default font for emojis at size {font_size}")
             return font
-        except:
+        except Exception:
             return None
     
     def test_emoji_support(self, font, test_emoji="😀"):

@@ -1,7 +1,21 @@
 # utils/apz_text_renderer_utility.py
 from .apz_box_utility import BoxUtility
+from .apz_emoji_png_renderer import EmojiPNGRenderer
 
 class TextRendererUtility:
+    @staticmethod
+    def _draw_text_with_color_support(draw, position, text, font, fill, font_manager):
+        use_embedded_color = font_manager.should_use_embedded_color(font)
+        if use_embedded_color:
+            try:
+                draw.text(position, text, font=font, embedded_color=True)
+                return
+            except TypeError:
+                pass
+            except Exception as exc:
+                print(f"Warning: embedded color rendering failed, falling back to standard fill. Error: {exc}")
+        draw.text(position, text, font=font, fill=fill)
+
     @staticmethod
     def render_text(draw, wrapped_lines, box_start_x, box_start_y, padding, theTextbox_width, theTextbox_height, font_manager, color_utility, alignment, vertical_alignment, line_height_ratio, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb):
         if not wrapped_lines:
@@ -60,7 +74,9 @@ class TextRendererUtility:
                         # Create a temporary image to render the emoji
                         temp_img = Image.new('RGBA', (150, 150), (0, 0, 0, 0))
                         temp_draw = ImageDraw.Draw(temp_img)
-                        temp_draw.text((10, 10), chunk, fill=current_font_color_rgb, font=emoji_font)
+                        TextRendererUtility._draw_text_with_color_support(
+                            temp_draw, (10, 10), chunk, emoji_font, current_font_color_rgb, font_manager
+                        )
                         
                         # Get the bounding box and crop
                         bbox = temp_draw.textbbox((10, 10), chunk, font=emoji_font)
@@ -76,20 +92,24 @@ class TextRendererUtility:
                                 draw._image.paste(scaled_emoji, (int(current_x), int(current_y)), scaled_emoji)
                                 chunk_width = scaled_width
                             else:
-                                # Fallback
-                                draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
+                                TextRendererUtility._draw_text_with_color_support(
+                                    draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
+                                )
                                 chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
                         else:
-                            # Fallback
-                            draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
+                            TextRendererUtility._draw_text_with_color_support(
+                                draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
+                            )
                             chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
                     else:
-                        # Regular emoji rendering
-                        draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
+                        TextRendererUtility._draw_text_with_color_support(
+                            draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
+                        )
                         chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
                 else:
-                    # Regular text rendering
-                    draw.text((current_x, current_y), chunk, fill=current_font_color_rgb, font=current_font)
+                    TextRendererUtility._draw_text_with_color_support(
+                        draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
+                    )
                     chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
 
                 if chunk_styles.get('u', False):  # Underline

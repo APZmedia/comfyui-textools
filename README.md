@@ -236,6 +236,8 @@ The enhanced text overlay supports modern text features:
   3. **Default Font** - Last resort fallback
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Easy Setup**: Add emoji fonts to `fonts/emoji/` directory for enhanced support
+- **Automatic Color Glyphs**: Detects Pillow builds that support embedded color glyph rendering and uses palette-aware drawing to keep emoji colors intact.
+- **Graceful Degradation**: When embedded color glyphs are unavailable, the node logs a warning and automatically falls back to monochrome rendering or PNG emoji assets so that workflows continue to function.
 
 ### Example Usage
 ```
@@ -382,4 +384,3 @@ Text overflow - all scaling strategies failed
 - **Enable Error Indicators**: Use `show_error_indicators = true` to see visual error messages
 - **Try Different Nodes**: Use V2 nodes for enhanced error handling
 - **Adjust Parameters**: Reduce font size or increase text box dimensions if needed
-

@@ -134,3 +134,15 @@ class FontManager:
                 return emoji_font
         
         return self.get_regular_font(font_size)
+    
+    def should_use_embedded_color(self, font):
+        """
+        Determine whether the provided font should be rendered using embedded color glyphs.
+        """
+        return self.emoji_support.should_use_embedded_color(font)
+    
+    def is_color_font(self, font):
+        """
+        Check if the provided font was identified as a color emoji font.
+        """
+        return self.emoji_support.is_color_font(font)
