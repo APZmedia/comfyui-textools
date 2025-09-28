@@ -117,34 +117,33 @@ class MarkdownRendererUtility:
                     bbox = font.getbbox(word)
                     word_width = bbox[2] - bbox[0]
                     
-                    # Check if word fits on current line
-                    if current_line_width + word_width <= max_width:
-                        # Word fits, add it to current line
+                    # Calculate space width if there's a next word
+                    space_width = 0
+                    if i < len(words) - 1:
+                        space_bbox = font.getbbox(' ')
+                        space_width = space_bbox[2] - space_bbox[0]
+                    
+                    # Check if word AND space fit on current line
+                    if current_line_width + word_width + space_width <= max_width:
+                        # Word and space fit, add word to current line
                         current_line.append((word, styles))
                         current_line_width += word_width
+                        
+                        # Add space if there's a next word
+                        if i < len(words) - 1:
+                            current_line.append((' ', styles))
+                            current_line_width += space_width
                     else:
                         # Word doesn't fit, start new line
                         if current_line:
                             lines.append(current_line)
                         current_line = [(word, styles)]
                         current_line_width = word_width
-                
-                # Add space after this word (if there's a next word)
-                if i < len(words) - 1:
-                    # Use the same font style for the space
-                    font = font_manager.get_font_for_style(styles, font_size, word if word else ' ')
-                    space_bbox = font.getbbox(' ')
-                    space_width = space_bbox[2] - space_bbox[0]
-                    
-                    if current_line_width + space_width <= max_width:
-                        current_line.append((' ', styles))
-                        current_line_width += space_width
-                    else:
-                        # Space doesn't fit, start new line
-                        if current_line:
-                            lines.append(current_line)
-                        current_line = [(' ', styles)]
-                        current_line_width = space_width
+                        
+                        # Add space if there's a next word
+                        if i < len(words) - 1:
+                            current_line.append((' ', styles))
+                            current_line_width += space_width
             
         
         # Add the last line
@@ -177,6 +176,10 @@ class MarkdownRendererUtility:
 
         current_x = x
         for text_part, styles in line:
+            # Skip empty text parts
+            if not text_part:
+                continue
+                
             current_font = font_manager.get_font_for_style(styles, font_size, text_part)
 
             if styles.get("hashtag", False):
