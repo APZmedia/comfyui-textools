@@ -25,7 +25,9 @@ class TextRendererUtility:
         effective_textbox_width, effective_textbox_height = BoxUtility.calculate_effective_dimensions(theTextbox_width, theTextbox_height, padding)
 
         # Calculate total text height for vertical alignment purposes
-        total_text_height = len(wrapped_lines) * int(wrapped_lines[0][1][0][1]['size'] * line_height_ratio)
+        # Use the actual font size from the first line, not a hardcoded value
+        font_size = wrapped_lines[0][1][0][1]['size'] if wrapped_lines and wrapped_lines[0][1] else 30
+        total_text_height = len(wrapped_lines) * int(font_size * line_height_ratio)
 
         # Calculate the initial Y position based on vertical alignment
         if vertical_alignment == "top":
@@ -122,4 +124,4 @@ class TextRendererUtility:
                 current_x += chunk_width
 
             # Move to the next line
-            current_y += int(wrapped_lines[0][1][0][1]['size'] * line_height_ratio)
+            current_y += int(font_size * line_height_ratio)

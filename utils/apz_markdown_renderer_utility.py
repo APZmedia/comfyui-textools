@@ -76,7 +76,7 @@ class MarkdownRendererUtility:
         # Render each line
         current_y = start_y
         for line in renderable_lines:
-            if current_y + line_height > box_top + box_height - padding:
+            if current_y + font_size > box_top + box_height - padding:
                 break  # Stop if we exceed box height
                 
             MarkdownRendererUtility._render_line(
