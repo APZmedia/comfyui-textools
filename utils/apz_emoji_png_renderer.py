@@ -28,6 +28,15 @@ class EmojiPNGRenderer:
     
     def get_emoji_png_path(self, emoji_char):
         """Get the PNG file path for an emoji character."""
+        # Extract the first emoji from the string if it contains multiple characters
+        if len(emoji_char) > 1:
+            # Find the first emoji in the string
+            emoji_match = self.emoji_pattern.search(emoji_char)
+            if emoji_match:
+                emoji_char = emoji_match.group()
+            else:
+                return None
+        
         # Convert emoji to filename (e.g., 😀 -> 1f600.png)
         unicode_codepoint = ord(emoji_char)
         filename = f"{unicode_codepoint:x}.png"
