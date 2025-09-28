@@ -1,4 +1,8 @@
-import torch
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
 from PIL import ImageDraw
 from utils.apz_color_utility import ColorUtility
 from utils.apz_enhanced_font_loader_utility import EnhancedFontLoaderUtility
@@ -188,7 +192,11 @@ class APZmediaImageRichTextOverlayV2:
             processed_image = pil_to_tensor(image_pil)
             processed_images.append(processed_image)
 
-        final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
+        if TORCH_AVAILABLE:
+            final_tensor = torch.cat(processed_images, dim=0)  # Concatenate along the batch dimension
+        else:
+            # If torch is not available, return the first processed image
+            final_tensor = processed_images[0] if processed_images else None
         
         # Prepare return information
         hashtags_str = ", ".join(hashtags_found) if hashtags_found else "None"

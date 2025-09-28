@@ -1,4 +1,8 @@
-import torch
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
 import numpy as np
 from PIL import Image
 
@@ -8,6 +12,15 @@ def tensor_to_pil(image_tensor):
     Assumes the tensor contains pixel values in the range [0, 1] for floating-point types
     and [0, 255] for uint8 types.
     """
+    if not TORCH_AVAILABLE:
+        # If torch is not available, assume input is already a numpy array or list of PIL images
+        if isinstance(image_tensor, list):
+            return image_tensor
+        elif hasattr(image_tensor, 'shape'):  # numpy array
+            return [Image.fromarray(image_tensor.astype(np.uint8))]
+        else:
+            return [image_tensor]
+    
     # Ensure the tensor is on the CPU and in the correct format
     if image_tensor.is_floating_point():
         image_tensor = (image_tensor * 255).type(torch.uint8)
@@ -35,6 +48,15 @@ def pil_to_tensor(image_pil):
     """
     if not isinstance(image_pil, list):
         image_pil = [image_pil]
+
+    if not TORCH_AVAILABLE:
+        # If torch is not available, return numpy arrays
+        arrays = []
+        for img in image_pil:
+            img_np = np.array(img)  # Convert PIL image to NumPy array
+            print(f"Shape of img_np in pil to tensor: {img_np.shape}")
+            arrays.append(img_np.astype(np.float32) / 255.0)
+        return arrays
 
     tensors = []
     for img in image_pil:
