@@ -63,52 +63,35 @@ class TextRendererUtility:
                 
                 # Check if this is an emoji that needs special handling
                 if font_manager.emoji_support.has_emoji(chunk):
-                    # Get the scale factor for NotoColorEmoji
-                    scale_factor = font_manager.emoji_support.get_emoji_scale_factor(wrapped_lines[0][1][0][1]['size'])
-                    
-                    if scale_factor != 1.0:
-                        # Render emoji at size 109 and scale down
-                        from PIL import Image, ImageDraw
+                    # Try to use PNG emoji renderer first
+                    try:
+                        from .apz_emoji_png_renderer import EmojiPNGRenderer
+                        emoji_png_renderer = EmojiPNGRenderer()
+                        emoji_img = emoji_png_renderer.load_emoji_png(chunk, wrapped_lines[0][1][0][1]['size'])
                         
-                        # Get the emoji font (size 109)
-                        emoji_font = font_manager.emoji_support.get_emoji_font(wrapped_lines[0][1][0][1]['size'])
-                        
-                        # Create a temporary image to render the emoji
-                        temp_img = Image.new('RGBA', (150, 150), (0, 0, 0, 0))
-                        temp_draw = ImageDraw.Draw(temp_img)
-                        TextRendererUtility._draw_text_with_color_support(
-                            temp_draw, (10, 10), chunk, emoji_font, current_font_color_rgb, font_manager
-                        )
-                        
-                        # Get the bounding box and crop
-                        bbox = temp_draw.textbbox((10, 10), chunk, font=emoji_font)
-                        if bbox[2] > bbox[0] and bbox[3] > bbox[1]:
-                            cropped = temp_img.crop(bbox)
-                            
-                            # Scale to the desired size
-                            scaled_width = int((bbox[2] - bbox[0]) * scale_factor)
-                            scaled_height = int((bbox[3] - bbox[1]) * scale_factor)
-                            
-                            if scaled_width > 0 and scaled_height > 0:
-                                scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
-                                draw._image.paste(scaled_emoji, (int(current_x), int(current_y)), scaled_emoji)
-                                chunk_width = scaled_width
-                            else:
-                                TextRendererUtility._draw_text_with_color_support(
-                                    draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
-                                )
-                                chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
+                        if emoji_img:
+                            # Calculate proper Y position to align with text baseline
+                            font_size = wrapped_lines[0][1][0][1]['size']
+                            # Position emoji at baseline, accounting for its height
+                            emoji_y = int(current_y + font_size - emoji_img.height)
+                            # Paste emoji PNG onto the image
+                            draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
+                            chunk_width = font_size  # Use font size as width
                         else:
+                            # Fallback to regular text rendering
                             TextRendererUtility._draw_text_with_color_support(
                                 draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
                             )
                             chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
-                    else:
+                    except Exception as e:
+                        print(f"PNG emoji renderer failed: {e}")
+                        # Fallback to regular text rendering
                         TextRendererUtility._draw_text_with_color_support(
                             draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
                         )
                         chunk_width = current_font.getbbox(chunk)[2] - current_font.getbbox(chunk)[0]
                 else:
+                    # Regular text rendering
                     TextRendererUtility._draw_text_with_color_support(
                         draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
                     )

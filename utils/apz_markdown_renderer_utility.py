@@ -168,30 +168,33 @@ class MarkdownRendererUtility:
             chunk_width = None
 
             if font_manager.emoji_support.has_emoji(text_part):
-                scale_factor = font_manager.emoji_support.get_emoji_scale_factor(font_size)
-                if scale_factor != 1.0:
-                    emoji_font = font_manager.emoji_support.get_emoji_font(font_size)
-                    if emoji_font:
-                        temp_img = Image.new("RGBA", (150, 150), (0, 0, 0, 0))
-                        temp_draw = ImageDraw.Draw(temp_img)
+                # Try to use PNG emoji renderer first
+                try:
+                    from .apz_emoji_png_renderer import EmojiPNGRenderer
+                    emoji_png_renderer = EmojiPNGRenderer()
+                    emoji_img = emoji_png_renderer.load_emoji_png(text_part, font_size)
+                    
+                    if emoji_img:
+                        # Calculate proper Y position to align with text baseline
+                        # Position emoji at baseline, accounting for its height
+                        emoji_y = int(y + font_size - emoji_img.height)
+                        # Paste emoji PNG onto the image
+                        draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
+                        chunk_width = font_size  # Use font size as width
+                    else:
+                        # Fallback to regular text rendering
                         MarkdownRendererUtility._draw_text_with_color_support(
-                            temp_draw, (10, 10), text_part, emoji_font, color, font_manager
+                            draw, (current_x, y), text_part, current_font, color, font_manager
                         )
-                        bbox = temp_draw.textbbox((10, 10), text_part, font=emoji_font)
-                        if bbox and (bbox[2] > bbox[0]) and (bbox[3] > bbox[1]):
-                            cropped = temp_img.crop(bbox)
-                            scaled_width = int((bbox[2] - bbox[0]) * scale_factor)
-                            scaled_height = int((bbox[3] - bbox[1]) * scale_factor)
-                            if scaled_width > 0 and scaled_height > 0:
-                                scaled_emoji = cropped.resize((scaled_width, scaled_height), Image.Resampling.LANCZOS)
-                                draw._image.paste(scaled_emoji, (int(current_x), int(y)), scaled_emoji)
-                                chunk_width = scaled_width
-
-                if chunk_width is None:
-                    bbox = current_font.getbbox(text_part)
+                        bbox = current_font.getbbox(text_part)
+                        chunk_width = bbox[2] - bbox[0]
+                except Exception as e:
+                    print(f"PNG emoji renderer failed: {e}")
+                    # Fallback to regular text rendering
                     MarkdownRendererUtility._draw_text_with_color_support(
                         draw, (current_x, y), text_part, current_font, color, font_manager
                     )
+                    bbox = current_font.getbbox(text_part)
                     chunk_width = bbox[2] - bbox[0]
             else:
                 bbox = current_font.getbbox(text_part)
