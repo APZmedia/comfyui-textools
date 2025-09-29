@@ -52,12 +52,15 @@ class EmojiPNGRenderer:
     
     def load_emoji_png(self, emoji_char, size):
         """Load and cache emoji PNG at specified size with smart resolution selection."""
+        print(f"DEBUG: load_emoji_png called with emoji='{emoji_char}', size={size}")
         cache_key = (emoji_char, size)
         if cache_key in self.emoji_cache:
+            print(f"DEBUG: Using cached emoji for '{emoji_char}' at size {size}")
             return self.emoji_cache[cache_key]
         
         # Try to find the best resolution PNG first
         best_png_path = self._find_best_resolution_png(emoji_char, size)
+        print(f"DEBUG: Best PNG path for '{emoji_char}' at size {size}: {best_png_path}")
         
         if best_png_path and os.path.exists(best_png_path):
             try:
