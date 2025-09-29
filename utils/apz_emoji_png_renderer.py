@@ -87,46 +87,48 @@ class EmojiPNGRenderer:
         return None
     
     def _find_best_resolution_png(self, emoji_char, target_size):
-        """Find the best resolution PNG for the target size."""
+        """Find the best resolution PNG using a ladder approach for optimal quality."""
         unicode_codepoint = ord(emoji_char)
         base_filename = f"{unicode_codepoint:x}"
         
-        # Define resolution preferences (closest to target size)
-        resolution_preferences = [
-            ("medium", 64),    # 64px - good for most cases
-            ("large", 128),    # 128px - high quality
-            ("small", 32),     # 32px - for small text
-            ("xlarge", 256),   # 256px - for very large text
-            ("tiny", 16)       # 16px - for very small text
+        # Define resolution ladder (ordered by size)
+        resolution_ladder = [
+            ("tiny", 16),      # 16px - smallest
+            ("small", 32),     # 32px - small
+            ("medium", 64),    # 64px - medium
+            ("large", 128),    # 128px - large
+            ("xlarge", 256)    # 256px - largest
         ]
         
-        # Find the closest resolution to target size
+        # Strategy: Find the smallest resolution that is >= target_size
+        # This ensures we upscale (better quality) rather than downscale when possible
         best_resolution = None
-        best_diff = float('inf')
+        best_size = None
         
-        for res_name, res_size in resolution_preferences:
-            diff = abs(target_size - res_size)
-            if diff < best_diff:
-                best_diff = diff
-                best_resolution = res_name
+        # First pass: Look for the smallest resolution >= target_size (prefer upscaling)
+        for res_name, res_size in resolution_ladder:
+            if res_size >= target_size:
+                path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
+                if os.path.exists(path):
+                    best_resolution = res_name
+                    best_size = res_size
+                    break
         
-        # Try to find the best resolution PNG
+        # If we found a suitable resolution, use it
         if best_resolution:
-            best_path = os.path.join(self.emoji_dir, f"{base_filename}_{best_resolution}.png")
-            if os.path.exists(best_path):
-                return best_path
+            return os.path.join(self.emoji_dir, f"{base_filename}_{best_resolution}.png")
+        
+        # Second pass: If no resolution >= target_size, find the largest available
+        # This handles cases where target_size > 256px
+        for res_name, res_size in reversed(resolution_ladder):
+            path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
+            if os.path.exists(path):
+                return path
         
         # Fallback to base resolution (no suffix)
         base_path = os.path.join(self.emoji_dir, f"{base_filename}.png")
         if os.path.exists(base_path):
             return base_path
-        
-        # Try other resolutions as fallback
-        for res_name, res_size in resolution_preferences:
-            if res_name != best_resolution:
-                fallback_path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
-                if os.path.exists(fallback_path):
-                    return fallback_path
         
         return None
     

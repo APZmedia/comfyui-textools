@@ -1,4 +1,5 @@
 # utils/apz_text_renderer_utility.py
+from PIL import Image
 from .apz_box_utility import BoxUtility
 from .apz_emoji_png_renderer import EmojiPNGRenderer
 
@@ -72,6 +73,11 @@ class TextRendererUtility:
                         if emoji_img:
                             # Calculate proper Y position to align with text baseline
                             font_size = wrapped_lines[0][1][0][1]['size']
+                            
+                            # Scale emoji to match font size
+                            if emoji_img.size != (font_size, font_size):
+                                emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
+                            
                             # Position emoji slightly lower to align better with text
                             emoji_y = int(current_y + font_size - emoji_img.height + 5)
                             # Paste emoji PNG onto the image

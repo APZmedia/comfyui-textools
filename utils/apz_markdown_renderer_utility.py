@@ -233,6 +233,10 @@ class MarkdownRendererUtility:
                     emoji_img = emoji_png_renderer.load_emoji_png(text_part, font_size)
                     
                     if emoji_img:
+                        # Scale emoji to match font size
+                        if emoji_img.size != (font_size, font_size):
+                            emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
+                        
                         # Calculate proper Y position to align with text baseline
                         # Position emoji slightly lower to align better with text
                         emoji_y = int(y + font_size - emoji_img.height + 5)
