@@ -64,12 +64,15 @@ class TextRendererUtility:
                 
                 # Check if this is an emoji that needs special handling
                 if font_manager.emoji_support.has_emoji(chunk):
+                    print(f"DEBUG: Found emoji in chunk: '{chunk}'")
                     # Try to use PNG emoji renderer first
                     try:
                         from .apz_emoji_png_renderer import EmojiPNGRenderer
                         emoji_png_renderer = EmojiPNGRenderer()
                         font_size = wrapped_lines[0][1][0][1]['size']
+                        print(f"DEBUG: Loading emoji PNG for '{chunk}' at size {font_size}")
                         emoji_img = emoji_png_renderer.load_emoji_png(chunk, font_size)
+                        print(f"DEBUG: Emoji PNG result: {emoji_img is not None}")
                         
                         if emoji_img:
                             # Calculate proper Y position to align with text baseline
