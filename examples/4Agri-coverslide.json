@@ -1,0 +1,2269 @@
+{
+  "id": "9e7596b6-64eb-485c-986c-2fdf342d1b4b",
+  "revision": 0,
+  "last_node_id": 176,
+  "last_link_id": 202,
+  "nodes": [
+    {
+      "id": 44,
+      "type": "SetNode",
+      "pos": [
+        -154.87652587890625,
+        2362.839111328125
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 38
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_Base-path",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Base-path"
+      ]
+    },
+    {
+      "id": 45,
+      "type": "SetNode",
+      "pos": [
+        -170.8440704345703,
+        2090.337158203125
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 39
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_Folder",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Folder"
+      ]
+    },
+    {
+      "id": 48,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        995.4342651367188
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 195
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "slot_index": 0,
+          "links": null
+        }
+      ],
+      "title": "Set_Color3",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Color3"
+      ]
+    },
+    {
+      "id": 49,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        862.6641235351562
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 194
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "slot_index": 0,
+          "links": null
+        }
+      ],
+      "title": "Set_Color2",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Color2"
+      ]
+    },
+    {
+      "id": 50,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        729.8939819335938
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 193
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "slot_index": 0,
+          "links": null
+        }
+      ],
+      "title": "Set_Color1",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Color1"
+      ]
+    },
+    {
+      "id": 66,
+      "type": "String",
+      "pos": [
+        -668.8445434570312,
+        2096.337158203125
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            39
+          ]
+        }
+      ],
+      "title": "PostID",
+      "properties": {
+        "cnr_id": "ComfyLiterals",
+        "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "4Agri01"
+      ]
+    },
+    {
+      "id": 46,
+      "type": "String",
+      "pos": [
+        -671.8445434570312,
+        2359.33740234375
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            38
+          ]
+        }
+      ],
+      "title": "DestinationFolder",
+      "properties": {
+        "cnr_id": "ComfyLiterals",
+        "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "W:\\WORK ACTIVE\\243_PrimoPrincipio_4Agri-PianoAnnuale\\5 Images\\Carousels"
+      ]
+    },
+    {
+      "id": 57,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        1128.2044677734375
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 196
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "slot_index": 0,
+          "links": null
+        }
+      ],
+      "title": "Set_Color4",
+      "properties": {
+        "previousName": "Color4",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Color4"
+      ]
+    },
+    {
+      "id": 58,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        1260.9747314453125
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 197
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "slot_index": 0,
+          "links": null
+        }
+      ],
+      "title": "Set_Color5",
+      "properties": {
+        "previousName": "Color5",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Color5"
+      ]
+    },
+    {
+      "id": 119,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        1526.5150146484375
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 31,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "link": 199
+        }
+      ],
+      "outputs": [
+        {
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_ColorD",
+      "properties": {
+        "previousName": "ColorD",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ColorD"
+      ]
+    },
+    {
+      "id": 54,
+      "type": "SetNode",
+      "pos": [
+        806.2723999023438,
+        1393.744873046875
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 198
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "slot_index": 0,
+          "links": null
+        }
+      ],
+      "title": "Set_ColorL",
+      "properties": {
+        "previousName": "ColorL",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ColorL"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "GetNode",
+      "pos": [
+        1608.5318603515625,
+        3383.12744140625
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": []
+        }
+      ],
+      "title": "Get_ParagraphFontBold",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ParagraphFontBold"
+      ]
+    },
+    {
+      "id": 29,
+      "type": "GetNode",
+      "pos": [
+        1602.2042236328125,
+        3496.988037109375
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            154,
+            155
+          ]
+        }
+      ],
+      "title": "Get_ColorL",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ColorL"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "GetNode",
+      "pos": [
+        1603.5047607421875,
+        3607.611328125
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": []
+        }
+      ],
+      "title": "Get_ColorL",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ColorL"
+      ]
+    },
+    {
+      "id": 28,
+      "type": "GetNode",
+      "pos": [
+        1610.2982177734375,
+        3715.294189453125
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            150
+          ]
+        }
+      ],
+      "title": "Get_ColorL",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ColorL"
+      ]
+    },
+    {
+      "id": 162,
+      "type": "GetNode",
+      "pos": [
+        2469.881103515625,
+        3058.439697265625
+      ],
+      "size": [
+        212.67147827148438,
+        58
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            156
+          ]
+        }
+      ],
+      "title": "Get_ParagraphFontRegular",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ParagraphFontRegular"
+      ]
+    },
+    {
+      "id": 136,
+      "type": "APZmediaImageRichTextOverlay",
+      "pos": [
+        2086.58740234375,
+        3249.78857421875
+      ],
+      "size": [
+        403.1999816894531,
+        592
+      ],
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 189
+        },
+        {
+          "label": "theText",
+          "name": "theText",
+          "type": "STRING",
+          "widget": {
+            "name": "theText"
+          },
+          "link": 113
+        },
+        {
+          "name": "font",
+          "type": "STRING",
+          "widget": {
+            "name": "font"
+          },
+          "link": 179
+        },
+        {
+          "name": "italic_font",
+          "type": "STRING",
+          "widget": {
+            "name": "italic_font"
+          },
+          "link": 181
+        },
+        {
+          "name": "bold_font",
+          "type": "STRING",
+          "widget": {
+            "name": "bold_font"
+          },
+          "link": 180
+        },
+        {
+          "name": "font_color",
+          "type": "STRING",
+          "widget": {
+            "name": "font_color"
+          },
+          "link": 154
+        },
+        {
+          "name": "italic_font_color",
+          "type": "STRING",
+          "widget": {
+            "name": "italic_font_color"
+          },
+          "link": 155
+        },
+        {
+          "name": "bold_font_color",
+          "type": "STRING",
+          "widget": {
+            "name": "bold_font_color"
+          },
+          "link": 150
+        }
+      ],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            103
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "APZmedia/comfyui-textools",
+        "ver": "48206607a8bfd2a042d67f4563170b44c180047b",
+        "Node name for S&R": "APZmediaImageRichTextOverlay",
+        "widget_ue_connectable": {
+          "theText": true,
+          "font": true,
+          "italic_font": true,
+          "bold_font": true,
+          "font_color": true,
+          "italic_font_color": true,
+          "bold_font_color": true
+        }
+      },
+      "widgets_values": [
+        "Hello <b>World</b> <i>This is italic</i>",
+        752,
+        554,
+        135,
+        "X:\\Assets\\Fonts\\N27-Bold.otf",
+        "X:\\Assets\\Fonts\\N27-Bold.otf",
+        "X:\\Assets\\Fonts\\N27-Bold.otf",
+        "left",
+        "middle",
+        "#FFFFFF",
+        "#FFFFFF",
+        "#FFFFFF",
+        70,
+        250,
+        0,
+        1.2,
+        "false",
+        "#FF0000",
+        3,
+        1,
+        "#FFFFFF",
+        1
+      ]
+    },
+    {
+      "id": 133,
+      "type": "APZmediaImageRichTextOverlay",
+      "pos": [
+        2764.4921875,
+        3242.09619140625
+      ],
+      "size": [
+        400,
+        605
+      ],
+      "flags": {},
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 103
+        },
+        {
+          "label": "theText",
+          "name": "theText",
+          "type": "STRING",
+          "widget": {
+            "name": "theText"
+          },
+          "link": 114
+        },
+        {
+          "name": "font",
+          "type": "STRING",
+          "widget": {
+            "name": "font"
+          },
+          "link": 156
+        }
+      ],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            202
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "APZmedia/comfyui-textools",
+        "ver": "48206607a8bfd2a042d67f4563170b44c180047b",
+        "Node name for S&R": "APZmediaImageRichTextOverlay",
+        "widget_ue_connectable": {
+          "theText": true,
+          "font": true
+        }
+      },
+      "widgets_values": [
+        "Hello <b>World</b> <i>This is italic</i>",
+        752,
+        98,
+        40,
+        "X:\\Assets\\Fonts\\N27-Bold.otf",
+        "X:\\Assets\\Fonts\\N27-Bold.otf",
+        "X:\\Assets\\Fonts\\N27-Bold.otf",
+        "left",
+        "middle",
+        "#FFFFFF",
+        "#FFFFFF",
+        "#FFFFFF",
+        70,
+        1068,
+        0,
+        1.2,
+        "false",
+        "#FF0000",
+        3,
+        1,
+        "#FFFFFF",
+        1
+      ]
+    },
+    {
+      "id": 96,
+      "type": "SetNode",
+      "pos": [
+        -335.9916076660156,
+        1402.3994140625
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 167
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_ParagraphFontItalic",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ParagraphFontItalic"
+      ]
+    },
+    {
+      "id": 81,
+      "type": "SetNode",
+      "pos": [
+        -335.9916076660156,
+        1277.4530029296875
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 166
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_ParagraphFontBold",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ParagraphFontBold"
+      ]
+    },
+    {
+      "id": 92,
+      "type": "SetNode",
+      "pos": [
+        -335.9916076660156,
+        1027.560302734375
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 168
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_TitleFontItalic",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "TitleFontItalic"
+      ]
+    },
+    {
+      "id": 89,
+      "type": "SetNode",
+      "pos": [
+        -335.9916076660156,
+        902.6139526367188
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 169
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_TitleFontBold",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "TitleFontBold"
+      ]
+    },
+    {
+      "id": 85,
+      "type": "SetNode",
+      "pos": [
+        -335.9916076660156,
+        777.6676025390625
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 170
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_TitleFontRegular",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "TitleFontRegular"
+      ]
+    },
+    {
+      "id": 77,
+      "type": "SetNode",
+      "pos": [
+        -337.111328125,
+        1152.5067138671875
+      ],
+      "size": [
+        211.11972045898438,
+        58
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "link": 164
+        }
+      ],
+      "outputs": [
+        {
+          "label": "*",
+          "name": "*",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "title": "Set_ParagraphFontRegular",
+      "properties": {
+        "previousName": "",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "ParagraphFontRegular"
+      ]
+    },
+    {
+      "id": 25,
+      "type": "GetNode",
+      "pos": [
+        1602.21630859375,
+        3155.98046875
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            179,
+            181
+          ]
+        }
+      ],
+      "title": "Get_TitleFontRegular",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "TitleFontRegular"
+      ]
+    },
+    {
+      "id": 26,
+      "type": "GetNode",
+      "pos": [
+        1610.8099365234375,
+        3274.4287109375
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            180
+          ]
+        }
+      ],
+      "title": "Get_TitleFontBold",
+      "properties": {
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "TitleFontBold"
+      ]
+    },
+    {
+      "id": 164,
+      "type": "APZmediaBrandAssetLoader",
+      "pos": [
+        -862.3974609375,
+        636.681640625
+      ],
+      "size": [
+        400,
+        960
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "brand_assets",
+          "type": "BRAND_ASSETS",
+          "links": []
+        },
+        {
+          "name": "logo_vertical_color",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "logo_vertical_color_mask",
+          "type": "MASK",
+          "links": null
+        },
+        {
+          "name": "logo_vertical_mono",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "logo_vertical_mono_mask",
+          "type": "MASK",
+          "links": null
+        },
+        {
+          "name": "logo_horizontal_color",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "logo_horizontal_color_mask",
+          "type": "MASK",
+          "links": null
+        },
+        {
+          "name": "logo_horizontal_mono",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "logo_horizontal_mono_mask",
+          "type": "MASK",
+          "links": null
+        },
+        {
+          "name": "logo_icon",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "logo_icon_mask",
+          "type": "MASK",
+          "links": null
+        },
+        {
+          "name": "font_primary",
+          "type": "STRING",
+          "links": [
+            170
+          ]
+        },
+        {
+          "name": "font_primary_bold",
+          "type": "STRING",
+          "links": [
+            169
+          ]
+        },
+        {
+          "name": "font_primary_italic",
+          "type": "STRING",
+          "links": [
+            168
+          ]
+        },
+        {
+          "name": "font_secondary",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "font_secondary_bold",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "font_secondary_italic",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "font_tertiary",
+          "type": "STRING",
+          "links": [
+            164
+          ]
+        },
+        {
+          "name": "font_tertiary_bold",
+          "type": "STRING",
+          "links": [
+            166
+          ]
+        },
+        {
+          "name": "font_tertiary_italic",
+          "type": "STRING",
+          "links": [
+            167
+          ]
+        },
+        {
+          "name": "color_palette",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "brand_name",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status_message",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "APZmedia/Joshua-brand-assets-loader",
+        "ver": "f487ce614927966d2a07b5676635e69b3165f376",
+        "Node name for S&R": "APZmediaBrandAssetLoader",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "manual",
+        "",
+        "https://api.example.com",
+        "",
+        "G:\\Shared drives\\ComfyUI models\\brands\\4Agri\\Logos\\4Agri-logo-V.png",
+        "G:\\Shared drives\\ComfyUI models\\brands\\4Agri\\Logos\\4Agri-logo-mono-v.png",
+        "G:\\Shared drives\\ComfyUI models\\brands\\4Agri\\Logos\\4Agri-logo-h.png",
+        "G:\\Shared drives\\ComfyUI models\\brands\\4Agri\\Logos\\4Agri-logo-mono-h.png",
+        "G:\\Shared drives\\ComfyUI models\\brands\\4Agri\\Logos\\4Agri-logo-V.png",
+        "D:\\fake-hosting-joshua\\fonts\\Kirvy\\Kirvy-Regular.otf",
+        "D:\\fake-hosting-joshua\\fonts\\Kirvy\\Kirvy-Bold.otf",
+        "D:\\fake-hosting-joshua\\fonts\\Kirvy\\Kirvy-Light.otf",
+        "",
+        "",
+        "",
+        "D:\\fake-hosting-joshua\\fonts\\openSans\\OpenSans-Regular.ttf",
+        "D:\\fake-hosting-joshua\\fonts\\openSansOpenSans-Bold.ttf",
+        "D:\\fake-hosting-joshua\\fonts\\openSans\\OpenSans-Italic.ttf",
+        ""
+      ]
+    },
+    {
+      "id": 172,
+      "type": "APZmediaGradientOverlay",
+      "pos": [
+        1076.08447265625,
+        3400.18212890625
+      ],
+      "size": [
+        335.150390625,
+        322
+      ],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "background_image",
+          "type": "IMAGE",
+          "link": 187
+        }
+      ],
+      "outputs": [
+        {
+          "name": "gradient_overlay_image",
+          "type": "IMAGE",
+          "links": [
+            189
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "APZmedia/Joshua-brand-assets-loader",
+        "ver": "c77f1b52189068da6eadacff79088f83c97d9db4",
+        "Node name for S&R": "APZmediaGradientOverlay",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "#000000",
+        "linear",
+        "horizontal",
+        "right",
+        "left",
+        0,
+        0.7900000000000001,
+        "normal",
+        0.6900000000000002,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": 166,
+      "type": "ImageResize+",
+      "pos": [
+        743.0576782226562,
+        3395.591796875
+      ],
+      "size": [
+        270,
+        218
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 160
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            187
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_essentials",
+        "ver": "9d9f4bedfc9f0321c19faf71855e228c93bd0dc9",
+        "Node name for S&R": "ImageResize+",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        1080,
+        1350,
+        "nearest",
+        "fill / crop",
+        "always",
+        0
+      ]
+    },
+    {
+      "id": 108,
+      "type": "LoadImage",
+      "pos": [
+        381.67919921875,
+        3394.48583984375
+      ],
+      "size": [
+        315,
+        314
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            160
+          ]
+        },
+        {
+          "label": "MASK",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.33",
+        "Node name for S&R": "LoadImage",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "2024-03-29_17h16_04.png",
+        "image"
+      ]
+    },
+    {
+      "id": 40,
+      "type": "PreviewImage",
+      "pos": [
+        4176.3984375,
+        3240.791015625
+      ],
+      "size": [
+        652.032470703125,
+        732.7034912109375
+      ],
+      "flags": {},
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 85
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.33",
+        "Node name for S&R": "PreviewImage",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 115,
+      "type": "ShowText|pysssss",
+      "pos": [
+        4137.3740234375,
+        3074.051513671875
+      ],
+      "size": [
+        960.499755859375,
+        76
+      ],
+      "flags": {},
+      "order": 37,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 83
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-custom-scripts",
+        "ver": "aac13aa7ce35b07d43633c3bbe654a38c00d74f5",
+        "Node name for S&R": "ShowText|pysssss",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "W:\\WORK ACTIVE\\243_PrimoPrincipio_4Agri-PianoAnnuale\\5 Images\\Carousels\\4Agri01"
+      ]
+    },
+    {
+      "id": 144,
+      "type": "String",
+      "pos": [
+        2325.880126953125,
+        2019.8885498046875
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            114
+          ]
+        }
+      ],
+      "title": "Subtitle",
+      "properties": {
+        "cnr_id": "ComfyLiterals",
+        "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Il freddo giusto per una fioritura perfetta! ❄️🌱"
+      ]
+    },
+    {
+      "id": 111,
+      "type": "String",
+      "pos": [
+        1575.6807861328125,
+        2028.968994140625
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            113
+          ]
+        }
+      ],
+      "title": "Title",
+      "properties": {
+        "cnr_id": "ComfyLiterals",
+        "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Fabbisogno di Freddo"
+      ]
+    },
+    {
+      "id": 113,
+      "type": "APZmedia Fast image save",
+      "pos": [
+        3523.13330078125,
+        3235.6767578125
+      ],
+      "size": [
+        365.4000244140625,
+        342
+      ],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 202
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": 201
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            85
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 1,
+          "links": [
+            83
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "APZmedia-comfyui-fast-image-save",
+        "ver": "543d88b838d6a92dc0a9b7a1b882713f428e2480",
+        "Node name for S&R": "APZmedia Fast image save",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {
+            "filename_prefix": true,
+            "output_path": true
+          },
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "[time(%Y-%m-%d)]",
+        "ComfyUI",
+        "_",
+        4,
+        "false",
+        "png",
+        300,
+        100,
+        "true",
+        "false",
+        "false",
+        "true"
+      ]
+    },
+    {
+      "id": 112,
+      "type": "String",
+      "pos": [
+        2976.699462890625,
+        2020.6263427734375
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            201
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyLiterals",
+        "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "FabbisognoFreddo"
+      ]
+    },
+    {
+      "id": 110,
+      "type": "String",
+      "pos": [
+        956.062744140625,
+        2035.8450927734375
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "SlideText",
+      "properties": {
+        "cnr_id": "ComfyLiterals",
+        "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Ogni specie ha un fabbisogno in freddo diverso: conoscere questo dato aiuta a pianificare meglio."
+      ]
+    },
+    {
+      "id": 176,
+      "type": "APZmediaColorPalette",
+      "pos": [
+        131.9603271484375,
+        726.996826171875
+      ],
+      "size": [
+        270,
+        430
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "color_1",
+          "type": "STRING",
+          "links": [
+            193
+          ]
+        },
+        {
+          "name": "color_2",
+          "type": "STRING",
+          "links": [
+            194
+          ]
+        },
+        {
+          "name": "color_3",
+          "type": "STRING",
+          "links": [
+            195
+          ]
+        },
+        {
+          "name": "color_4",
+          "type": "STRING",
+          "links": [
+            196
+          ]
+        },
+        {
+          "name": "color_5",
+          "type": "STRING",
+          "links": [
+            197
+          ]
+        },
+        {
+          "name": "color_6",
+          "type": "STRING",
+          "links": [
+            198
+          ]
+        },
+        {
+          "name": "color_7",
+          "type": "STRING",
+          "links": [
+            199
+          ]
+        },
+        {
+          "name": "palette_json",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "palette_name",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status_message",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "APZmedia/Joshua-brand-assets-loader",
+        "ver": "c77f1b52189068da6eadacff79088f83c97d9db4",
+        "Node name for S&R": "APZmediaColorPalette",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "#955b47",
+        "#FFFFFF",
+        "#edd690",
+        "#f0f0ef",
+        "#b4dfed",
+        "#A0F9F9",
+        "#484643",
+        "4Agri",
+        true
+      ]
+    }
+  ],
+  "links": [
+    [
+      38,
+      46,
+      0,
+      44,
+      0,
+      "*"
+    ],
+    [
+      39,
+      66,
+      0,
+      45,
+      0,
+      "*"
+    ],
+    [
+      83,
+      113,
+      1,
+      115,
+      0,
+      "STRING"
+    ],
+    [
+      85,
+      113,
+      0,
+      40,
+      0,
+      "IMAGE"
+    ],
+    [
+      103,
+      136,
+      0,
+      133,
+      0,
+      "IMAGE"
+    ],
+    [
+      113,
+      111,
+      0,
+      136,
+      1,
+      "STRING"
+    ],
+    [
+      114,
+      144,
+      0,
+      133,
+      1,
+      "STRING"
+    ],
+    [
+      150,
+      28,
+      0,
+      136,
+      7,
+      "STRING"
+    ],
+    [
+      154,
+      29,
+      0,
+      136,
+      5,
+      "STRING"
+    ],
+    [
+      155,
+      29,
+      0,
+      136,
+      6,
+      "STRING"
+    ],
+    [
+      156,
+      162,
+      0,
+      133,
+      2,
+      "STRING"
+    ],
+    [
+      160,
+      108,
+      0,
+      166,
+      0,
+      "IMAGE"
+    ],
+    [
+      164,
+      164,
+      17,
+      77,
+      0,
+      "STRING"
+    ],
+    [
+      166,
+      164,
+      18,
+      81,
+      0,
+      "STRING"
+    ],
+    [
+      167,
+      164,
+      19,
+      96,
+      0,
+      "STRING"
+    ],
+    [
+      168,
+      164,
+      13,
+      92,
+      0,
+      "STRING"
+    ],
+    [
+      169,
+      164,
+      12,
+      89,
+      0,
+      "STRING"
+    ],
+    [
+      170,
+      164,
+      11,
+      85,
+      0,
+      "STRING"
+    ],
+    [
+      179,
+      25,
+      0,
+      136,
+      2,
+      "STRING"
+    ],
+    [
+      180,
+      26,
+      0,
+      136,
+      4,
+      "STRING"
+    ],
+    [
+      181,
+      25,
+      0,
+      136,
+      3,
+      "STRING"
+    ],
+    [
+      187,
+      166,
+      0,
+      172,
+      0,
+      "IMAGE"
+    ],
+    [
+      189,
+      172,
+      0,
+      136,
+      0,
+      "IMAGE"
+    ],
+    [
+      193,
+      176,
+      0,
+      50,
+      0,
+      "STRING"
+    ],
+    [
+      194,
+      176,
+      1,
+      49,
+      0,
+      "STRING"
+    ],
+    [
+      195,
+      176,
+      2,
+      48,
+      0,
+      "STRING"
+    ],
+    [
+      196,
+      176,
+      3,
+      57,
+      0,
+      "STRING"
+    ],
+    [
+      197,
+      176,
+      4,
+      58,
+      0,
+      "STRING"
+    ],
+    [
+      198,
+      176,
+      5,
+      54,
+      0,
+      "STRING"
+    ],
+    [
+      199,
+      176,
+      6,
+      119,
+      0,
+      "STRING"
+    ],
+    [
+      201,
+      112,
+      0,
+      113,
+      1,
+      "STRING"
+    ],
+    [
+      202,
+      133,
+      0,
+      113,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 2,
+      "title": "NamingConfig",
+      "bounding": [
+        -783.844482421875,
+        2005.337158203125,
+        990,
+        634
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8954302432552752,
+      "offset": [
+        -624.6099013024249,
+        -2999.6015170944834
+      ]
+    },
+    "node_versions": {
+      "ComfyLiterals": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+      "ComfyUI-APZmedia-cleanName-from-string": "b4cfc92c4256a13985a2c1a5ee5f378e659d4ca0",
+      "comfyui-custom-scripts": "bbda5e52ad580c13ceaa53136d9c2bed9137bd2e",
+      "comfy-core": "0.3.14",
+      "derfuu_comfyui_moddednodes": "d0905bed31249f2bd0814c67585cf4fe3c77c015",
+      "APZmedia-comfyui-fast-image-save": "fcf951eebd514c666ab420b5e90d0b8787269a06",
+      "comfyui-videohelpersuite": "c36626c6028faca912eafcedbc71f1d342fb4d2a",
+      "comfyui_essentials": "33ff89fd354d8ec3ab6affb605a79a931b445d99",
+      "ComfyUI_Ib_CustomNodes": "59746dc1f9d5e3f52c13e21dba1aacb82d5f1c2a",
+      "comfyui-kjnodes": "f653a8e45e72e5d7af9a91a2ff66c75ec44639f9",
+      "comfyui-post-processing-nodes": "c49a05254795403648f2c1774b6f5ea39f96e7d5",
+      "comfyui-textools": "6482c8a88c828dcded8df6573a1d74e07837d056"
+    },
+    "ue_links": [],
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true,
+    "frontendVersion": "1.26.13",
+    "links_added_by_ue": []
+  },
+  "version": 0.4
+}

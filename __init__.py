@@ -37,15 +37,25 @@ except Exception as e:
     logger.error("Failed to import APZmediaImageMarkdownTextOverlay node.", exc_info=True)
 
 NODE_CLASS_MAPPINGS = {
+    # New naming convention
     "APZ/RichTextOverlay": APZmediaImageRichTextOverlay,
     "APZ/RichTextOverlayV2": APZmediaImageRichTextOverlayV2,
     "APZ/MarkdownTextOverlay": APZmediaImageMarkdownTextOverlay,
+    # Backward compatibility - old naming convention
+    "APZmediaImageRichTextOverlay": APZmediaImageRichTextOverlay,
+    "APZmediaImageRichTextOverlayV2": APZmediaImageRichTextOverlayV2,
+    "APZmediaImageMarkdownTextOverlay": APZmediaImageMarkdownTextOverlay,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    # New naming convention
     "APZ/RichTextOverlay": "APZmedia Image Rich Text Overlay",
     "APZ/RichTextOverlayV2": "APZmedia Image Rich Text Overlay V2",
     "APZ/MarkdownTextOverlay": "APZmedia Image Markdown Text Overlay",
+    # Backward compatibility - old naming convention
+    "APZmediaImageRichTextOverlay": "APZmedia Image Rich Text Overlay",
+    "APZmediaImageRichTextOverlayV2": "APZmedia Image Rich Text Overlay V2",
+    "APZmediaImageMarkdownTextOverlay": "APZmedia Image Markdown Text Overlay",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
