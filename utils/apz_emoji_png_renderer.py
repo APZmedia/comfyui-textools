@@ -38,9 +38,17 @@ class EmojiPNGRenderer:
                 return None
         
         # Convert emoji to filename (e.g., 😀 -> 1f600.png)
-        unicode_codepoint = ord(emoji_char)
-        filename = f"{unicode_codepoint:x}.png"
-        return os.path.join(self.emoji_dir, filename)
+        # Handle multi-character emojis by taking the first character
+        if len(emoji_char) > 1:
+            emoji_char = emoji_char[0]
+        
+        try:
+            unicode_codepoint = ord(emoji_char)
+            filename = f"{unicode_codepoint:x}.png"
+            return os.path.join(self.emoji_dir, filename)
+        except TypeError:
+            # If still having issues, return None to fall back to font rendering
+            return None
     
     def load_emoji_png(self, emoji_char, size):
         """Load and cache emoji PNG at specified size with smart resolution selection."""
@@ -88,8 +96,15 @@ class EmojiPNGRenderer:
     
     def _find_best_resolution_png(self, emoji_char, target_size):
         """Find the best resolution PNG using a ladder approach for optimal quality."""
-        unicode_codepoint = ord(emoji_char)
-        base_filename = f"{unicode_codepoint:x}"
+        # Handle multi-character emojis by taking the first character
+        if len(emoji_char) > 1:
+            emoji_char = emoji_char[0]
+        
+        try:
+            unicode_codepoint = ord(emoji_char)
+            base_filename = f"{unicode_codepoint:x}"
+        except TypeError:
+            return None
         
         # Define resolution ladder (ordered by size)
         resolution_ladder = [
