@@ -61,19 +61,17 @@ class EmojiPNGRenderer:
         
         if best_png_path and os.path.exists(best_png_path):
             try:
-                print(f"DEBUG: Loading existing PNG: {best_png_path}")
                 emoji_img = Image.open(best_png_path)
                 # If the loaded image is not the right size, resize it
                 if emoji_img.size != (size, size):
                     emoji_img = emoji_img.resize((size, size), Image.Resampling.LANCZOS)
                 self.emoji_cache[cache_key] = emoji_img
-                print(f"DEBUG: Successfully loaded PNG for '{emoji_char}' at size {size}")
                 return emoji_img
             except Exception as e:
                 print(f"Failed to load emoji PNG {best_png_path}: {e}")
                 # Fall through to generation
         else:
-            print(f"DEBUG: Emoji PNG not found for '{emoji_char}' at size {size}, generating...")
+            print(f"Emoji PNG not found for '{emoji_char}' at size {size}, generating...")
         
         # Generate emoji PNG if not available or failed to load
         emoji_img = self._generate_emoji_png(emoji_char, size)

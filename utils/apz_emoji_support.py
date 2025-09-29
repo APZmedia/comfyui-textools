@@ -181,10 +181,7 @@ class EmojiSupport:
         Returns:
             Boolean indicating if emojis are present
         """
-        result = bool(self.unicode_emoji_pattern.search(text))
-        if result:
-            print(f"DEBUG: Emoji detected in text: '{text}'")
-        return result
+        return bool(self.unicode_emoji_pattern.search(text))
     
     def extract_emojis(self, text):
         """

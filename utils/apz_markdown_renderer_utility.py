@@ -229,6 +229,9 @@ class MarkdownRendererUtility:
                 # Split the text part into individual emojis if it contains multiple emojis
                 emoji_parts = font_manager.emoji_support.split_text_by_emoji(text_part)
                 
+                # Store the starting position for this text part
+                part_start_x = current_x
+                
                 for emoji_part, is_emoji in emoji_parts:
                     if is_emoji:
                         # Try to use PNG emoji renderer first
@@ -272,9 +275,7 @@ class MarkdownRendererUtility:
                         current_x += bbox[2] - bbox[0]
                 
                 # Calculate total width for the entire text part
-                chunk_width = current_x - (box_left + padding if alignment == "left" else 
-                                         box_left + padding + (box_width - line_width) // 2 if alignment == "center" else 
-                                         box_left + padding + (box_width - line_width))
+                chunk_width = current_x - part_start_x
             else:
                 bbox = current_font.getbbox(text_part)
                 MarkdownRendererUtility._draw_text_with_color_support(

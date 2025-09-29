@@ -64,23 +64,20 @@ class TextRendererUtility:
                 
                 # Check if this is an emoji that needs special handling
                 if font_manager.emoji_support.has_emoji(chunk):
-                    print(f"DEBUG: Found emoji in chunk: '{chunk}'")
-                    
                     # Split the chunk into individual emojis if it contains multiple emojis
                     emoji_parts = font_manager.emoji_support.split_text_by_emoji(chunk)
-                    print(f"DEBUG: Split into {len(emoji_parts)} parts: {emoji_parts}")
+                    
+                    # Store the starting position for this chunk
+                    chunk_start_x = current_x
                     
                     for emoji_part, is_emoji in emoji_parts:
                         if is_emoji:
-                            print(f"DEBUG: Processing individual emoji: '{emoji_part}'")
                             # Try to use PNG emoji renderer first
                             try:
                                 from .apz_emoji_png_renderer import EmojiPNGRenderer
                                 emoji_png_renderer = EmojiPNGRenderer()
                                 font_size = wrapped_lines[0][1][0][1]['size']
-                                print(f"DEBUG: Loading emoji PNG for '{emoji_part}' at size {font_size}")
                                 emoji_img = emoji_png_renderer.load_emoji_png(emoji_part, font_size)
-                                print(f"DEBUG: Emoji PNG result: {emoji_img is not None}")
                                 
                                 if emoji_img:
                                     # Calculate proper Y position to align with text baseline
@@ -92,11 +89,9 @@ class TextRendererUtility:
                                     
                                     # Position emoji slightly lower to align better with text
                                     emoji_y = int(current_y + font_size - emoji_img.height + 5)
-                                    print(f"DEBUG: Pasting emoji '{emoji_part}' at position ({int(current_x)}, {emoji_y}) with size {emoji_img.size}")
                                     # Paste emoji PNG onto the image
                                     draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
                                     current_x += font_size  # Move to next position
-                                    print(f"DEBUG: Emoji pasted successfully, moved to x={current_x}")
                                 else:
                                     # Fallback to regular text rendering
                                     TextRendererUtility._draw_text_with_color_support(
@@ -105,7 +100,6 @@ class TextRendererUtility:
                                     bbox = current_font.getbbox(emoji_part)
                                     current_x += bbox[2] - bbox[0]
                             except Exception as e:
-                                print(f"DEBUG: Error processing emoji '{emoji_part}': {e}")
                                 # Fallback to regular text rendering
                                 TextRendererUtility._draw_text_with_color_support(
                                     draw, (current_x, current_y), emoji_part, current_font, current_font_color_rgb, font_manager
@@ -114,7 +108,6 @@ class TextRendererUtility:
                                 current_x += bbox[2] - bbox[0]
                         else:
                             # Regular text part
-                            print(f"DEBUG: Processing regular text: '{emoji_part}'")
                             TextRendererUtility._draw_text_with_color_support(
                                 draw, (current_x, current_y), emoji_part, current_font, current_font_color_rgb, font_manager
                             )
@@ -122,10 +115,7 @@ class TextRendererUtility:
                             current_x += bbox[2] - bbox[0]
                     
                     # Calculate total width for the entire chunk
-                    chunk_width = current_x - (box_start_x + padding if alignment == "left" else 
-                                             box_start_x + padding + (effective_textbox_width - line_width) // 2 if alignment == "center" else 
-                                             box_start_x + padding + (effective_textbox_width - line_width))
-                    print(f"DEBUG: Total chunk width: {chunk_width}")
+                    chunk_width = current_x - chunk_start_x
                     continue  # Skip the regular text rendering below
                 else:
                     # Regular text rendering
