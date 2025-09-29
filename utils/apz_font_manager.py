@@ -197,12 +197,11 @@ class FontManager:
         else:
             base_font = self.get_regular_font(font_size)
         
-        # Skip font-based emoji rendering when using PNG system
-        # The PNG system handles emoji rendering separately
-        # if text and self.emoji_support.has_emoji(text):
-        #     emoji_font = self.emoji_support.get_emoji_font(font_size)
-        #     if emoji_font and self.emoji_support.test_emoji_support(emoji_font):
-        #         return emoji_font
+        # Use emoji fonts for emoji text (this is how emojis work in real life)
+        if text and self.emoji_support.has_emoji(text):
+            emoji_font = self.emoji_support.get_emoji_font(font_size)
+            if emoji_font and self.emoji_support.test_emoji_support(emoji_font):
+                return emoji_font
         
         return base_font
     

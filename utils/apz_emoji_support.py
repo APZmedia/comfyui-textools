@@ -24,6 +24,7 @@ class EmojiSupport:
         )
         self.embedded_color_supported = self._detect_embedded_color_support()
         self._warned_color_without_support = False
+        # Comprehensive emoji pattern covering all major Unicode emoji blocks
         self.unicode_emoji_pattern = re.compile(
             r'[\U0001F600-\U0001F64F]'  # Emoticons
             r'|[\U0001F300-\U0001F5FF]'  # Misc Symbols and Pictographs
@@ -32,6 +33,25 @@ class EmojiSupport:
             r'|[\U0001F900-\U0001F9FF]'  # Supplemental Symbols and Pictographs
             r'|[\U00002600-\U000026FF]'  # Miscellaneous symbols
             r'|[\U00002700-\U000027BF]'  # Dingbats
+            r'|[\U00002744]'  # Snowflake ❄
+            r'|[\U0001F338]'  # Cherry blossom 🌸
+            r'|[\U0001F000-\U0001F02F]'  # Mahjong tiles and other symbols
+            r'|[\U0001F300-\U0001F5FF]'  # Weather and nature symbols
+            r'|[\U0001F400-\U0001F4FF]'  # Animals and objects
+            r'|[\U0001F500-\U0001F5FF]'  # Audio and video symbols
+            r'|[\U0001F600-\U0001F64F]'  # Face symbols
+            r'|[\U0001F680-\U0001F6FF]'  # Transport symbols
+            r'|[\U0001F700-\U0001F77F]'  # Alchemical symbols
+            r'|[\U0001F780-\U0001F7FF]'  # Geometric shapes extended
+            r'|[\U0001F800-\U0001F8FF]'  # Supplemental arrows-C
+            r'|[\U0001F900-\U0001F9FF]'  # Supplemental symbols and pictographs
+            r'|[\U0001FA00-\U0001FA6F]'  # Chess symbols
+            r'|[\U0001FA70-\U0001FAFF]'  # Symbols and pictographs extended-A
+            r'|[\U0001FB00-\U0001FBFF]'  # Symbols for legacy computing
+            r'|[\U0001FC00-\U0001FCFF]'  # Symbols for legacy computing
+            r'|[\U0001FD00-\U0001FDFF]'  # Symbols for legacy computing
+            r'|[\U0001FE00-\U0001FEFF]'  # Variation selectors
+            r'|[\U0001FF00-\U0001FFFF]'  # Symbols for legacy computing
         )
 
     def _detect_embedded_color_support(self):
@@ -213,6 +233,26 @@ class EmojiSupport:
                 self._record_font_metadata(None, cached_font)
             return cached_font
         
+        # Try system emoji fonts first (for local development)
+        # Note: These may not work in serverless pods
+        system_fonts = [
+            "Segoe UI Emoji",      # Windows
+            "Apple Color Emoji",   # macOS  
+            "Noto Color Emoji",    # Linux
+            "Twemoji",             # Alternative
+        ]
+        
+        for font_name in system_fonts:
+            try:
+                font = ImageFont.truetype(font_name, font_size)
+                self._record_font_metadata(font_name, font)
+                self.emoji_font_cache[cache_key] = font
+                print(f"Loaded system emoji font: {font_name} at size {font_size}")
+                return font
+            except OSError:
+                continue
+        
+        # Try bundled fonts (serverless-safe fallback)
         for font_path in self.emoji_fonts:
             try:
                 # Try to load the font at the requested size first

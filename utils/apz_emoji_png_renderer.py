@@ -28,16 +28,6 @@ class EmojiPNGRenderer:
     
     def get_emoji_png_path(self, emoji_char):
         """Get the PNG file path for an emoji character."""
-        # Extract the first emoji from the string if it contains multiple characters
-        if len(emoji_char) > 1:
-            # Find the first emoji in the string
-            emoji_match = self.emoji_pattern.search(emoji_char)
-            if emoji_match:
-                emoji_char = emoji_match.group()
-            else:
-                return None
-        
-        # Convert emoji to filename (e.g., 😀 -> 1f600.png)
         # Handle multi-character emojis by taking the first character
         if len(emoji_char) > 1:
             emoji_char = emoji_char[0]
@@ -52,6 +42,7 @@ class EmojiPNGRenderer:
     
     def load_emoji_png(self, emoji_char, size):
         """Load and cache emoji PNG at specified size with smart resolution selection."""
+        # print(f"DEBUG: load_emoji_png called with '{emoji_char}' (length: {len(emoji_char)}) at size {size}")
         cache_key = (emoji_char, size)
         if cache_key in self.emoji_cache:
             return self.emoji_cache[cache_key]
@@ -61,10 +52,13 @@ class EmojiPNGRenderer:
         
         if best_png_path and os.path.exists(best_png_path):
             try:
+                print(f"Loading PNG: {best_png_path}")
                 emoji_img = Image.open(best_png_path)
+                print(f"Original PNG size: {emoji_img.size}, target size: {size}")
                 # If the loaded image is not the right size, resize it
                 if emoji_img.size != (size, size):
                     emoji_img = emoji_img.resize((size, size), Image.Resampling.LANCZOS)
+                    print(f"Resized to: {emoji_img.size}")
                 self.emoji_cache[cache_key] = emoji_img
                 return emoji_img
             except Exception as e:
@@ -115,29 +109,31 @@ class EmojiPNGRenderer:
             ("xlarge", 256)    # 256px - largest
         ]
         
-        # Strategy: Find the smallest resolution that is >= target_size
-        # This ensures we upscale (better quality) rather than downscale when possible
+        # Strategy: Find the best resolution for the target size
+        # Prefer downscaling over upscaling for better quality
         best_resolution = None
         best_size = None
         
-        # First pass: Look for the smallest resolution >= target_size (prefer upscaling)
-        for res_name, res_size in resolution_ladder:
-            if res_size >= target_size:
+        # First pass: Look for the largest resolution <= target_size (prefer downscaling)
+        for res_name, res_size in reversed(resolution_ladder):
+            if res_size <= target_size:
                 path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
                 if os.path.exists(path):
                     best_resolution = res_name
                     best_size = res_size
+                    print(f"Selected {res_name} resolution ({res_size}px) for target {target_size}px")
                     break
         
         # If we found a suitable resolution, use it
         if best_resolution:
             return os.path.join(self.emoji_dir, f"{base_filename}_{best_resolution}.png")
         
-        # Second pass: If no resolution >= target_size, find the largest available
-        # This handles cases where target_size > 256px
-        for res_name, res_size in reversed(resolution_ladder):
+        # Second pass: If no resolution <= target_size, find the smallest available
+        # This handles cases where target_size < 16px
+        for res_name, res_size in resolution_ladder:
             path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
             if os.path.exists(path):
+                print(f"Fallback: Using {res_name} resolution ({res_size}px) for target {target_size}px")
                 return path
         
         # Fallback to base resolution (no suffix)
@@ -148,21 +144,37 @@ class EmojiPNGRenderer:
         return None
     
     def _generate_emoji_png(self, emoji_char, size):
-        """Generate emoji PNG using the best available emoji font."""
+        """Generate emoji PNG using system emoji fonts that support multiple sizes."""
+        # print(f"DEBUG: Generating emoji PNG for '{emoji_char}' (length: {len(emoji_char)}) at size {size}")
         try:
-            # Try to use the bundled emoji fonts first
+            # Try system emoji fonts first (these work at any size)
+            system_fonts = [
+                "Segoe UI Emoji",  # Windows
+                "Apple Color Emoji",  # macOS
+                "Noto Color Emoji",  # Linux
+                "Twemoji",  # Alternative
+            ]
+            
+            for font_name in system_fonts:
+                try:
+                    # Try to load system font at the requested size
+                    font = ImageFont.truetype(font_name, size)
+                    return self._render_emoji_to_png(emoji_char, font, size)
+                except OSError:
+                    continue
+            
+            # Try bundled fonts as fallback
             script_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(script_dir)
             bundled_fonts_dir = os.path.join(project_root, "fonts", "emoji")
             
-            # List of bundled emoji fonts to try
-            emoji_font_paths = [
+            bundled_font_paths = [
+                os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),
                 os.path.join(bundled_fonts_dir, "NotoColorEmoji-Color.ttf"),
                 os.path.join(bundled_fonts_dir, "NotoColorEmoji-Regular.ttf"),
-                os.path.join(bundled_fonts_dir, "SegoeUIEmoji.ttf"),
             ]
             
-            for font_path in emoji_font_paths:
+            for font_path in bundled_font_paths:
                 if os.path.exists(font_path):
                     try:
                         # Try to load at the requested size first
@@ -177,7 +189,7 @@ class EmojiPNGRenderer:
                         except OSError:
                             continue
             
-            # Fallback to system default font
+            # Final fallback to system default font
             font = ImageFont.load_default()
             return self._render_emoji_to_png(emoji_char, font, size)
             
