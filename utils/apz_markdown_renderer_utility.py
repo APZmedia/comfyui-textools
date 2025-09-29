@@ -226,38 +226,55 @@ class MarkdownRendererUtility:
             chunk_width = None
 
             if font_manager.emoji_support.has_emoji(text_part):
-                # Try to use PNG emoji renderer first
-                try:
-                    from .apz_emoji_png_renderer import EmojiPNGRenderer
-                    emoji_png_renderer = EmojiPNGRenderer()
-                    emoji_img = emoji_png_renderer.load_emoji_png(text_part, font_size)
-                    
-                    if emoji_img:
-                        # Scale emoji to match font size
-                        if emoji_img.size != (font_size, font_size):
-                            emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
-                        
-                        # Calculate proper Y position to align with text baseline
-                        # Position emoji slightly lower to align better with text
-                        emoji_y = int(y + font_size - emoji_img.height + 5)
-                        # Paste emoji PNG onto the image
-                        draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
-                        chunk_width = font_size  # Use font size as width
+                # Split the text part into individual emojis if it contains multiple emojis
+                emoji_parts = font_manager.emoji_support.split_text_by_emoji(text_part)
+                
+                for emoji_part, is_emoji in emoji_parts:
+                    if is_emoji:
+                        # Try to use PNG emoji renderer first
+                        try:
+                            from .apz_emoji_png_renderer import EmojiPNGRenderer
+                            emoji_png_renderer = EmojiPNGRenderer()
+                            emoji_img = emoji_png_renderer.load_emoji_png(emoji_part, font_size)
+                            
+                            if emoji_img:
+                                # Scale emoji to match font size
+                                if emoji_img.size != (font_size, font_size):
+                                    emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
+                                
+                                # Calculate proper Y position to align with text baseline
+                                # Position emoji slightly lower to align better with text
+                                emoji_y = int(y + font_size - emoji_img.height + 5)
+                                # Paste emoji PNG onto the image
+                                draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
+                                current_x += font_size  # Move to next position
+                            else:
+                                # Fallback to regular text rendering
+                                MarkdownRendererUtility._draw_text_with_color_support(
+                                    draw, (current_x, y), emoji_part, current_font, color, font_manager
+                                )
+                                bbox = current_font.getbbox(emoji_part)
+                                current_x += bbox[2] - bbox[0]
+                        except Exception as e:
+                            print(f"PNG emoji renderer failed: {e}")
+                            # Fallback to regular text rendering
+                            MarkdownRendererUtility._draw_text_with_color_support(
+                                draw, (current_x, y), emoji_part, current_font, color, font_manager
+                            )
+                            bbox = current_font.getbbox(emoji_part)
+                            current_x += bbox[2] - bbox[0]
                     else:
-                        # Fallback to regular text rendering
+                        # Regular text part
                         MarkdownRendererUtility._draw_text_with_color_support(
-                            draw, (current_x, y), text_part, current_font, color, font_manager
+                            draw, (current_x, y), emoji_part, current_font, color, font_manager
                         )
-                        bbox = current_font.getbbox(text_part)
-                        chunk_width = bbox[2] - bbox[0]
-                except Exception as e:
-                    print(f"PNG emoji renderer failed: {e}")
-                    # Fallback to regular text rendering
-                    MarkdownRendererUtility._draw_text_with_color_support(
-                        draw, (current_x, y), text_part, current_font, color, font_manager
-                    )
-                    bbox = current_font.getbbox(text_part)
-                    chunk_width = bbox[2] - bbox[0]
+                        bbox = current_font.getbbox(emoji_part)
+                        current_x += bbox[2] - bbox[0]
+                
+                # Calculate total width for the entire text part
+                chunk_width = current_x - (box_left + padding if alignment == "left" else 
+                                         box_left + padding + (box_width - line_width) // 2 if alignment == "center" else 
+                                         box_left + padding + (box_width - line_width))
             else:
                 bbox = current_font.getbbox(text_part)
                 MarkdownRendererUtility._draw_text_with_color_support(
