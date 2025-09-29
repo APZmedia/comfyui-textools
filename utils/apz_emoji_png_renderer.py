@@ -43,37 +43,90 @@ class EmojiPNGRenderer:
         return os.path.join(self.emoji_dir, filename)
     
     def load_emoji_png(self, emoji_char, size):
-        """Load and cache emoji PNG at specified size. Generate if not available."""
+        """Load and cache emoji PNG at specified size with smart resolution selection."""
         cache_key = (emoji_char, size)
         if cache_key in self.emoji_cache:
             return self.emoji_cache[cache_key]
         
-        png_path = self.get_emoji_png_path(emoji_char)
-        if os.path.exists(png_path):
+        # Try to find the best resolution PNG first
+        best_png_path = self._find_best_resolution_png(emoji_char, size)
+        
+        if best_png_path and os.path.exists(best_png_path):
             try:
-                emoji_img = Image.open(png_path)
-                # Resize to desired size
-                emoji_img = emoji_img.resize((size, size), Image.Resampling.LANCZOS)
+                emoji_img = Image.open(best_png_path)
+                # If the loaded image is not the right size, resize it
+                if emoji_img.size != (size, size):
+                    emoji_img = emoji_img.resize((size, size), Image.Resampling.LANCZOS)
                 self.emoji_cache[cache_key] = emoji_img
                 return emoji_img
             except Exception as e:
-                print(f"Failed to load emoji PNG {png_path}: {e}")
+                print(f"Failed to load emoji PNG {best_png_path}: {e}")
                 # Fall through to generation
         else:
-            print(f"Emoji PNG not found: {png_path}, generating...")
+            print(f"Emoji PNG not found for {emoji_char} at size {size}, generating...")
         
         # Generate emoji PNG if not available or failed to load
         emoji_img = self._generate_emoji_png(emoji_char, size)
         if emoji_img:
             self.emoji_cache[cache_key] = emoji_img
-            # Save generated PNG for future use
+            # Save generated PNG for future use (at base size for efficiency)
             try:
-                os.makedirs(os.path.dirname(png_path), exist_ok=True)
-                emoji_img.save(png_path)
-                print(f"Generated and saved emoji PNG: {png_path}")
+                os.makedirs(os.path.dirname(self.get_emoji_png_path(emoji_char)), exist_ok=True)
+                # Save at base size for efficiency
+                base_size = 128
+                if size != base_size:
+                    base_img = emoji_img.resize((base_size, base_size), Image.Resampling.LANCZOS)
+                    base_img.save(self.get_emoji_png_path(emoji_char))
+                else:
+                    emoji_img.save(self.get_emoji_png_path(emoji_char))
+                print(f"Generated and saved emoji PNG: {self.get_emoji_png_path(emoji_char)}")
             except Exception as e:
                 print(f"Warning: Could not save generated emoji PNG: {e}")
             return emoji_img
+        
+        return None
+    
+    def _find_best_resolution_png(self, emoji_char, target_size):
+        """Find the best resolution PNG for the target size."""
+        unicode_codepoint = ord(emoji_char)
+        base_filename = f"{unicode_codepoint:x}"
+        
+        # Define resolution preferences (closest to target size)
+        resolution_preferences = [
+            ("medium", 64),    # 64px - good for most cases
+            ("large", 128),    # 128px - high quality
+            ("small", 32),     # 32px - for small text
+            ("xlarge", 256),   # 256px - for very large text
+            ("tiny", 16)       # 16px - for very small text
+        ]
+        
+        # Find the closest resolution to target size
+        best_resolution = None
+        best_diff = float('inf')
+        
+        for res_name, res_size in resolution_preferences:
+            diff = abs(target_size - res_size)
+            if diff < best_diff:
+                best_diff = diff
+                best_resolution = res_name
+        
+        # Try to find the best resolution PNG
+        if best_resolution:
+            best_path = os.path.join(self.emoji_dir, f"{base_filename}_{best_resolution}.png")
+            if os.path.exists(best_path):
+                return best_path
+        
+        # Fallback to base resolution (no suffix)
+        base_path = os.path.join(self.emoji_dir, f"{base_filename}.png")
+        if os.path.exists(base_path):
+            return base_path
+        
+        # Try other resolutions as fallback
+        for res_name, res_size in resolution_preferences:
+            if res_name != best_resolution:
+                fallback_path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
+                if os.path.exists(fallback_path):
+                    return fallback_path
         
         return None
     
