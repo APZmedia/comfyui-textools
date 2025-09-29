@@ -11,34 +11,42 @@ class FontManager:
         # Initialize URL file utility for handling URLs
         self.url_utility = URLFileUtility()
         
-        # Convert paths/URLs to local paths
-        # Only resolve URLs, not local paths
-        if regular_font_path.startswith(('http://', 'https://')):
+        # Validate and handle font paths
+        if not regular_font_path or regular_font_path.strip() == "":
+            print("Warning: Regular font path is empty, using default system font")
+            self.regular_font_path = None  # Will use PIL default font
+        elif regular_font_path.startswith(('http://', 'https://')):
             try:
                 self.regular_font_path = self.url_utility.get_local_path(regular_font_path)
             except Exception as e:
                 print(f"Warning: Could not resolve regular font URL '{regular_font_path}': {e}")
-                self.regular_font_path = regular_font_path
+                self.regular_font_path = None  # Will use PIL default font
         else:
-            self.regular_font_path = regular_font_path
+            self.regular_font_path = self._resolve_font_path(regular_font_path)
             
-        if italic_font_path.startswith(('http://', 'https://')):
+        if not italic_font_path or italic_font_path.strip() == "":
+            print("Warning: Italic font path is empty, using default system font")
+            self.italic_font_path = None  # Will use PIL default font
+        elif italic_font_path.startswith(('http://', 'https://')):
             try:
                 self.italic_font_path = self.url_utility.get_local_path(italic_font_path)
             except Exception as e:
                 print(f"Warning: Could not resolve italic font URL '{italic_font_path}': {e}")
-                self.italic_font_path = italic_font_path
+                self.italic_font_path = None  # Will use PIL default font
         else:
-            self.italic_font_path = italic_font_path
+            self.italic_font_path = self._resolve_font_path(italic_font_path)
             
-        if bold_font_path.startswith(('http://', 'https://')):
+        if not bold_font_path or bold_font_path.strip() == "":
+            print("Warning: Bold font path is empty, using default system font")
+            self.bold_font_path = None  # Will use PIL default font
+        elif bold_font_path.startswith(('http://', 'https://')):
             try:
                 self.bold_font_path = self.url_utility.get_local_path(bold_font_path)
             except Exception as e:
                 print(f"Warning: Could not resolve bold font URL '{bold_font_path}': {e}")
-                self.bold_font_path = bold_font_path
+                self.bold_font_path = None  # Will use PIL default font
         else:
-            self.bold_font_path = bold_font_path
+            self.bold_font_path = self._resolve_font_path(bold_font_path)
 
         # Print statements to confirm paths
         print(f"Initialized FontManager with Regular Font: {self.regular_font_path}")
@@ -51,12 +59,45 @@ class FontManager:
         # Initialize emoji support
         self.emoji_support = create_emoji_support()
 
+    def _resolve_font_path(self, font_path):
+        """
+        Resolve font path to absolute path, handling relative paths from project root.
+        Only resolves paths that start with 'fonts/' to use bundled fonts.
+        """
+        # If it's already an absolute path, return as is
+        if os.path.isabs(font_path):
+            return font_path
         
+        # Only resolve relative paths that start with 'fonts/' (bundled fonts)
+        if font_path.startswith('fonts/'):
+            # Get the project root directory (where this file is located)
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
+            # Resolve relative path from project root
+            resolved_path = os.path.join(project_root, font_path)
+            resolved_path = os.path.normpath(resolved_path)
+            
+            # Check if the resolved path exists
+            if os.path.exists(resolved_path):
+                return resolved_path
+            else:
+                print(f"Warning: Bundled font file not found at resolved path: {resolved_path}")
+                return None
+        else:
+            # For other relative paths, return as-is (let the system handle them)
+            return font_path
 
     def load_font(self, font_path, font_size):
         # Load font from cache if available
         if (font_path, font_size) not in self.font_cache:
             print(f"Loading font from path: {font_path} with size: {font_size}")
+            
+            # Handle None font path (use PIL default font)
+            if font_path is None:
+                print("Using PIL default font")
+                font = ImageFont.load_default()
+                self.font_cache[(font_path, font_size)] = font
+                return font
             
             # Check if font_path is a URL that needs to be resolved
             actual_font_path = font_path
@@ -66,16 +107,28 @@ class FontManager:
                     print(f"Resolved URL to local path: {actual_font_path}")
                 except Exception as e:
                     print(f"Warning: Could not resolve font URL '{font_path}': {e}")
-                    # Fall back to default font or raise error
-                    raise OSError(f"Cannot load font from URL: {font_path}")
+                    # Fall back to default font
+                    print("Falling back to PIL default font")
+                    font = ImageFont.load_default()
+                    self.font_cache[(font_path, font_size)] = font
+                    return font
             
             # Check if the resolved path exists
             if not os.path.exists(actual_font_path):
                 print(f"Warning: Font file does not exist: {actual_font_path}")
-                raise OSError(f"Font file not found: {actual_font_path}")
+                print("Falling back to PIL default font")
+                font = ImageFont.load_default()
+                self.font_cache[(font_path, font_size)] = font
+                return font
             
-            font = ImageFont.truetype(actual_font_path, font_size)
-            self.font_cache[(font_path, font_size)] = font
+            try:
+                font = ImageFont.truetype(actual_font_path, font_size)
+                self.font_cache[(font_path, font_size)] = font
+            except Exception as e:
+                print(f"Warning: Could not load font from '{actual_font_path}': {e}")
+                print("Falling back to PIL default font")
+                font = ImageFont.load_default()
+                self.font_cache[(font_path, font_size)] = font
         return self.font_cache[(font_path, font_size)]
     
 

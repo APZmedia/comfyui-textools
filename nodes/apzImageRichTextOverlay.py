@@ -25,7 +25,7 @@ class APZmediaImageRichTextOverlay:
                 "theTextbox_height": ("INT", {"default": 200, "min": 1}),
                 "max_font_size": ("INT", {"default": 30, "min": 1, "max": 256, "step": 1}),
                 "font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"}),
-                "italic_font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"}),
+                "italic_font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"}),
                 "bold_font": ("STRING", {"default": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"}),
                 "alignment": (cls._alignments, {"default": "center"}),
                 "vertical_alignment": (cls._vertical_alignments, {"default": "middle"}),
