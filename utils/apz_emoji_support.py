@@ -222,16 +222,21 @@ class EmojiSupport:
                 print(f"Loaded emoji font: {font_path} at size {font_size}")
                 return font
             except OSError as e:
-                # If NotoColorEmoji fails at requested size, try size 109 as fallback
+                # If NotoColorEmoji fails at requested size, try a scaled approach
                 if "NotoColorEmoji" in font_path:
                     try:
-                        font = ImageFont.truetype(font_path, 109)
+                        # Try to load at a base size and then scale
+                        base_size = 109  # NotoColorEmoji's preferred size
+                        font = ImageFont.truetype(font_path, base_size)
                         self._record_font_metadata(font_path, font)
+                        # Store the scale factor for later use
+                        scale_factor = font_size / base_size
+                        font.scale_factor = scale_factor
                         self.emoji_font_cache[cache_key] = font
-                        print(f"Loaded NotoColorEmoji at fixed size 109 (requested: {font_size})")
+                        print(f"Loaded NotoColorEmoji at base size {base_size} with scale factor {scale_factor:.2f} (requested: {font_size})")
                         return font
                     except OSError:
-                        print(f"NotoColorEmoji failed at both sizes: {e}")
+                        print(f"NotoColorEmoji failed at base size: {e}")
                         continue
                 else:
                     print(f"Font failed at size {font_size}: {e}")
