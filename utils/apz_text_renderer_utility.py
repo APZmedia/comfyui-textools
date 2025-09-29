@@ -69,7 +69,6 @@ class TextRendererUtility:
                         from .apz_emoji_png_renderer import EmojiPNGRenderer
                         emoji_png_renderer = EmojiPNGRenderer()
                         font_size = wrapped_lines[0][1][0][1]['size']
-                        print(f"DEBUG: Rendering emoji '{chunk}' at font size {font_size}")
                         emoji_img = emoji_png_renderer.load_emoji_png(chunk, font_size)
                         
                         if emoji_img:

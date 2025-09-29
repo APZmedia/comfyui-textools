@@ -95,9 +95,44 @@ class FontManager:
             # Handle None font path (use PIL default font)
             if font_path is None:
                 print("Using PIL default font")
-                font = ImageFont.load_default()
-                self.font_cache[(font_path, font_size)] = font
-                return font
+                # PIL default font doesn't scale, so we need to use a scalable fallback
+                try:
+                    # Try to use a system font that supports scaling
+                    import platform
+                    system = platform.system()
+                    if system == "Windows":
+                        fallback_fonts = [
+                            "C:/Windows/Fonts/arial.ttf",
+                            "C:/Windows/Fonts/calibri.ttf",
+                            "C:/Windows/Fonts/tahoma.ttf"
+                        ]
+                    elif system == "Darwin":  # macOS
+                        fallback_fonts = [
+                            "/System/Library/Fonts/Arial.ttf",
+                            "/System/Library/Fonts/Helvetica.ttc"
+                        ]
+                    else:  # Linux
+                        fallback_fonts = [
+                            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+                        ]
+                    
+                    for fallback_font in fallback_fonts:
+                        if os.path.exists(fallback_font):
+                            font = ImageFont.truetype(fallback_font, font_size)
+                            self.font_cache[(font_path, font_size)] = font
+                            print(f"Using fallback font: {fallback_font}")
+                            return font
+                    
+                    # If no fallback font found, use default (but it won't scale properly)
+                    font = ImageFont.load_default()
+                    self.font_cache[(font_path, font_size)] = font
+                    return font
+                except Exception as e:
+                    print(f"Warning: Could not load fallback font: {e}")
+                    font = ImageFont.load_default()
+                    self.font_cache[(font_path, font_size)] = font
+                    return font
             
             # Check if font_path is a URL that needs to be resolved
             actual_font_path = font_path
