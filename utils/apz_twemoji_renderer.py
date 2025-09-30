@@ -109,6 +109,10 @@ class TwemojiRenderer:
                     img = self._svg_to_png(local_path, size)
                 else:
                     img = Image.open(local_path)
+                    
+                    # Convert palette mode to RGBA for better compatibility
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
                 
                 if img:
                     self.emoji_cache[cache_key] = img
@@ -130,6 +134,10 @@ class TwemojiRenderer:
                     with open(local_path, 'wb') as f:
                         f.write(emoji_data)
                     img = Image.open(io.BytesIO(emoji_data))
+                    
+                    # Convert palette mode to RGBA for better compatibility
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
                 
                 if img:
                     self.emoji_cache[cache_key] = img

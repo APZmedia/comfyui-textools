@@ -25,6 +25,7 @@ class EmojiSupport:
         self.embedded_color_supported = self._detect_embedded_color_support()
         self._warned_color_without_support = False
         # Comprehensive emoji pattern covering all major Unicode emoji blocks
+        # This pattern matches emoji sequences including variation selectors
         self.unicode_emoji_pattern = re.compile(
             r'[\U0001F600-\U0001F64F]'  # Emoticons
             r'|[\U0001F300-\U0001F5FF]'  # Misc Symbols and Pictographs
@@ -35,6 +36,7 @@ class EmojiSupport:
             r'|[\U00002700-\U000027BF]'  # Dingbats
             r'|[\U00002744]'  # Snowflake ❄
             r'|[\U0001F338]'  # Cherry blossom 🌸
+            r'|[\U00002B50]'  # Star ⭐
             r'|[\U0001F000-\U0001F02F]'  # Mahjong tiles and other symbols
             r'|[\U0001F300-\U0001F5FF]'  # Weather and nature symbols
             r'|[\U0001F400-\U0001F4FF]'  # Animals and objects
@@ -52,6 +54,20 @@ class EmojiSupport:
             r'|[\U0001FD00-\U0001FDFF]'  # Symbols for legacy computing
             r'|[\U0001FE00-\U0001FEFF]'  # Variation selectors
             r'|[\U0001FF00-\U0001FFFF]'  # Symbols for legacy computing
+        )
+        
+        # Pattern for emoji sequences (emoji + variation selectors)
+        self.emoji_sequence_pattern = re.compile(
+            r'[\U0001F600-\U0001F64F][\U0000FE00-\U0000FE0F]*'  # Emoticons with selectors
+            r'|[\U0001F300-\U0001F5FF][\U0000FE00-\U0000FE0F]*'  # Misc Symbols with selectors
+            r'|[\U0001F680-\U0001F6FF][\U0000FE00-\U0000FE0F]*'  # Transport with selectors
+            r'|[\U0001F1E0-\U0001F1FF][\U0001F1E0-\U0001F1FF]*'  # Regional indicators
+            r'|[\U0001F900-\U0001F9FF][\U0000FE00-\U0000FE0F]*'  # Supplemental with selectors
+            r'|[\U00002600-\U000026FF][\U0000FE00-\U0000FE0F]*'  # Misc symbols with selectors
+            r'|[\U00002700-\U000027BF][\U0000FE00-\U0000FE0F]*'  # Dingbats with selectors
+            r'|[\U00002744][\U0000FE00-\U0000FE0F]*'  # Snowflake with selectors
+            r'|[\U0001F338][\U0000FE00-\U0000FE0F]*'  # Cherry blossom with selectors
+            r'|[\U00002B50][\U0000FE00-\U0000FE0F]*'  # Star with selectors
         )
 
     def _detect_embedded_color_support(self):
@@ -363,6 +379,7 @@ class EmojiSupport:
     def split_text_by_emoji(self, text):
         """
         Split text into emoji and non-emoji parts.
+        Uses emoji sequence pattern to handle variation selectors properly.
         
         Args:
             text: Input text
@@ -373,16 +390,30 @@ class EmojiSupport:
         parts = []
         current_pos = 0
         
-        for match in self.unicode_emoji_pattern.finditer(text):
+        # First try to match emoji sequences (emoji + variation selectors)
+        for match in self.emoji_sequence_pattern.finditer(text):
             start, end = match.span()
             
-            # Add non-emoji text before this emoji
+            # Add non-emoji text before this emoji sequence
             if start > current_pos:
                 parts.append((text[current_pos:start], False))
             
-            # Add emoji
+            # Add emoji sequence
             parts.append((match.group(), True))
             current_pos = end
+        
+        # If no emoji sequences found, fall back to individual emoji matching
+        if current_pos == 0:
+            for match in self.unicode_emoji_pattern.finditer(text):
+                start, end = match.span()
+                
+                # Add non-emoji text before this emoji
+                if start > current_pos:
+                    parts.append((text[current_pos:start], False))
+                
+                # Add emoji
+                parts.append((match.group(), True))
+                current_pos = end
         
         # Add remaining non-emoji text
         if current_pos < len(text):

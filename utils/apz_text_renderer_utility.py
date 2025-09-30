@@ -71,7 +71,6 @@ class TextRendererUtility:
                     for emoji_part, is_emoji in emoji_parts:
                         if is_emoji:
                             # Use Twemoji for serverless-compatible emoji rendering
-                            # print(f"DEBUG: Rendering emoji '{emoji_part}' (length: {len(emoji_part)}) at size {font_size}")
                             try:
                                 twemoji_renderer = TwemojiRenderer(use_svg=False)
                                 # Use standard 72x72 size and scale to font_size
@@ -82,10 +81,11 @@ class TextRendererUtility:
                                     if emoji_img.size != (font_size, font_size):
                                         emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
                                     
-                                    # Paste emoji onto the image
-                                    emoji_y = int(current_y + font_size - emoji_img.height + 5)
+                                    # Paste emoji onto the image - align with text baseline
+                                    emoji_y = int(current_y)
                                     draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
-                                    current_x += font_size
+                                    # Use actual emoji width for spacing, not font size
+                                    current_x += emoji_img.width
                                 else:
                                     # Fallback to regular text rendering if PNG not available
                                     TextRendererUtility._draw_text_with_color_support(
