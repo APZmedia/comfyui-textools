@@ -82,7 +82,8 @@ class TextRendererUtility:
                                         emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
                                     
                                     # Paste emoji onto the image - align with text baseline
-                                    emoji_y = int(current_y)
+                                    # Adjust emoji position to align with text baseline
+                                    emoji_y = int(current_y + font_size - emoji_img.height)
                                     draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
                                     # Use actual emoji width for spacing, not font size
                                     current_x += emoji_img.width
