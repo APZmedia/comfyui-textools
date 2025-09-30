@@ -246,8 +246,9 @@ class MarkdownRendererUtility:
                                     emoji_img = emoji_img.resize((font_size, font_size), Image.Resampling.LANCZOS)
                                 
                                 # Calculate proper Y position to align with text baseline
-                                # Position emoji slightly lower to align better with text
-                                emoji_y = int(y + font_size - emoji_img.height + 5)
+                                # Position emoji slightly lower to align better with text (proportional to font size)
+                                baseline_offset = int(font_size * 0.125)  # 12.5% of font size
+                                emoji_y = int(y + font_size - emoji_img.height + baseline_offset)
                                 # Paste emoji PNG onto the image
                                 draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
                                 current_x += font_size  # Move to next position
