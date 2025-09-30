@@ -62,30 +62,79 @@ class FontManager:
     def _resolve_font_path(self, font_path):
         """
         Resolve font path to absolute path, handling relative paths from project root.
-        Only resolves paths that start with 'fonts/' to use bundled fonts.
+        Supports cross-platform paths for Windows, macOS, and Linux.
         """
-        # If it's already an absolute path, return as is
+        # If it's already an absolute path, check if it exists
         if os.path.isabs(font_path):
-            return font_path
-        
-        # Only resolve relative paths that start with 'fonts/' (bundled fonts)
-        if font_path.startswith('fonts/'):
-            # Get the project root directory (where this file is located)
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            
-            # Resolve relative path from project root
-            resolved_path = os.path.join(project_root, font_path)
-            resolved_path = os.path.normpath(resolved_path)
-            
-            # Check if the resolved path exists
-            if os.path.exists(resolved_path):
-                return resolved_path
+            if os.path.exists(font_path):
+                return font_path
             else:
-                print(f"Warning: Bundled font file not found at resolved path: {resolved_path}")
+                print(f"Warning: Absolute font path does not exist: {font_path}")
                 return None
-        else:
-            # For other relative paths, return as-is (let the system handle them)
-            return font_path
+        
+        # Get the project root directory (where this file is located)
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Try multiple resolution strategies
+        potential_paths = []
+        
+        # Strategy 1: Resolve relative to project root
+        project_relative_path = os.path.join(project_root, font_path)
+        potential_paths.append(os.path.normpath(project_relative_path))
+        
+        # Strategy 2: Try the path as-is (in case it's a system font path)
+        potential_paths.append(font_path)
+        
+        # Strategy 3: Try common system font directories
+        import platform
+        system = platform.system()
+        
+        if system == "Windows":
+            # Windows system font directories
+            system_font_dirs = [
+                "C:/Windows/Fonts/",
+                "C:/Windows/System32/Fonts/",
+                os.path.expanduser("~/AppData/Local/Microsoft/Windows/Fonts/")
+            ]
+        elif system == "Darwin":  # macOS
+            system_font_dirs = [
+                "/System/Library/Fonts/",
+                "/Library/Fonts/",
+                os.path.expanduser("~/Library/Fonts/"),
+                "/System/Library/Fonts/Supplemental/"
+            ]
+        else:  # Linux
+            system_font_dirs = [
+                "/usr/share/fonts/",
+                "/usr/local/share/fonts/",
+                os.path.expanduser("~/.fonts/"),
+                os.path.expanduser("~/.local/share/fonts/"),
+                "/usr/share/fonts/truetype/",
+                "/usr/share/fonts/opentype/"
+            ]
+        
+        # Add system font directory + font_path combinations
+        for font_dir in system_font_dirs:
+            if os.path.exists(font_dir):
+                potential_paths.append(os.path.join(font_dir, font_path))
+                # Also try with just the filename if font_path contains directories
+                font_filename = os.path.basename(font_path)
+                potential_paths.append(os.path.join(font_dir, font_filename))
+        
+        # Check all potential paths
+        for path in potential_paths:
+            if os.path.exists(path):
+                print(f"Found font at: {path}")
+                return path
+        
+        # If no path found, print helpful debug information
+        print(f"Warning: Font file not found. Searched paths:")
+        for i, path in enumerate(potential_paths[:5], 1):  # Show first 5 paths
+            print(f"  {i}. {path}")
+        if len(potential_paths) > 5:
+            print(f"  ... and {len(potential_paths) - 5} more paths")
+        
+        return None
 
     def load_font(self, font_path, font_size):
         # Load font from cache if available
@@ -147,10 +196,20 @@ class FontManager:
                     font = ImageFont.load_default()
                     self.font_cache[(font_path, font_size)] = font
                     return font
+            else:
+                # Resolve the font path (handles relative paths)
+                actual_font_path = self._resolve_font_path(font_path)
+                if actual_font_path is None:
+                    print(f"Warning: Could not resolve font path '{font_path}'")
+                    print("Falling back to PIL default font")
+                    font = ImageFont.load_default()
+                    self.font_cache[(font_path, font_size)] = font
+                    return font
             
             # Check if the resolved path exists
             if not os.path.exists(actual_font_path):
                 print(f"Warning: Font file does not exist: {actual_font_path}")
+                print(f"Original font path was: {font_path}")
                 print("Falling back to PIL default font")
                 font = ImageFont.load_default()
                 self.font_cache[(font_path, font_size)] = font
