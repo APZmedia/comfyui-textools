@@ -6,52 +6,92 @@ from .apz_emoji_support import create_emoji_support
 
 class FontManager:
     def __init__(self, regular_font_path, italic_font_path, bold_font_path, max_font_size):
+        print("=" * 60)
+        print("FONT MANAGER INITIALIZATION")
+        print("=" * 60)
+        print(f"Input paths received:")
+        print(f"  Regular: '{regular_font_path}'")
+        print(f"  Italic:  '{italic_font_path}'")
+        print(f"  Bold:    '{bold_font_path}'")
+        print(f"  Max size: {max_font_size}")
+        
         self.max_font_size = max_font_size
         
         # Initialize URL file utility for handling URLs
         self.url_utility = URLFileUtility()
         
         # Validate and handle font paths
+        print("\nProcessing Regular Font Path:")
         if not regular_font_path or regular_font_path.strip() == "":
-            print("Warning: Regular font path is empty, using default system font")
+            print("  → Empty path detected, will use default system font")
             self.regular_font_path = None  # Will use PIL default font
         elif regular_font_path.startswith(('http://', 'https://')):
+            print(f"  → URL detected: {regular_font_path}")
             try:
                 self.regular_font_path = self.url_utility.get_local_path(regular_font_path)
+                print(f"  → URL resolved to: {self.regular_font_path}")
             except Exception as e:
-                print(f"Warning: Could not resolve regular font URL '{regular_font_path}': {e}")
+                print(f"  → URL resolution failed: {e}")
+                print("  → Will use default system font")
                 self.regular_font_path = None  # Will use PIL default font
         else:
+            print(f"  → Local path detected, resolving...")
             self.regular_font_path = self._resolve_font_path(regular_font_path)
+            if self.regular_font_path:
+                print(f"  → Resolved to: {self.regular_font_path}")
+            else:
+                print("  → Resolution failed, will use default system font")
             
+        print("\nProcessing Italic Font Path:")
         if not italic_font_path or italic_font_path.strip() == "":
-            print("Warning: Italic font path is empty, using default system font")
+            print("  → Empty path detected, will use default system font")
             self.italic_font_path = None  # Will use PIL default font
         elif italic_font_path.startswith(('http://', 'https://')):
+            print(f"  → URL detected: {italic_font_path}")
             try:
                 self.italic_font_path = self.url_utility.get_local_path(italic_font_path)
+                print(f"  → URL resolved to: {self.italic_font_path}")
             except Exception as e:
-                print(f"Warning: Could not resolve italic font URL '{italic_font_path}': {e}")
+                print(f"  → URL resolution failed: {e}")
+                print("  → Will use default system font")
                 self.italic_font_path = None  # Will use PIL default font
         else:
+            print(f"  → Local path detected, resolving...")
             self.italic_font_path = self._resolve_font_path(italic_font_path)
+            if self.italic_font_path:
+                print(f"  → Resolved to: {self.italic_font_path}")
+            else:
+                print("  → Resolution failed, will use default system font")
             
+        print("\nProcessing Bold Font Path:")
         if not bold_font_path or bold_font_path.strip() == "":
-            print("Warning: Bold font path is empty, using default system font")
+            print("  → Empty path detected, will use default system font")
             self.bold_font_path = None  # Will use PIL default font
         elif bold_font_path.startswith(('http://', 'https://')):
+            print(f"  → URL detected: {bold_font_path}")
             try:
                 self.bold_font_path = self.url_utility.get_local_path(bold_font_path)
+                print(f"  → URL resolved to: {self.bold_font_path}")
             except Exception as e:
-                print(f"Warning: Could not resolve bold font URL '{bold_font_path}': {e}")
+                print(f"  → URL resolution failed: {e}")
+                print("  → Will use default system font")
                 self.bold_font_path = None  # Will use PIL default font
         else:
+            print(f"  → Local path detected, resolving...")
             self.bold_font_path = self._resolve_font_path(bold_font_path)
+            if self.bold_font_path:
+                print(f"  → Resolved to: {self.bold_font_path}")
+            else:
+                print("  → Resolution failed, will use default system font")
 
-        # Print statements to confirm paths
-        print(f"Initialized FontManager with Regular Font: {self.regular_font_path}")
-        print(f"Italic Font: {self.italic_font_path}")
-        print(f"Bold Font: {self.bold_font_path}")
+        # Print final resolved paths
+        print("\n" + "=" * 60)
+        print("FINAL FONT PATHS")
+        print("=" * 60)
+        print(f"Regular Font: {self.regular_font_path}")
+        print(f"Italic Font:  {self.italic_font_path}")
+        print(f"Bold Font:    {self.bold_font_path}")
+        print("=" * 60)
 
         # Dictionary to cache loaded fonts
         self.font_cache = {}
