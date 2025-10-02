@@ -1,6 +1,7 @@
 # utils/apz_text_renderer_utility.py
+from PIL import Image
 from .apz_box_utility import BoxUtility
-from .apz_emoji_png_renderer import EmojiPNGRenderer
+from .apz_twemoji_renderer import TwemojiRenderer
 
 class TextRendererUtility:
     @staticmethod
