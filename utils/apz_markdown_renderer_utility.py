@@ -3,11 +3,16 @@ from PIL import Image, ImageDraw
 from .apz_font_manager import FontManager
 from .apz_color_utility import ColorUtility
 from .apz_markdown_parser import parse_markdown, parse_markdown_with_headers, parse_markdown_extended
+from .apz_emoji_png_renderer import EmojiPNGRenderer
 
 class MarkdownRendererUtility:
     """
     Utility class for rendering markdown text with proper styling and layout.
     """
+    
+    @staticmethod
+    def _clone_styles(styles):
+        return styles.copy() if isinstance(styles, dict) else {}
     
     @staticmethod
     def _draw_text_with_color_support(draw, position, text, font, fill, font_manager):
@@ -86,28 +91,36 @@ class MarkdownRendererUtility:
         renderable_lines = MarkdownRendererUtility._process_parsed_parts(
             parsed_parts, box_width - 2 * padding, font_manager, font_size
         )
-        
-        # Calculate total height needed
-        line_height = font_size * line_height_ratio
-        total_height = len(renderable_lines) * line_height
-        
-        # Calculate starting Y position based on vertical alignment
+
+        effective_box_width = max(box_width - 2 * padding, 0)
+        effective_box_height = max(box_height - 2 * padding, 0)
+
+        line_sizes = []
+        line_heights = []
+        for line in renderable_lines:
+            chunk_sizes = [styles.get("size", font_size) for _, styles in line if styles is not None]
+            line_size = max(chunk_sizes) if chunk_sizes else font_size
+            line_sizes.append(line_size)
+            line_heights.append(int(line_size * line_height_ratio))
+
+        total_height = sum(line_heights)
+
         if vertical_alignment == "middle":
-            start_y = box_top + (box_height - total_height) // 2
+            start_y = box_top + padding + max((effective_box_height - total_height) // 2, 0)
         elif vertical_alignment == "bottom":
-            start_y = box_top + box_height - total_height - padding
+            start_y = box_top + box_height - padding - total_height
         else:  # top
             start_y = box_top + padding
-        
-        # Render each line
+
         current_y = start_y
-        for line in renderable_lines:
-            if current_y + font_size > box_top + box_height - padding:
+        for idx, line in enumerate(renderable_lines):
+            line_height = line_heights[idx]
+            if current_y + line_height > box_top + box_height - padding:
                 break  # Stop if we exceed box height
-                
+
             MarkdownRendererUtility._render_line(
                 draw, line, box_left, current_y, padding, box_width,
-                font_manager, color_utility, alignment, font_size,
+                font_manager, color_utility, alignment, line_sizes[idx],
                 font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
             )
             current_y += line_height
@@ -141,30 +154,28 @@ class MarkdownRendererUtility:
                     if not word:
                         continue
 
-                    font = font_manager.get_font_for_style(styles, font_size, word)
-                    bbox = font.getbbox(word)
-                    word_width = bbox[2] - bbox[0]
+                    style_dict = MarkdownRendererUtility._clone_styles(styles)
+                    word_width = MarkdownRendererUtility._measure_text_width(word, style_dict, font_manager, font_size)
 
                     space_width = 0
                     if i < len(words) - 1:
-                        space_bbox = font.getbbox(' ')
-                        space_width = space_bbox[2] - space_bbox[0]
+                        space_width = MarkdownRendererUtility._measure_text_width(' ', style_dict, font_manager, font_size)
 
                     if current_line_width + word_width + space_width <= max_width:
-                        current_line.append((word, styles))
+                        current_line.append((word, style_dict))
                         current_line_width += word_width
 
                         if i < len(words) - 1:
-                            current_line.append((' ', styles))
+                            current_line.append((' ', MarkdownRendererUtility._clone_styles(styles)))
                             current_line_width += space_width
                     else:
                         if current_line:
                             lines.append(current_line)
-                        current_line = [(word, styles)]
+                        current_line = [(word, style_dict)]
                         current_line_width = word_width
 
                         if i < len(words) - 1:
-                            current_line.append((' ', styles))
+                            current_line.append((' ', MarkdownRendererUtility._clone_styles(styles)))
                             current_line_width += space_width
 
                 newline_requested = segment_index < len(segments) - 1 or (
@@ -191,85 +202,65 @@ class MarkdownRendererUtility:
         """
         Render a single line of markdown text.
         """
-        # Calculate total line width
+        emoji_png_renderer = EmojiPNGRenderer()
+
         total_line_width = 0
         for text_part, styles in line:
-            measure_font = font_manager.get_font_for_style(styles, font_size)
-            bbox = measure_font.getbbox(text_part)
-            total_line_width += bbox[2] - bbox[0]
+            style_dict = styles if isinstance(styles, dict) else {}
+            chunk_size = style_dict.get("size", font_size)
+            total_line_width += MarkdownRendererUtility._measure_text_width(
+                text_part, style_dict, font_manager, chunk_size
+            )
 
-        # Calculate starting X position based on alignment
         if alignment == "center":
-            x = box_left + (box_width - total_line_width) // 2
+            x = box_left + max((box_width - total_line_width) // 2, 0)
         elif alignment == "right":
-            x = box_left + box_width - total_line_width - padding
+            x = box_left + max(box_width - total_line_width - padding, 0)
         else:  # left
             x = box_left + padding
 
         current_x = x
         for text_part, styles in line:
-            # Skip empty text parts
             if not text_part:
                 continue
-                
-            current_font = font_manager.get_font_for_style(styles, font_size, text_part)
 
-            if styles.get("hashtag", False):
+            style_dict = styles if isinstance(styles, dict) else {}
+            chunk_size = style_dict.get("size", font_size)
+            chunk_width = MarkdownRendererUtility._measure_text_width(
+                text_part, style_dict, font_manager, chunk_size
+            )
+            current_font = font_manager.get_font_for_style(style_dict, chunk_size, text_part)
+
+            if style_dict.get("hashtag", False):
                 color = (0, 100, 200)
-            elif styles.get("b", False):
+            elif style_dict.get("b", False):
                 color = bold_font_color_rgb
-            elif styles.get("i", False):
+            elif style_dict.get("i", False):
                 color = italic_font_color_rgb
             else:
                 color = font_color_rgb
 
-            chunk_width = None
-
-            if font_manager.emoji_support.has_emoji(text_part):
-                # Try to use PNG emoji renderer first
-                try:
-                    from .apz_emoji_png_renderer import EmojiPNGRenderer
-                    emoji_png_renderer = EmojiPNGRenderer()
-                    emoji_img = emoji_png_renderer.load_emoji_png(text_part, font_size)
-                    
-                    if emoji_img:
-                        # Calculate proper Y position to align with text baseline
-                        # Position emoji slightly lower to align better with text
-                        emoji_y = int(y + font_size - emoji_img.height + 5)
-                        # Paste emoji PNG onto the image
-                        draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
-                        chunk_width = font_size  # Use font size as width
-                    else:
-                        # Fallback to regular text rendering
-                        MarkdownRendererUtility._draw_text_with_color_support(
-                            draw, (current_x, y), text_part, current_font, color, font_manager
-                        )
-                        bbox = current_font.getbbox(text_part)
-                        chunk_width = bbox[2] - bbox[0]
-                except Exception as e:
-                    print(f"PNG emoji renderer failed: {e}")
-                    # Fallback to regular text rendering
+            if chunk_width > 0 and font_manager.emoji_support.has_emoji(text_part):
+                emoji_img = emoji_png_renderer.load_emoji_png(text_part, chunk_size)
+                if emoji_img:
+                    emoji_y = int(y + chunk_size - emoji_img.height + 5)
+                    draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
+                else:
                     MarkdownRendererUtility._draw_text_with_color_support(
                         draw, (current_x, y), text_part, current_font, color, font_manager
                     )
-                    bbox = current_font.getbbox(text_part)
-                    chunk_width = bbox[2] - bbox[0]
             else:
-                bbox = current_font.getbbox(text_part)
                 MarkdownRendererUtility._draw_text_with_color_support(
                     draw, (current_x, y), text_part, current_font, color, font_manager
                 )
-                chunk_width = bbox[2] - bbox[0]
 
-            if chunk_width is None:
-                chunk_width = 0
-
-            if styles.get("u", False):
-                underline_y = y + current_font.getsize(text_part)[1]
-                draw.line((current_x, underline_y, current_x + chunk_width, underline_y), fill=color, width=1)
-            if styles.get("s", False):
-                strikeout_y = y + current_font.getsize(text_part)[1] // 2
-                draw.line((current_x, strikeout_y, current_x + chunk_width, strikeout_y), fill=color, width=1)
+            if chunk_width > 0 and text_part.strip():
+                if style_dict.get("u", False):
+                    underline_y = y + current_font.getsize(text_part)[1]
+                    draw.line((current_x, underline_y, current_x + chunk_width, underline_y), fill=color, width=1)
+                if style_dict.get("s", False):
+                    strikeout_y = y + current_font.getsize(text_part)[1] // 2
+                    draw.line((current_x, strikeout_y, current_x + chunk_width, strikeout_y), fill=color, width=1)
 
             current_x += chunk_width
 

@@ -279,6 +279,12 @@ The emoji support system uses fonts in this order:
 2. **System emoji fonts** - Platform-specific fallback
 3. **Default fonts** - Last resort
 
+#### **Emoji Scaling Behavior**
+- Emoji glyphs are sized based on the resolved text font size, ensuring consistent proportions when switching between default and custom fonts.
+- When the active emoji font only supports a fixed render size (e.g., Noto Color Emoji), the renderer automatically rescales output to match the requested point size before compositing.
+- PNG-based emoji fallbacks are rendered at the same pixel dimensions as text glyphs so mixed text/emoji lines align correctly.
+- Word wrapping and layout calculations use the same emoji-aware width measurements as the renderer, preventing layout drift when varying font sizes or switching to custom fonts.
+
 ## Markdown Syntax Support
 
 The markdown text overlay supports the following syntax:
