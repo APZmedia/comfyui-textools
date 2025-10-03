@@ -114,7 +114,9 @@ class EnhancedFontLoaderUtility:
                     return font_size, render_lines, total_text_height, warnings
                     
             except Exception as e:
+                import traceback
                 warnings.append(f"Error at font size {font_size}: {str(e)}")
+                # print(f"Debug traceback: {traceback.format_exc()}")  # Uncomment for debugging
                 font_size -= 1
                 continue
                 
@@ -235,8 +237,8 @@ class EnhancedFontLoaderUtility:
     def _check_word_widths(self, wrapped_lines, font_size, max_width):
         """Check if any individual words are too wide for the container."""
         warnings = []
-        for line, line_parts in wrapped_lines:
-            for chunk, chunk_styles in line_parts:
+        for line in wrapped_lines:
+            for chunk, chunk_styles in line:
                 if chunk.strip():  # Skip spaces
                     # Get appropriate font for this chunk
                     if chunk_styles.get('b', False):
