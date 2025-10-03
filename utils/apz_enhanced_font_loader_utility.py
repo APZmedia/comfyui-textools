@@ -100,7 +100,7 @@ class EnhancedFontLoaderUtility:
                 else:
                     render_lines = []
                     for aggregated_line, aggregated_parts in wrapped_lines:
-                        render_lines.append([(chunk, styles) for chunk, styles in aggregated_parts])
+                        render_lines.append(aggregated_parts)
 
                 logical_line_count = len(render_lines)
                 total_text_height = logical_line_count * line_height
