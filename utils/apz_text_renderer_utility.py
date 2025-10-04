@@ -2,6 +2,7 @@
 from PIL import Image
 from .apz_box_utility import BoxUtility
 from .apz_twemoji_renderer import TwemojiRenderer
+from .apz_emoji_png_renderer import EmojiPNGRenderer
 
 class TextRendererUtility:
     @staticmethod
