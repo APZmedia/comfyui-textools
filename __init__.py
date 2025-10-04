@@ -41,6 +41,8 @@ NODE_CLASS_MAPPINGS = {
     "APZmediaImageRichTextOverlay": APZmediaImageRichTextOverlay,
     "APZmediaImageRichTextOverlayV2": APZmediaImageRichTextOverlayV2,
     "APZmediaImageMarkdownTextOverlay": APZmediaImageMarkdownTextOverlay,
+    # Alias for existing workflows
+    "APZ/MarkdownTextOverlay": APZmediaImageMarkdownTextOverlay,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -48,6 +50,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "APZmediaImageRichTextOverlay": "APZmedia Image Rich Text Overlay",
     "APZmediaImageRichTextOverlayV2": "APZmedia Image Rich Text Overlay V2",
     "APZmediaImageMarkdownTextOverlay": "APZmedia Image Markdown Text Overlay",
+    # Alias display names
+    "APZ/MarkdownTextOverlay": "APZmedia Image Markdown Text Overlay",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
