@@ -57,7 +57,14 @@ class EmojiPNGRenderer:
                 print(f"Original PNG size: {emoji_img.size}, target size: {size}")
                 # If the loaded image is not the right size, resize it
                 if emoji_img.size != (size, size):
-                    emoji_img = emoji_img.resize((size, size), Image.Resampling.LANCZOS)
+                    # Use better scaling algorithm based on whether we're upscaling or downscaling
+                    original_size = max(emoji_img.size)
+                    if size > original_size:
+                        # Upscaling - use NEAREST for pixel art, or BICUBIC for smooth
+                        emoji_img = emoji_img.resize((size, size), Image.Resampling.NEAREST)
+                    else:
+                        # Downscaling - use LANCZOS for better quality
+                        emoji_img = emoji_img.resize((size, size), Image.Resampling.LANCZOS)
                     print(f"Resized to: {emoji_img.size}")
                 self.emoji_cache[cache_key] = emoji_img
                 return emoji_img
@@ -77,7 +84,13 @@ class EmojiPNGRenderer:
                 # Save at base size for efficiency
                 base_size = 128
                 if size != base_size:
-                    base_img = emoji_img.resize((base_size, base_size), Image.Resampling.LANCZOS)
+                    # Use better scaling for saving
+                    if size > base_size:
+                        # We're scaling down - use LANCZOS for quality
+                        base_img = emoji_img.resize((base_size, base_size), Image.Resampling.LANCZOS)
+                    else:
+                        # We're scaling up - use NEAREST to avoid blur
+                        base_img = emoji_img.resize((base_size, base_size), Image.Resampling.NEAREST)
                     base_img.save(self.get_emoji_png_path(emoji_char))
                 else:
                     emoji_img.save(self.get_emoji_png_path(emoji_char))
@@ -220,8 +233,13 @@ class EmojiPNGRenderer:
                 scaled_img = Image.new("RGBA", (scaled_size, scaled_size), (0, 0, 0, 0))
                 scaled_draw = ImageDraw.Draw(scaled_img)
                 scaled_draw.text((x * scale_factor, y * scale_factor), emoji_char, font=font, embedded_color=True)
-                # Scale down to target size
-                img = scaled_img.resize((size, size), Image.Resampling.LANCZOS)
+                # Scale down to target size using better algorithm
+                if scale_factor > 1.0:
+                    # We're scaling down from a larger image - use LANCZOS for quality
+                    img = scaled_img.resize((size, size), Image.Resampling.LANCZOS)
+                else:
+                    # We're scaling up - use NEAREST to avoid blur
+                    img = scaled_img.resize((size, size), Image.Resampling.NEAREST)
             else:
                 # Render directly at target size
                 try:

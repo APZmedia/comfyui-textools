@@ -162,7 +162,14 @@ class TwemojiRenderer:
         """Render emoji at specified size."""
         img = self.load_emoji(emoji_char, size)
         if img and img.size != (size, size):
-            img = img.resize((size, size), Image.Resampling.LANCZOS)
+            # Use better scaling algorithm based on whether we're upscaling or downscaling
+            original_size = max(img.size)
+            if size > original_size:
+                # Upscaling - use NEAREST for pixel art, or BICUBIC for smooth
+                img = img.resize((size, size), Image.Resampling.NEAREST)
+            else:
+                # Downscaling - use LANCZOS for better quality
+                img = img.resize((size, size), Image.Resampling.LANCZOS)
         return img
     
     def split_text_by_emoji(self, text):

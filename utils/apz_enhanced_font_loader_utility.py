@@ -111,7 +111,7 @@ class EnhancedFontLoaderUtility:
                     word_warnings = self._check_word_widths(render_lines, font_size, effective_textbox_width)
                     warnings.extend(word_warnings)
                     
-                    return font_size, render_lines, total_text_height, warnings
+                    return font_size, wrapped_lines, total_text_height, warnings
                     
             except Exception as e:
                 import traceback

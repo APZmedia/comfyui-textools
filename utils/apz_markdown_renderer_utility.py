@@ -243,7 +243,8 @@ class MarkdownRendererUtility:
             if chunk_width > 0 and font_manager.emoji_support.has_emoji(text_part):
                 emoji_img = emoji_png_renderer.load_emoji_png(text_part, chunk_size)
                 if emoji_img:
-                    emoji_y = int(y + chunk_size - emoji_img.height + 5)
+                    # Better emoji positioning - center vertically with the text baseline
+                    emoji_y = int(y + (chunk_size - emoji_img.height) // 2)
                     draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
                 else:
                     MarkdownRendererUtility._draw_text_with_color_support(
