@@ -112,9 +112,14 @@ class TextRendererUtility:
                     continue
 
                 current_font = font_manager.get_font_for_style(styles_dict, chunk_size, chunk)
+                
+                # Log font usage for rendering
+                font_name = getattr(current_font, 'path', 'Unknown') if hasattr(current_font, 'path') else 'PIL Default'
+                print(f"🎨 Rendering text chunk: '{chunk[:30]}{'...' if len(chunk) > 30 else ''}' with font: {font_name}")
 
                 if styles_dict.get("hashtag", False):
                     current_font_color_rgb = (0, 100, 200)
+                    print(f"🏷️ Hashtag detected, using blue color")
                 else:
                     current_font_color_rgb = color_utility.get_font_color(
                         styles_dict, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb

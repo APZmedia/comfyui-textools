@@ -11,6 +11,13 @@ class FontManager:
         # Initialize URL file utility for handling URLs
         self.url_utility = URLFileUtility()
         
+        # Log font initialization
+        print(f"🔤 FontManager initialized:")
+        print(f"   Regular font: {regular_font_path or 'Default (PIL)'}")
+        print(f"   Italic font: {italic_font_path or 'Default (PIL)'}")
+        print(f"   Bold font: {bold_font_path or 'Default (PIL)'}")
+        print(f"   Max font size: {max_font_size}")
+        
         # Validate and handle font paths
         if not regular_font_path or regular_font_path.strip() == "":
             self.regular_font_path = None  # Will use PIL default font
@@ -128,6 +135,9 @@ class FontManager:
         return None
 
     def load_font(self, font_path, font_size):
+        # Log font loading attempt
+        print(f"🔤 Loading font: {font_path or 'Default (PIL)'} at size {font_size}")
+        
         # Load font from cache if available
         if (font_path, font_size) not in self.font_cache:
             # Handle None font path (use PIL default font)
@@ -158,11 +168,13 @@ class FontManager:
                     for fallback_font in fallback_fonts:
                         if os.path.exists(fallback_font):
                             font = ImageFont.truetype(fallback_font, font_size)
+                            print(f"✅ Using fallback font: {fallback_font}")
                             self.font_cache[(font_path, font_size)] = font
                             return font
                     
                     # If no fallback font found, use default (but it won't scale properly)
                     font = ImageFont.load_default()
+                    print(f"⚠️ Using PIL default font (no fallback found)")
                     self.font_cache[(font_path, font_size)] = font
                     return font
                 except Exception as e:
@@ -196,10 +208,13 @@ class FontManager:
             # Try to load the font
             try:
                 font = ImageFont.truetype(actual_font_path, font_size)
+                print(f"✅ Successfully loaded font: {actual_font_path}")
                 self.font_cache[(font_path, font_size)] = font
                 return font
             except Exception as e:
+                print(f"❌ Failed to load font {actual_font_path}: {e}")
                 font = ImageFont.load_default()
+                print(f"⚠️ Using PIL default font as fallback")
                 self.font_cache[(font_path, font_size)] = font
                 return font
         
@@ -228,6 +243,10 @@ class FontManager:
         Returns:
             PIL ImageFont object
         """
+        # Log style selection
+        style_type = "bold" if style.get('b', False) else "italic" if style.get('i', False) else "regular"
+        print(f"🔤 Getting {style_type} font for text: '{text[:20]}{'...' if len(text) > 20 else ''}' at size {font_size}")
+        
         # First, get the base font based on style
         if style.get('b', False):
             base_font = self.get_bold_font(font_size)
@@ -238,9 +257,13 @@ class FontManager:
         
         # Use emoji fonts for emoji text (this is how emojis work in real life)
         if text and self.emoji_support.has_emoji(text):
+            print(f"😀 Text contains emojis, checking emoji font support")
             emoji_font = self.emoji_support.get_emoji_font(font_size)
             if emoji_font and self.emoji_support.test_emoji_support(emoji_font):
+                print(f"✅ Using emoji font for emoji text")
                 return emoji_font
+            else:
+                print(f"⚠️ Emoji font not available, using base font")
         
         return base_font
     
