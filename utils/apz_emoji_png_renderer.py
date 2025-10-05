@@ -123,11 +123,13 @@ class EmojiPNGRenderer:
     
     def _generate_emoji_png(self, emoji_char, size):
         """Generate high-quality emoji PNG using super-sampling for crisp rendering."""
-        print(f"🎨 Generating high-quality emoji PNG for '{emoji_char}' at size {size}")
+        # Generate emoji at 80% of requested size for better text alignment
+        target_size = int(size * 0.8)  # 80% of requested size
+        print(f"🎨 Generating high-quality emoji PNG for '{emoji_char}' at size {target_size} (requested: {size})")
         try:
             # Use super-sampling for better quality: render at 2x size, then scale down
-            render_size = size * 2  # Render at double resolution for crispness
-            print(f"🔍 Super-sampling: rendering at {render_size}px, scaling to {size}px")
+            render_size = target_size * 2  # Render at double resolution for crispness
+            print(f"🔍 Super-sampling: rendering at {render_size}px, scaling to {target_size}px")
             
             # Try system emoji fonts first (these work at any size)
             system_fonts = [
@@ -143,7 +145,7 @@ class EmojiPNGRenderer:
                     font = ImageFont.truetype(font_name, render_size)
                     print(f"✅ Using system font: {font_name} at super-sampled size {render_size}")
                     # Render at high resolution, then scale down for crispness
-                    return self._render_emoji_to_png(emoji_char, font, size, scale_factor=2.0)
+                    return self._render_emoji_to_png(emoji_char, font, target_size, scale_factor=2.0)
                 except OSError:
                     continue
             
@@ -164,21 +166,21 @@ class EmojiPNGRenderer:
                         # Try to load at the super-sampled size first
                         font = ImageFont.truetype(font_path, render_size)
                         print(f"✅ Using bundled font: {os.path.basename(font_path)} at super-sampled size {render_size}")
-                        return self._render_emoji_to_png(emoji_char, font, size, scale_factor=2.0)
+                        return self._render_emoji_to_png(emoji_char, font, target_size, scale_factor=2.0)
                     except OSError:
                         # If it fails, try with a base size and scale
                         try:
                             base_size = max(109, render_size)  # Use larger base size for quality
                             font = ImageFont.truetype(font_path, base_size)
                             scale_factor = render_size / base_size
-                            print(f"✅ Using bundled font: {os.path.basename(font_path)} at base size {base_size}, scaling to {size}")
-                            return self._render_emoji_to_png(emoji_char, font, size, scale_factor=scale_factor)
+                            print(f"✅ Using bundled font: {os.path.basename(font_path)} at base size {base_size}, scaling to {target_size}")
+                            return self._render_emoji_to_png(emoji_char, font, target_size, scale_factor=scale_factor)
                         except OSError:
                             continue
             
             # Final fallback to system default font
             font = ImageFont.load_default()
-            return self._render_emoji_to_png(emoji_char, font, size)
+            return self._render_emoji_to_png(emoji_char, font, target_size)
             
         except Exception as e:
             print(f"Failed to generate emoji PNG for {emoji_char}: {e}")
@@ -187,24 +189,37 @@ class EmojiPNGRenderer:
     def _render_emoji_to_png(self, emoji_char, font, size, scale_factor=1.0):
         """Render high-quality emoji character to PNG image using super-sampling."""
         try:
-            # Create a transparent image at the target size
-            img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+            # Get text bounding box first to determine proper image size
+            bbox = font.getbbox(emoji_char)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            
+            # Create image large enough to accommodate the full emoji
+            # Add some padding to ensure no cropping
+            padding = max(4, size // 10)  # 10% padding or minimum 4px
+            img_width = max(size, text_width + padding * 2)
+            img_height = max(size, text_height + padding * 2)
+            
+            # Create a transparent image at the calculated size
+            img = Image.new("RGBA", (img_width, img_height), (0, 0, 0, 0))
             
             # Apply scale factor for super-sampling
             if scale_factor != 1.0:
                 # Create a larger image for super-sampling, render, then scale down
                 scaled_size = int(size * scale_factor)
-                scaled_img = Image.new("RGBA", (scaled_size, scaled_size), (0, 0, 0, 0))
+                scaled_img_width = max(scaled_size, int(text_width * scale_factor) + padding * 2)
+                scaled_img_height = max(scaled_size, int(text_height * scale_factor) + padding * 2)
+                scaled_img = Image.new("RGBA", (scaled_img_width, scaled_img_height), (0, 0, 0, 0))
                 scaled_draw = ImageDraw.Draw(scaled_img)
                 
-                # Get text bounding box to center the emoji
-                bbox = font.getbbox(emoji_char)
-                text_width = bbox[2] - bbox[0]
-                text_height = bbox[3] - bbox[1]
+                # Calculate proper positioning to prevent cropping
+                # The bbox gives us the actual content boundaries
+                # We need to position the emoji so its visual content fits properly
+                x = padding - bbox[0]  # Offset by left margin + padding
+                y = padding - bbox[1]  # Offset by top margin + padding
                 
-                # Calculate position to center the emoji in the scaled image
-                x = (scaled_size - text_width) // 2
-                y = (scaled_size - text_height) // 2
+                print(f"🔍 Super-sampled emoji bbox: {bbox}, positioning at ({x}, {y})")
+                print(f"🔍 Scaled image size: {scaled_img_width}x{scaled_img_height}")
                 
                 # Render the emoji at high resolution
                 try:
@@ -214,17 +229,21 @@ class EmojiPNGRenderer:
                     scaled_draw.text((x, y), emoji_char, font=font, fill=(0, 0, 0, 255))
                 
                 # Scale down to target size using LANCZOS for maximum quality
-                img = scaled_img.resize((size, size), Image.Resampling.LANCZOS)
-                print(f"✅ Super-sampled emoji: {scaled_size}px -> {size}px")
+                # Scale to the calculated dimensions, not just square
+                final_width = max(size, text_width + padding * 2)
+                final_height = max(size, text_height + padding * 2)
+                img = scaled_img.resize((final_width, final_height), Image.Resampling.LANCZOS)
+                print(f"✅ Super-sampled emoji: {scaled_img_width}x{scaled_img_height} -> {final_width}x{final_height}")
             else:
                 # Render directly at target size
                 draw = ImageDraw.Draw(img)
-                bbox = font.getbbox(emoji_char)
-                text_width = bbox[2] - bbox[0]
-                text_height = bbox[3] - bbox[1]
                 
-                x = (size - text_width) // 2
-                y = (size - text_height) // 2
+                # Calculate proper positioning to prevent cropping
+                x = padding - bbox[0]  # Offset by left margin + padding
+                y = padding - bbox[1]  # Offset by top margin + padding
+                
+                print(f"🔍 Direct emoji bbox: {bbox}, positioning at ({x}, {y})")
+                print(f"🔍 Image size: {img_width}x{img_height}")
                 
                 try:
                     draw.text((x, y), emoji_char, font=font, embedded_color=True)

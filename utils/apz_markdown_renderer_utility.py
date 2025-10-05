@@ -254,18 +254,59 @@ class MarkdownRendererUtility:
                         emoji_size = chunk_size  # Match text size exactly
                         emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, emoji_size)
                         if emoji_img:
-                            # Align emoji with text baseline - position at the bottom of the text line
-                            emoji_y = int(y + chunk_size - emoji_img.height)
-                            # Ensure emoji doesn't go above the text area
-                            emoji_y = max(y, emoji_y)
+                            # Emoji-specific positioning strategy
+                            # Different emojis need different alignment approaches
+                            
+                            # Get emoji characteristics for smart positioning
+                            emoji_char = emoji_segment[0] if emoji_segment else '?'
+                            emoji_unicode = ord(emoji_char)
+                            
+                            # Define emoji-specific boundary box with generous padding
+                            # Give more space for emojis that tend to extend beyond their boundaries
+                            base_padding = max(4, chunk_size // 8)  # 12.5% padding or minimum 4px
+                            
+                            # Emoji-specific padding adjustments
+                            if emoji_unicode in [0x2744, 0x1F331, 0x1F338, 0x2B50]:  # ❄️🌱🌸⭐
+                                # Nature/weather emojis that extend upward
+                                emoji_padding_top = base_padding * 2
+                                emoji_padding_bottom = base_padding
+                            elif emoji_unicode in [0x1F600, 0x1F601, 0x1F602]:  # 😀😁😂
+                                # Face emojis that are more centered
+                                emoji_padding_top = base_padding
+                                emoji_padding_bottom = base_padding
+                            else:
+                                # Default padding for other emojis
+                                emoji_padding_top = base_padding
+                                emoji_padding_bottom = base_padding
+                            
+                            # Create generous boundary box
+                            emoji_box_top = y - emoji_padding_top
+                            emoji_box_bottom = y + chunk_size + emoji_padding_bottom
+                            emoji_box_height = emoji_box_bottom - emoji_box_top
+                            
+                            # Smart centering: position emoji to align with text baseline
+                            # Calculate where text baseline would be
+                            text_baseline_y = y + (chunk_size * 3 // 4)  # Assume baseline is 3/4 down the line
+                            
+                            # Position emoji so its bottom aligns with text baseline
+                            emoji_y = text_baseline_y - emoji_img.height
+                            
+                            # Ensure emoji stays within the generous boundary box
+                            emoji_y = max(emoji_box_top, min(emoji_y, emoji_box_bottom - emoji_img.height))
+                            
+                            print(f"🔍 Emoji-specific positioning: char={emoji_char}, unicode={emoji_unicode:04x}")
+                            print(f"🔍 Padding: top={emoji_padding_top}, bottom={emoji_padding_bottom}")
+                            print(f"🔍 Text baseline: {text_baseline_y}, emoji_y={emoji_y}")
+                            print(f"🔍 Boundary: top={emoji_box_top}, bottom={emoji_box_bottom}")
+                            
                             emoji_x = max(0, min(int(current_x_offset), box_left + box_width - emoji_img.width))
                             
                             # Validate emoji position before rendering
-                            if (emoji_x >= 0 and emoji_y >= y and 
+                            if (emoji_x >= 0 and emoji_y >= emoji_box_top and 
                                 emoji_x + emoji_img.width <= box_left + box_width and
-                                emoji_y + emoji_img.height <= y + chunk_size):
+                                emoji_y + emoji_img.height <= emoji_box_bottom):
                                 print(f"🎨 Rendering individual emoji: '{emoji_segment}' at position ({emoji_x}, {emoji_y}) with size {emoji_img.size}")
-                                print(f"🔍 Emoji positioning debug: y={y}, chunk_size={chunk_size}, emoji_height={emoji_img.height}, final_y={emoji_y}")
+                                print(f"🔍 Emoji boundary box: top={emoji_box_top}, bottom={emoji_box_bottom}, height={emoji_box_height}, center={emoji_box_center_y}, final_y={emoji_y}")
                                 draw._image.paste(emoji_img, (emoji_x, emoji_y), emoji_img)
                                 # Move x position for next emoji
                                 current_x_offset += emoji_img.width

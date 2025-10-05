@@ -138,12 +138,85 @@ class TextRendererUtility:
                             # Render each emoji individually
                             emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
                             if emoji_img:
-                                # Align emoji with text baseline - position at the bottom of the text line
-                                emoji_y = int(current_y + chunk_size - emoji_img.height)
-                                # Ensure emoji doesn't go above the text area
-                                emoji_y = max(current_y, emoji_y)
+                                # Saliency-based emoji positioning
+                                # Analyze the emoji image to find the actual content boundaries
+                                
+                                # Convert to numpy array for analysis
+                                import numpy as np
+                                emoji_array = np.array(emoji_img)
+                                
+                                # Find non-transparent pixels (content area)
+                                if emoji_array.shape[2] == 4:  # RGBA
+                                    alpha_channel = emoji_array[:, :, 3]
+                                    content_pixels = alpha_channel > 0
+                                else:  # RGB
+                                    # For RGB images, assume all pixels are content
+                                    content_pixels = np.ones((emoji_array.shape[0], emoji_array.shape[1]), dtype=bool)
+                                
+                                # Find content boundaries
+                                if np.any(content_pixels):
+                                    # Find rows and columns with content
+                                    content_rows = np.any(content_pixels, axis=1)
+                                    content_cols = np.any(content_pixels, axis=0)
+                                    
+                                    # Get content boundaries
+                                    content_top = np.argmax(content_rows) if np.any(content_rows) else 0
+                                    content_bottom = len(content_rows) - np.argmax(content_rows[::-1]) if np.any(content_rows) else emoji_img.height
+                                    content_left = np.argmax(content_cols) if np.any(content_cols) else 0
+                                    content_right = len(content_cols) - np.argmax(content_cols[::-1]) if np.any(content_cols) else emoji_img.width
+                                    
+                                    # Calculate content dimensions
+                                    content_height = content_bottom - content_top
+                                    content_width = content_right - content_left
+                                    
+                                    print(f"🔍 Saliency analysis: content_top={content_top}, content_bottom={content_bottom}")
+                                    print(f"🔍 Content dimensions: {content_width}x{content_height}")
+                                    print(f"🔍 Original emoji size: {emoji_img.size}")
+                                    
+                                    # Crop the emoji to its actual content boundaries
+                                    # This removes empty space and makes the emoji the right size
+                                    if content_width > 0 and content_height > 0:
+                                        # Crop to content area
+                                        emoji_img = emoji_img.crop((content_left, content_top, content_right, content_bottom))
+                                        print(f"🔍 Cropped emoji to content: {emoji_img.size}")
+                                        
+                                        # Scale the cropped emoji to fit properly within the text line
+                                        # Target size should be smaller than chunk_size for proper text alignment
+                                        target_height = int(chunk_size * 0.8)  # 80% of text line height
+                                        target_width = int(chunk_size * 0.8)  # 80% of text line width
+                                        
+                                        # Scale based on the larger dimension
+                                        height_scale = target_height / emoji_img.height
+                                        width_scale = target_width / emoji_img.width
+                                        scale_factor = min(height_scale, width_scale, 1.0)  # Don't scale up
+                                        
+                                        if scale_factor < 1.0:
+                                            new_width = int(emoji_img.width * scale_factor)
+                                            new_height = int(emoji_img.height * scale_factor)
+                                            emoji_img = emoji_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                                            print(f"🔍 Scaled emoji to fit: {emoji_img.size} (scale_factor={scale_factor:.2f})")
+                                        else:
+                                            print(f"🔍 Emoji already fits: {emoji_img.size}")
+                                    
+                                    # Position emoji to align with text baseline
+                                    # Since we cropped to content, we need to position it properly
+                                    text_baseline = current_y + chunk_size
+                                    emoji_y = text_baseline - emoji_img.height
+                                    
+                                    # Ensure emoji doesn't go above the text area
+                                    emoji_y = max(current_y, emoji_y)
+                                    
+                                    print(f"🔍 Baseline positioning: current_y={current_y}, chunk_size={chunk_size}, text_baseline={text_baseline}")
+                                    print(f"🔍 Calculated emoji_y={emoji_y}, emoji_height={emoji_img.height}")
+                                    print(f"🔍 Final emoji size: {emoji_img.size}")
+                                else:
+                                    # Fallback: no content detected, use default centering
+                                    emoji_box_top = current_y
+                                    emoji_box_bottom = current_y + chunk_size
+                                    emoji_y = current_y + (chunk_size - emoji_img.height) // 2
+                                    print(f"🔍 Fallback positioning: no content detected")
+                                
                                 print(f"🎨 Rendering individual emoji: '{emoji_segment}' at position ({int(current_x_offset)}, {emoji_y}) with size {emoji_img.size}")
-                                print(f"🔍 Emoji positioning debug: current_y={current_y}, chunk_size={chunk_size}, emoji_height={emoji_img.height}, final_y={emoji_y}")
                                 draw._image.paste(emoji_img, (int(current_x_offset), emoji_y), emoji_img)
                                 # Move x position for next emoji
                                 current_x_offset += emoji_img.width
