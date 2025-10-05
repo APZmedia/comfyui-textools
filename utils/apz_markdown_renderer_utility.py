@@ -241,15 +241,59 @@ class MarkdownRendererUtility:
                 color = font_color_rgb
 
             if chunk_width > 0 and font_manager.emoji_support.has_emoji(text_part):
-                emoji_img = emoji_png_renderer.load_emoji_png(text_part, chunk_size)
-                if emoji_img:
-                    # Better emoji positioning - center vertically with the text baseline
-                    emoji_y = int(y + (chunk_size - emoji_img.height) // 2)
-                    draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
-                else:
-                    MarkdownRendererUtility._draw_text_with_color_support(
-                        draw, (current_x, y), text_part, current_font, color, font_manager
-                    )
+                # Handle multiple consecutive emojis by splitting them individually
+                emoji_segments = font_manager.emoji_support.split_text_by_emoji(text_part)
+                current_x_offset = current_x
+                
+                for emoji_segment, is_emoji in emoji_segments:
+                    if not emoji_segment:
+                        continue
+                        
+                    if is_emoji:
+                        # Use exact text size for emojis to prevent size mismatch
+                        emoji_size = chunk_size  # Match text size exactly
+                        emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, emoji_size)
+                        if emoji_img:
+                            # Align emoji with text baseline - position at the bottom of the text line
+                            emoji_y = int(y + chunk_size - emoji_img.height)
+                            # Ensure emoji doesn't go above the text area
+                            emoji_y = max(y, emoji_y)
+                            emoji_x = max(0, min(int(current_x_offset), box_left + box_width - emoji_img.width))
+                            
+                            # Validate emoji position before rendering
+                            if (emoji_x >= 0 and emoji_y >= y and 
+                                emoji_x + emoji_img.width <= box_left + box_width and
+                                emoji_y + emoji_img.height <= y + chunk_size):
+                                print(f"🎨 Rendering individual emoji: '{emoji_segment}' at position ({emoji_x}, {emoji_y}) with size {emoji_img.size}")
+                                print(f"🔍 Emoji positioning debug: y={y}, chunk_size={chunk_size}, emoji_height={emoji_img.height}, final_y={emoji_y}")
+                                draw._image.paste(emoji_img, (emoji_x, emoji_y), emoji_img)
+                                # Move x position for next emoji
+                                current_x_offset += emoji_img.width
+                            else:
+                                print(f"⚠️ Emoji '{emoji_segment}' would be cropped, using font fallback")
+                                MarkdownRendererUtility._draw_text_with_color_support(
+                                    draw, (current_x_offset, y), emoji_segment, current_font, color, font_manager
+                                )
+                                # Estimate width for positioning
+                                current_x_offset += chunk_size
+                        else:
+                            # Fallback to font rendering for this emoji
+                            MarkdownRendererUtility._draw_text_with_color_support(
+                                draw, (current_x_offset, y), emoji_segment, current_font, color, font_manager
+                            )
+                            # Estimate width for positioning
+                            current_x_offset += chunk_size
+                    else:
+                        # Render non-emoji text
+                        MarkdownRendererUtility._draw_text_with_color_support(
+                            draw, (current_x_offset, y), emoji_segment, current_font, color, font_manager
+                        )
+                        # Measure and advance position
+                        segment_width = MarkdownRendererUtility._measure_text_width(emoji_segment, styles, font_manager, chunk_size)
+                        current_x_offset += segment_width
+                
+                # Update current_x to the final position
+                current_x = current_x_offset
             else:
                 MarkdownRendererUtility._draw_text_with_color_support(
                     draw, (current_x, y), text_part, current_font, color, font_manager

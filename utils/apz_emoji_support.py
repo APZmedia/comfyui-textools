@@ -380,6 +380,7 @@ class EmojiSupport:
         """
         Split text into emoji and non-emoji parts.
         Uses emoji sequence pattern to handle variation selectors properly.
+        Handles multiple consecutive emojis correctly.
         
         Args:
             text: Input text
@@ -398,8 +399,9 @@ class EmojiSupport:
             if start > current_pos:
                 parts.append((text[current_pos:start], False))
             
-            # Add emoji sequence
-            parts.append((match.group(), True))
+            # Add emoji sequence (can contain multiple consecutive emojis)
+            emoji_text = match.group()
+            parts.append((emoji_text, True))
             current_pos = end
         
         # If no emoji sequences found, fall back to individual emoji matching

@@ -165,8 +165,8 @@ class TwemojiRenderer:
             # Use better scaling algorithm based on whether we're upscaling or downscaling
             original_size = max(img.size)
             if size > original_size:
-                # Upscaling - use NEAREST for pixel art, or BICUBIC for smooth
-                img = img.resize((size, size), Image.Resampling.NEAREST)
+                # Upscaling - use BICUBIC for smooth scaling
+                img = img.resize((size, size), Image.Resampling.BICUBIC)
             else:
                 # Downscaling - use LANCZOS for better quality
                 img = img.resize((size, size), Image.Resampling.LANCZOS)

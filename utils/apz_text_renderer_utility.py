@@ -126,15 +126,45 @@ class TextRendererUtility:
                     )
 
                 if chunk_width > 0 and font_manager.emoji_support.has_emoji(chunk):
-                    emoji_img = emoji_png_renderer.load_emoji_png(chunk, chunk_size)
-                    if emoji_img:
-                        # Better emoji positioning - center vertically with the text baseline
-                        emoji_y = int(current_y + (chunk_size - emoji_img.height) // 2)
-                        draw._image.paste(emoji_img, (int(current_x), emoji_y), emoji_img)
-                    else:
-                        TextRendererUtility._draw_text_with_color_support(
-                            draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
-                        )
+                    # Handle multiple consecutive emojis by splitting them individually
+                    emoji_segments = font_manager.emoji_support.split_text_by_emoji(chunk)
+                    current_x_offset = current_x
+                    
+                    for emoji_segment, is_emoji in emoji_segments:
+                        if not emoji_segment:
+                            continue
+                            
+                        if is_emoji:
+                            # Render each emoji individually
+                            emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
+                            if emoji_img:
+                                # Align emoji with text baseline - position at the bottom of the text line
+                                emoji_y = int(current_y + chunk_size - emoji_img.height)
+                                # Ensure emoji doesn't go above the text area
+                                emoji_y = max(current_y, emoji_y)
+                                print(f"🎨 Rendering individual emoji: '{emoji_segment}' at position ({int(current_x_offset)}, {emoji_y}) with size {emoji_img.size}")
+                                print(f"🔍 Emoji positioning debug: current_y={current_y}, chunk_size={chunk_size}, emoji_height={emoji_img.height}, final_y={emoji_y}")
+                                draw._image.paste(emoji_img, (int(current_x_offset), emoji_y), emoji_img)
+                                # Move x position for next emoji
+                                current_x_offset += emoji_img.width
+                            else:
+                                # Fallback to font rendering for this emoji
+                                TextRendererUtility._draw_text_with_color_support(
+                                    draw, (current_x_offset, current_y), emoji_segment, current_font, current_font_color_rgb, font_manager
+                                )
+                                # Estimate width for positioning
+                                current_x_offset += chunk_size
+                        else:
+                            # Render non-emoji text
+                            TextRendererUtility._draw_text_with_color_support(
+                                draw, (current_x_offset, current_y), emoji_segment, current_font, current_font_color_rgb, font_manager
+                            )
+                            # Measure and advance position
+                            segment_width = TextRendererUtility._measure_chunk_width(emoji_segment, styles_dict, font_manager, chunk_size)
+                            current_x_offset += segment_width
+                    
+                    # Update current_x to the final position
+                    current_x = current_x_offset
                 else:
                     TextRendererUtility._draw_text_with_color_support(
                         draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
