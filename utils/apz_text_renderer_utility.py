@@ -5,15 +5,29 @@ from .apz_twemoji_renderer import TwemojiRenderer
 from .apz_emoji_png_renderer import EmojiPNGRenderer
 
 class TextRendererUtility:
+    # Cache for emoji dimensions to avoid recalculation
+    _emoji_dimensions_cache = {}
+    # Cache for processed emoji images to avoid reprocessing
+    _emoji_images_cache = {}
+    
     @staticmethod
     def _get_emoji_rendered_width(emoji_segment, chunk_size, emoji_png_renderer):
         """
         Get the actual width that an emoji will occupy when rendered.
-        This must match the actual rendering logic exactly.
+        Uses caching to avoid recalculation for the same emoji and size.
         """
+        # Create cache key based on emoji and size
+        cache_key = f"{emoji_segment}_{chunk_size}"
+        
+        # Check cache first
+        if cache_key in TextRendererUtility._emoji_dimensions_cache:
+            return TextRendererUtility._emoji_dimensions_cache[cache_key]
+        
         emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
         if not emoji_img:
-            return int(chunk_size * 0.8)  # Fallback width
+            width = int(chunk_size * 0.8)  # Fallback width
+            TextRendererUtility._emoji_dimensions_cache[cache_key] = width
+            return width
         
         # Apply the same cropping logic as the renderer to remove padding
         import numpy as np
@@ -42,11 +56,73 @@ class TextRendererUtility:
             
             # Ensure we have a reasonable minimum width
             if content_width > 0:
-                return max(content_width, 4)  # Minimum 4px width
+                width = max(content_width, 4)  # Minimum 4px width
             else:
-                return int(chunk_size * 0.8)
+                width = int(chunk_size * 0.8)
         else:
-            return int(chunk_size * 0.8)
+            width = int(chunk_size * 0.8)
+        
+        # Cache the result
+        TextRendererUtility._emoji_dimensions_cache[cache_key] = width
+        return width
+
+    @staticmethod
+    def _get_processed_emoji_image(emoji_segment, chunk_size, emoji_png_renderer):
+        """
+        Get a processed emoji image with padding removed.
+        Uses caching to avoid reprocessing the same emoji and size.
+        """
+        # Create cache key based on emoji and size
+        cache_key = f"{emoji_segment}_{chunk_size}"
+        
+        # Check cache first
+        if cache_key in TextRendererUtility._emoji_images_cache:
+            return TextRendererUtility._emoji_images_cache[cache_key]
+        
+        emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
+        if not emoji_img:
+            TextRendererUtility._emoji_images_cache[cache_key] = None
+            return None
+        
+        # Apply the same cropping logic as the renderer to remove padding
+        import numpy as np
+        emoji_array = np.array(emoji_img)
+        
+        # Find content boundaries with more aggressive padding removal
+        if emoji_array.shape[2] == 4:  # RGBA
+            alpha_channel = emoji_array[:, :, 3]
+            # Use a higher threshold to be more aggressive about removing padding
+            content_pixels = alpha_channel > 10  # Threshold for transparency
+        else:  # RGB
+            # For RGB images, look for non-white pixels (assuming white is background)
+            content_pixels = np.any(emoji_array < 250, axis=2)
+        
+        if np.any(content_pixels):
+            content_rows = np.any(content_pixels, axis=1)
+            content_cols = np.any(content_pixels, axis=0)
+            
+            # Find the first and last rows/columns with content
+            content_top = np.argmax(content_rows) if np.any(content_rows) else 0
+            content_bottom = len(content_rows) - np.argmax(content_rows[::-1]) if np.any(content_rows) else emoji_img.height
+            content_left = np.argmax(content_cols) if np.any(content_cols) else 0
+            content_right = len(content_cols) - np.argmax(content_cols[::-1]) if np.any(content_cols) else emoji_img.width
+            
+            # Crop to content area to remove padding
+            if content_right > content_left and content_bottom > content_top:
+                emoji_img = emoji_img.crop((content_left, content_top, content_right, content_bottom))
+        
+        # Cache the processed image
+        TextRendererUtility._emoji_images_cache[cache_key] = emoji_img
+        return emoji_img
+
+    @staticmethod
+    def clear_emoji_cache():
+        """
+        Clear the emoji caches to free memory.
+        Call this when you want to reset the cache.
+        """
+        TextRendererUtility._emoji_dimensions_cache.clear()
+        TextRendererUtility._emoji_images_cache.clear()
 
     @staticmethod
     def _draw_text_with_color_support(draw, position, text, font, fill, font_manager):
@@ -204,36 +280,9 @@ class TextRendererUtility:
                         # Debug boxes removed for clean rendering
                             
                         if is_emoji:
-                            # Render each emoji individually
-                            emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
+                            # Render each emoji individually using cached processed image
+                            emoji_img = TextRendererUtility._get_processed_emoji_image(emoji_segment, chunk_size, emoji_png_renderer)
                             if emoji_img:
-                                # Apply the same cropping logic as measurement to remove padding
-                                import numpy as np
-                                emoji_array = np.array(emoji_img)
-                                
-                                # Find content boundaries with more aggressive padding removal
-                                if emoji_array.shape[2] == 4:  # RGBA
-                                    alpha_channel = emoji_array[:, :, 3]
-                                    # Use a higher threshold to be more aggressive about removing padding
-                                    content_pixels = alpha_channel > 10  # Threshold for transparency
-                                else:  # RGB
-                                    # For RGB images, look for non-white pixels (assuming white is background)
-                                    content_pixels = np.any(emoji_array < 250, axis=2)
-                                
-                                if np.any(content_pixels):
-                                    content_rows = np.any(content_pixels, axis=1)
-                                    content_cols = np.any(content_pixels, axis=0)
-                                    
-                                    # Find the first and last rows/columns with content
-                                    content_top = np.argmax(content_rows) if np.any(content_rows) else 0
-                                    content_bottom = len(content_rows) - np.argmax(content_rows[::-1]) if np.any(content_rows) else emoji_img.height
-                                    content_left = np.argmax(content_cols) if np.any(content_cols) else 0
-                                    content_right = len(content_cols) - np.argmax(content_cols[::-1]) if np.any(content_cols) else emoji_img.width
-                                    
-                                    # Crop to content area to remove padding
-                                    if content_right > content_left and content_bottom > content_top:
-                                        emoji_img = emoji_img.crop((content_left, content_top, content_right, content_bottom))
-                                
                                 # Position emoji to align with text baseline
                                 text_baseline = current_y + chunk_size
                                 emoji_y = text_baseline - emoji_img.height
