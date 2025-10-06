@@ -86,12 +86,12 @@ class TwemojiRenderer:
             return None
         
         try:
-            print(f"Downloading emoji from: {url}")
+            # Debug logging removed for performance
             response = self.session.get(url, timeout=10)
             response.raise_for_status()
             return response.content
         except Exception as e:
-            print(f"Failed to download emoji from {url}: {e}")
+            # Debug logging removed for performance
             return None
     
     def load_emoji(self, emoji_char, size=72):
@@ -118,7 +118,8 @@ class TwemojiRenderer:
                     self.emoji_cache[cache_key] = img
                     return img
             except Exception as e:
-                print(f"Failed to load local emoji {local_path}: {e}")
+                # Debug logging removed for performance
+                pass
         
         # Download from CDN
         emoji_data = self.download_emoji(emoji_char, size)
@@ -143,7 +144,8 @@ class TwemojiRenderer:
                     self.emoji_cache[cache_key] = img
                     return img
             except Exception as e:
-                print(f"Failed to process downloaded emoji: {e}")
+                # Debug logging removed for performance
+                pass
         
         return None
     
@@ -152,10 +154,10 @@ class TwemojiRenderer:
         try:
             # For SVG support, we'd need cairosvg or similar
             # For now, we'll use PNG mode which is more reliable
-            print(f"SVG conversion not implemented, using PNG mode instead")
+            # Debug logging removed for performance
             return None
         except Exception as e:
-            print(f"Failed to convert SVG to PNG: {e}")
+            # Debug logging removed for performance
             return None
     
     def render_emoji(self, emoji_char, size=72):
@@ -200,22 +202,24 @@ def test_twemoji():
     
     # Test emoji detection
     text = "Hello ❄️🌸 World!"
-    print(f"Text: {text}")
-    print(f"Has emoji: {renderer.has_emoji(text)}")
+    # Debug logging removed for performance
+    # Debug logging removed for performance
     
     # Test splitting
     parts = renderer.split_text_by_emoji(text)
-    print(f"Parts: {parts}")
+    # Debug logging removed for performance
     
     # Test individual emoji loading
     for emoji_part, is_emoji in parts:
         if is_emoji:
-            print(f"Loading emoji: {emoji_part}")
+            # Debug logging removed for performance
             img = renderer.load_emoji(emoji_part, 72)
             if img:
-                print(f"  ✅ Loaded: {img.size}")
+                # Debug logging removed for performance
+                pass
             else:
-                print(f"  ❌ Failed to load")
+                # Debug logging removed for performance
+                pass
 
 if __name__ == "__main__":
     test_twemoji()

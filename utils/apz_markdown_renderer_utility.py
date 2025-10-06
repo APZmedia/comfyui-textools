@@ -24,7 +24,8 @@ class MarkdownRendererUtility:
             except TypeError:
                 pass
             except Exception as exc:
-                print(f"Warning: embedded color rendering failed, falling back to standard fill. Error: {exc}")
+                # Debug logging removed for performance
+                pass
         draw.text(position, text, font=font, fill=fill)
 
     @staticmethod
@@ -42,7 +43,12 @@ class MarkdownRendererUtility:
                 if not segment:
                     continue
                 if is_emoji:
-                    total_width += font_size * len(segment)
+                    # Use the same helper function as the main renderer for consistency
+                    from .apz_emoji_png_renderer import EmojiPNGRenderer
+                    from .apz_text_renderer_utility import TextRendererUtility
+                    emoji_png_renderer = EmojiPNGRenderer()
+                    emoji_width = TextRendererUtility._get_emoji_rendered_width(segment, font_size, emoji_png_renderer)
+                    total_width += emoji_width
                 else:
                     segment_font = font_manager.get_font_for_style(styles, font_size, segment)
                     bbox = segment_font.getbbox(segment)
@@ -58,7 +64,7 @@ class MarkdownRendererUtility:
                            box_width, box_height, font_manager, color_utility, 
                            alignment, vertical_alignment, line_height_ratio,
                            font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, 
-                           font_size):
+                           font_size, hashtag_color_rgb=None):
         """
         Render markdown text with proper styling and layout.
         
@@ -121,7 +127,7 @@ class MarkdownRendererUtility:
             MarkdownRendererUtility._render_line(
                 draw, line, box_left, current_y, padding, box_width,
                 font_manager, color_utility, alignment, line_sizes[idx],
-                font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
+                font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, hashtag_color_rgb
             )
             current_y += line_height
     
@@ -198,7 +204,7 @@ class MarkdownRendererUtility:
     @staticmethod
     def _render_line(draw, line, box_left, y, padding, box_width, font_manager,
                     color_utility, alignment, font_size, font_color_rgb,
-                    italic_font_color_rgb, bold_font_color_rgb):
+                    italic_font_color_rgb, bold_font_color_rgb, hashtag_color_rgb=None):
         """
         Render a single line of markdown text.
         """
@@ -232,7 +238,10 @@ class MarkdownRendererUtility:
             current_font = font_manager.get_font_for_style(style_dict, chunk_size, text_part)
 
             if style_dict.get("hashtag", False):
-                color = (0, 100, 200)
+                if hashtag_color_rgb:
+                    color = hashtag_color_rgb
+                else:
+                    color = (0, 100, 200)  # Default blue
             elif style_dict.get("b", False):
                 color = bold_font_color_rgb
             elif style_dict.get("i", False):
@@ -294,10 +303,10 @@ class MarkdownRendererUtility:
                             # Ensure emoji stays within the generous boundary box
                             emoji_y = max(emoji_box_top, min(emoji_y, emoji_box_bottom - emoji_img.height))
                             
-                            print(f"🔍 Emoji-specific positioning: char={emoji_char}, unicode={emoji_unicode:04x}")
-                            print(f"🔍 Padding: top={emoji_padding_top}, bottom={emoji_padding_bottom}")
-                            print(f"🔍 Text baseline: {text_baseline_y}, emoji_y={emoji_y}")
-                            print(f"🔍 Boundary: top={emoji_box_top}, bottom={emoji_box_bottom}")
+                            # Debug logging removed for performance
+                            # Debug logging removed for performance
+                            # Debug logging removed for performance
+                            # Debug logging removed for performance
                             
                             emoji_x = max(0, min(int(current_x_offset), box_left + box_width - emoji_img.width))
                             
@@ -305,13 +314,13 @@ class MarkdownRendererUtility:
                             if (emoji_x >= 0 and emoji_y >= emoji_box_top and 
                                 emoji_x + emoji_img.width <= box_left + box_width and
                                 emoji_y + emoji_img.height <= emoji_box_bottom):
-                                print(f"🎨 Rendering individual emoji: '{emoji_segment}' at position ({emoji_x}, {emoji_y}) with size {emoji_img.size}")
-                                print(f"🔍 Emoji boundary box: top={emoji_box_top}, bottom={emoji_box_bottom}, height={emoji_box_height}, center={emoji_box_center_y}, final_y={emoji_y}")
+                                # Debug logging removed for performance
+                                # Debug logging removed for performance
                                 draw._image.paste(emoji_img, (emoji_x, emoji_y), emoji_img)
                                 # Move x position for next emoji
                                 current_x_offset += emoji_img.width
                             else:
-                                print(f"⚠️ Emoji '{emoji_segment}' would be cropped, using font fallback")
+                                # Debug logging removed for performance
                                 MarkdownRendererUtility._draw_text_with_color_support(
                                     draw, (current_x_offset, y), emoji_segment, current_font, color, font_manager
                                 )

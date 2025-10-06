@@ -116,7 +116,7 @@ class EnhancedFontLoaderUtility:
             except Exception as e:
                 import traceback
                 warnings.append(f"Error at font size {font_size}: {str(e)}")
-                # print(f"Debug traceback: {traceback.format_exc()}")  # Uncomment for debugging
+                # # Debug logging removed for performance  # Uncomment for debugging
                 font_size -= 1
                 continue
                 

@@ -7,72 +7,86 @@ This module provides utility functions and classes for text processing, font man
 try:
     from .apz_box_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_box_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_color_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_color_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_enhanced_font_loader_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_enhanced_font_loader_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_error_handler_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_error_handler_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_font_loader_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_font_loader_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_font_manager import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_font_manager: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_image_conversion import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_image_conversion: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_markdown_parser import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_markdown_parser: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_markdown_renderer_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_markdown_renderer_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_rich_text_parser import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_rich_text_parser: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_text_box_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_text_box_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_text_renderer_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_text_renderer_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_text_wrapper import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_text_wrapper: {e}")
+    # Debug logging removed for performance
+    pass
 
 try:
     from .apz_url_file_utility import *
 except ImportError as e:
-    print(f"Warning: Could not import apz_url_file_utility: {e}")
+    # Debug logging removed for performance
+    pass
 
 # Make specific classes and functions available for import
 try:

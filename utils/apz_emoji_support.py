@@ -160,9 +160,10 @@ class EmojiSupport:
                 url_utility = URLFileUtility()
                 custom_font_path = url_utility.get_local_path(self.custom_emoji_font_url)
                 custom_fonts.append(custom_font_path)
-                print(f"Using custom emoji font from URL: {self.custom_emoji_font_url}")
+                # Debug logging removed for performance
             except Exception as e:
-                print(f"Warning: Could not load custom emoji font from URL '{self.custom_emoji_font_url}': {e}")
+                # Debug logging removed for performance
+                pass
         
         # Prioritize bundled fonts
         bundled_fonts = [
@@ -263,7 +264,7 @@ class EmojiSupport:
                 font = ImageFont.truetype(font_name, font_size)
                 self._record_font_metadata(font_name, font)
                 self.emoji_font_cache[cache_key] = font
-                print(f"Loaded system emoji font: {font_name} at size {font_size}")
+                # Debug logging removed for performance
                 return font
             except OSError:
                 continue
@@ -275,7 +276,7 @@ class EmojiSupport:
                 font = ImageFont.truetype(font_path, font_size)
                 self._record_font_metadata(font_path, font)
                 self.emoji_font_cache[cache_key] = font
-                print(f"Loaded emoji font: {font_path} at size {font_size}")
+                # Debug logging removed for performance
                 return font
             except OSError as e:
                 # If NotoColorEmoji fails at requested size, try a scaled approach
@@ -289,16 +290,16 @@ class EmojiSupport:
                         scale_factor = font_size / base_size
                         font.scale_factor = scale_factor
                         self.emoji_font_cache[cache_key] = font
-                        print(f"Loaded NotoColorEmoji at base size {base_size} with scale factor {scale_factor:.2f} (requested: {font_size})")
+                        # Debug logging removed for performance
                         return font
                     except OSError:
-                        print(f"NotoColorEmoji failed at base size: {e}")
+                        # Debug logging removed for performance
                         continue
                 else:
-                    print(f"Font failed at size {font_size}: {e}")
+                    # Debug logging removed for performance
                     continue
             except (OSError, IOError) as e:
-                print(f"Failed to load emoji font {font_path}: {e}")
+                # Debug logging removed for performance
                 continue
         
         # Fallback to default font
@@ -306,7 +307,7 @@ class EmojiSupport:
             font = ImageFont.load_default()
             self._record_font_metadata(None, font)
             self.emoji_font_cache[cache_key] = font
-            print(f"Using default font for emojis at size {font_size}")
+            # Debug logging removed for performance
             return font
         except Exception:
             return None
@@ -330,7 +331,7 @@ class EmojiSupport:
             height = bbox[3] - bbox[1]
             return width > 0 and height > 0
         except Exception as e:
-            print(f"Emoji test error: {e}")
+            # Debug logging removed for performance
             return False
     
     def get_font_for_text(self, text, regular_font, font_size):

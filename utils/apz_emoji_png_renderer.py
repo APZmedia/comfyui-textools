@@ -42,15 +42,15 @@ class EmojiPNGRenderer:
     
     def load_emoji_png(self, emoji_char, size):
         """Load and cache emoji PNG at specified size with smart resolution selection."""
-        print(f"🔍 Loading emoji PNG: '{emoji_char}' at size {size}")
+        # Emoji PNG loading logging removed for performance
         cache_key = (emoji_char, size)
         if cache_key in self.emoji_cache:
-            print(f"✅ Using cached emoji: {emoji_char} at size {size}")
+            # Cached emoji logging removed for performance
             return self.emoji_cache[cache_key]
         
         # Always generate high-quality PNG emojis from fonts
         # This ensures consistent, crisp emoji rendering
-        print(f"🎨 Generating high-quality PNG emoji: '{emoji_char}' at size {size}")
+        # Emoji generation logging removed for performance
         emoji_img = self._generate_emoji_png(emoji_char, size)
         if emoji_img:
             self.emoji_cache[cache_key] = emoji_img
@@ -59,9 +59,10 @@ class EmojiPNGRenderer:
                 os.makedirs(os.path.dirname(self.get_emoji_png_path(emoji_char)), exist_ok=True)
                 # Save at the actual rendered size for maximum quality
                 emoji_img.save(self.get_emoji_png_path(emoji_char))
-                print(f"✅ Saved high-quality emoji PNG: {self.get_emoji_png_path(emoji_char)} at size {emoji_img.size}")
+                # Debug logging removed for performance
             except Exception as e:
-                print(f"Warning: Could not save generated emoji PNG: {e}")
+                # Debug logging removed for performance
+                pass
             return emoji_img
         
         return None
@@ -99,7 +100,7 @@ class EmojiPNGRenderer:
                 if os.path.exists(path):
                     best_resolution = res_name
                     best_size = res_size
-                    print(f"Selected {res_name} resolution ({res_size}px) for target {target_size}px")
+                    # Debug logging removed for performance
                     break
         
         # If we found a suitable resolution, use it
@@ -111,7 +112,7 @@ class EmojiPNGRenderer:
         for res_name, res_size in resolution_ladder:
             path = os.path.join(self.emoji_dir, f"{base_filename}_{res_name}.png")
             if os.path.exists(path):
-                print(f"Fallback: Using {res_name} resolution ({res_size}px) for target {target_size}px")
+                # Debug logging removed for performance
                 return path
         
         # Fallback to base resolution (no suffix)
@@ -125,11 +126,11 @@ class EmojiPNGRenderer:
         """Generate high-quality emoji PNG using super-sampling for crisp rendering."""
         # Generate emoji at 80% of requested size for better text alignment
         target_size = int(size * 0.8)  # 80% of requested size
-        print(f"🎨 Generating high-quality emoji PNG for '{emoji_char}' at size {target_size} (requested: {size})")
+        # Debug logging removed for performance
         try:
             # Use super-sampling for better quality: render at 2x size, then scale down
             render_size = target_size * 2  # Render at double resolution for crispness
-            print(f"🔍 Super-sampling: rendering at {render_size}px, scaling to {target_size}px")
+            # Debug logging removed for performance
             
             # Try system emoji fonts first (these work at any size)
             system_fonts = [
@@ -143,7 +144,7 @@ class EmojiPNGRenderer:
                 try:
                     # Try to load system font at the super-sampled size
                     font = ImageFont.truetype(font_name, render_size)
-                    print(f"✅ Using system font: {font_name} at super-sampled size {render_size}")
+                    # Debug logging removed for performance
                     # Render at high resolution, then scale down for crispness
                     return self._render_emoji_to_png(emoji_char, font, target_size, scale_factor=2.0)
                 except OSError:
@@ -165,7 +166,7 @@ class EmojiPNGRenderer:
                     try:
                         # Try to load at the super-sampled size first
                         font = ImageFont.truetype(font_path, render_size)
-                        print(f"✅ Using bundled font: {os.path.basename(font_path)} at super-sampled size {render_size}")
+                        # Debug logging removed for performance
                         return self._render_emoji_to_png(emoji_char, font, target_size, scale_factor=2.0)
                     except OSError:
                         # If it fails, try with a base size and scale
@@ -173,7 +174,7 @@ class EmojiPNGRenderer:
                             base_size = max(109, render_size)  # Use larger base size for quality
                             font = ImageFont.truetype(font_path, base_size)
                             scale_factor = render_size / base_size
-                            print(f"✅ Using bundled font: {os.path.basename(font_path)} at base size {base_size}, scaling to {target_size}")
+                            # Debug logging removed for performance
                             return self._render_emoji_to_png(emoji_char, font, target_size, scale_factor=scale_factor)
                         except OSError:
                             continue
@@ -183,7 +184,7 @@ class EmojiPNGRenderer:
             return self._render_emoji_to_png(emoji_char, font, target_size)
             
         except Exception as e:
-            print(f"Failed to generate emoji PNG for {emoji_char}: {e}")
+            # Debug logging removed for performance
             return None
     
     def _render_emoji_to_png(self, emoji_char, font, size, scale_factor=1.0):
@@ -194,11 +195,11 @@ class EmojiPNGRenderer:
             text_width = bbox[2] - bbox[0]
             text_height = bbox[3] - bbox[1]
             
-            # Create image large enough to accommodate the full emoji
-            # Add some padding to ensure no cropping
-            padding = max(4, size // 10)  # 10% padding or minimum 4px
-            img_width = max(size, text_width + padding * 2)
-            img_height = max(size, text_height + padding * 2)
+            # Create image exactly the size of the emoji content
+            # Use no padding to eliminate extra spacing
+            padding = 0  # No padding
+            img_width = text_width  # Use actual text width only
+            img_height = text_height  # Use actual text height only
             
             # Create a transparent image at the calculated size
             img = Image.new("RGBA", (img_width, img_height), (0, 0, 0, 0))
@@ -207,19 +208,19 @@ class EmojiPNGRenderer:
             if scale_factor != 1.0:
                 # Create a larger image for super-sampling, render, then scale down
                 scaled_size = int(size * scale_factor)
-                scaled_img_width = max(scaled_size, int(text_width * scale_factor) + padding * 2)
-                scaled_img_height = max(scaled_size, int(text_height * scale_factor) + padding * 2)
+                scaled_img_width = int(text_width * scale_factor)
+                scaled_img_height = int(text_height * scale_factor)
                 scaled_img = Image.new("RGBA", (scaled_img_width, scaled_img_height), (0, 0, 0, 0))
                 scaled_draw = ImageDraw.Draw(scaled_img)
                 
                 # Calculate proper positioning to prevent cropping
                 # The bbox gives us the actual content boundaries
                 # We need to position the emoji so its visual content fits properly
-                x = padding - bbox[0]  # Offset by left margin + padding
-                y = padding - bbox[1]  # Offset by top margin + padding
+                x = -bbox[0]  # Offset by left margin
+                y = -bbox[1]  # Offset by top margin
                 
-                print(f"🔍 Super-sampled emoji bbox: {bbox}, positioning at ({x}, {y})")
-                print(f"🔍 Scaled image size: {scaled_img_width}x{scaled_img_height}")
+                # Debug logging removed for performance
+                # Debug logging removed for performance
                 
                 # Render the emoji at high resolution
                 try:
@@ -229,21 +230,21 @@ class EmojiPNGRenderer:
                     scaled_draw.text((x, y), emoji_char, font=font, fill=(0, 0, 0, 255))
                 
                 # Scale down to target size using LANCZOS for maximum quality
-                # Scale to the calculated dimensions, not just square
-                final_width = max(size, text_width + padding * 2)
-                final_height = max(size, text_height + padding * 2)
+                # Scale to the actual content dimensions
+                final_width = text_width
+                final_height = text_height
                 img = scaled_img.resize((final_width, final_height), Image.Resampling.LANCZOS)
-                print(f"✅ Super-sampled emoji: {scaled_img_width}x{scaled_img_height} -> {final_width}x{final_height}")
+                # Debug logging removed for performance
             else:
                 # Render directly at target size
                 draw = ImageDraw.Draw(img)
                 
                 # Calculate proper positioning to prevent cropping
-                x = padding - bbox[0]  # Offset by left margin + padding
-                y = padding - bbox[1]  # Offset by top margin + padding
+                x = -bbox[0]  # Offset by left margin
+                y = -bbox[1]  # Offset by top margin
                 
-                print(f"🔍 Direct emoji bbox: {bbox}, positioning at ({x}, {y})")
-                print(f"🔍 Image size: {img_width}x{img_height}")
+                # Debug logging removed for performance
+                # Debug logging removed for performance
                 
                 try:
                     draw.text((x, y), emoji_char, font=font, embedded_color=True)
@@ -254,7 +255,7 @@ class EmojiPNGRenderer:
             return img
             
         except Exception as e:
-            print(f"Failed to render emoji {emoji_char}: {e}")
+            # Debug logging removed for performance
             return None
     
     def render_text_with_emoji_pngs(self, draw, text, font, font_size, x, y, color):
@@ -340,7 +341,7 @@ This directory should contain transparent PNG files for emojis.
     with open(os.path.join(emoji_dir, "README.md"), "w", encoding="utf-8") as f:
         f.write(readme_content)
     
-    print(f"Created emoji PNG library structure at: {emoji_dir}")
+    # Debug logging removed for performance
     print("Add transparent PNG emoji files to enable color emoji support!")
 
 if __name__ == "__main__":

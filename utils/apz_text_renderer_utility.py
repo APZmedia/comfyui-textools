@@ -6,6 +6,49 @@ from .apz_emoji_png_renderer import EmojiPNGRenderer
 
 class TextRendererUtility:
     @staticmethod
+    def _get_emoji_rendered_width(emoji_segment, chunk_size, emoji_png_renderer):
+        """
+        Get the actual width that an emoji will occupy when rendered.
+        This must match the actual rendering logic exactly.
+        """
+        emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
+        if not emoji_img:
+            return int(chunk_size * 0.8)  # Fallback width
+        
+        # Apply the same cropping logic as the renderer to remove padding
+        import numpy as np
+        emoji_array = np.array(emoji_img)
+        
+        # Find content boundaries with more aggressive padding removal
+        if emoji_array.shape[2] == 4:  # RGBA
+            alpha_channel = emoji_array[:, :, 3]
+            # Use a higher threshold to be more aggressive about removing padding
+            content_pixels = alpha_channel > 10  # Threshold for transparency
+        else:  # RGB
+            # For RGB images, look for non-white pixels (assuming white is background)
+            content_pixels = np.any(emoji_array < 250, axis=2)
+        
+        if np.any(content_pixels):
+            content_rows = np.any(content_pixels, axis=1)
+            content_cols = np.any(content_pixels, axis=0)
+            
+            # Find the first and last rows/columns with content
+            content_top = np.argmax(content_rows) if np.any(content_rows) else 0
+            content_bottom = len(content_rows) - np.argmax(content_rows[::-1]) if np.any(content_rows) else emoji_img.height
+            content_left = np.argmax(content_cols) if np.any(content_cols) else 0
+            content_right = len(content_cols) - np.argmax(content_cols[::-1]) if np.any(content_cols) else emoji_img.width
+            
+            content_width = content_right - content_left
+            
+            # Ensure we have a reasonable minimum width
+            if content_width > 0:
+                return max(content_width, 4)  # Minimum 4px width
+            else:
+                return int(chunk_size * 0.8)
+        else:
+            return int(chunk_size * 0.8)
+
+    @staticmethod
     def _draw_text_with_color_support(draw, position, text, font, fill, font_manager):
         use_embedded_color = font_manager.should_use_embedded_color(font)
         if use_embedded_color:
@@ -15,13 +58,15 @@ class TextRendererUtility:
             except TypeError:
                 pass
             except Exception as exc:
-                print(f"Warning: embedded color rendering failed, falling back to standard fill. Error: {exc}")
+                # Debug logging removed for performance
+                pass
         draw.text(position, text, font=font, fill=fill)
 
     @staticmethod
-    def _measure_chunk_width(text, styles, font_manager, font_size):
+    def _measure_chunk_width(text, styles, font_manager, chunk_size):
         """
         Measure the width of a text chunk, with emoji-aware handling.
+        This must match the actual rendering logic exactly.
         """
         if not text:
             return 0
@@ -29,25 +74,41 @@ class TextRendererUtility:
         local_styles = styles if isinstance(styles, dict) else {}
         emoji_support = getattr(font_manager, "emoji_support", None)
 
+        # For spaces, use a simple and consistent measurement
+        if text == ' ':
+            try:
+                measure_font = font_manager.get_font_for_style(local_styles, chunk_size, text)
+                bbox = measure_font.getbbox(text)
+                space_width = bbox[2] - bbox[0]
+                # Ensure space width is reasonable and consistent
+                return max(space_width, 2)  # Minimum 2px for space
+            except Exception:
+                # Fallback for space width
+                return max(chunk_size // 4, 2)  # Minimum 2px
+
         if emoji_support and emoji_support.has_emoji(text):
             total_width = 0
             for segment, is_emoji in emoji_support.split_text_by_emoji(text):
                 if not segment:
                     continue
                 if is_emoji:
-                    total_width += font_size * max(len(segment), 1)
+                    # Use the helper function to ensure consistency with rendering
+                    from .apz_emoji_png_renderer import EmojiPNGRenderer
+                    emoji_png_renderer = EmojiPNGRenderer()
+                    emoji_width = TextRendererUtility._get_emoji_rendered_width(segment, chunk_size, emoji_png_renderer)
+                    total_width += emoji_width
                 else:
-                    segment_font = font_manager.get_font_for_style(local_styles, font_size, segment)
+                    segment_font = font_manager.get_font_for_style(local_styles, chunk_size, segment)
                     bbox = segment_font.getbbox(segment)
                     total_width += bbox[2] - bbox[0]
             return total_width
 
-        measure_font = font_manager.get_font_for_style(local_styles, font_size, text)
+        measure_font = font_manager.get_font_for_style(local_styles, chunk_size, text)
         bbox = measure_font.getbbox(text)
         return bbox[2] - bbox[0]
 
     @staticmethod
-    def render_text(draw, wrapped_lines, box_start_x, box_start_y, padding, theTextbox_width, theTextbox_height, font_manager, color_utility, alignment, vertical_alignment, line_height_ratio, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb):
+    def render_text(draw, wrapped_lines, box_start_x, box_start_y, padding, theTextbox_width, theTextbox_height, font_manager, color_utility, alignment, vertical_alignment, line_height_ratio, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, hashtag_color_rgb=None, show_debug_boxes=False):
         if not wrapped_lines:
             return
 
@@ -111,15 +172,21 @@ class TextRendererUtility:
                 if not chunk:
                     continue
 
+                # Debug box removed for clean rendering
+
                 current_font = font_manager.get_font_for_style(styles_dict, chunk_size, chunk)
                 
                 # Log font usage for rendering
                 font_name = getattr(current_font, 'path', 'Unknown') if hasattr(current_font, 'path') else 'PIL Default'
-                print(f"🎨 Rendering text chunk: '{chunk[:30]}{'...' if len(chunk) > 30 else ''}' with font: {font_name}")
+                # Debug logging removed for performance
 
                 if styles_dict.get("hashtag", False):
-                    current_font_color_rgb = (0, 100, 200)
-                    print(f"🏷️ Hashtag detected, using blue color")
+                    if hashtag_color_rgb:
+                        current_font_color_rgb = hashtag_color_rgb
+                        print(f"🏷️ Hashtag detected: '{chunk}' using color: {hashtag_color_rgb}")
+                    else:
+                        current_font_color_rgb = (0, 100, 200)  # Default blue
+                        print(f"🏷️ Hashtag detected: '{chunk}' using default blue color")
                 else:
                     current_font_color_rgb = color_utility.get_font_color(
                         styles_dict, font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
@@ -133,105 +200,73 @@ class TextRendererUtility:
                     for emoji_segment, is_emoji in emoji_segments:
                         if not emoji_segment:
                             continue
+                        
+                        # Debug boxes removed for clean rendering
                             
                         if is_emoji:
                             # Render each emoji individually
                             emoji_img = emoji_png_renderer.load_emoji_png(emoji_segment, chunk_size)
                             if emoji_img:
-                                # Saliency-based emoji positioning
-                                # Analyze the emoji image to find the actual content boundaries
-                                
-                                # Convert to numpy array for analysis
+                                # Apply the same cropping logic as measurement to remove padding
                                 import numpy as np
                                 emoji_array = np.array(emoji_img)
                                 
-                                # Find non-transparent pixels (content area)
+                                # Find content boundaries with more aggressive padding removal
                                 if emoji_array.shape[2] == 4:  # RGBA
                                     alpha_channel = emoji_array[:, :, 3]
-                                    content_pixels = alpha_channel > 0
+                                    # Use a higher threshold to be more aggressive about removing padding
+                                    content_pixels = alpha_channel > 10  # Threshold for transparency
                                 else:  # RGB
-                                    # For RGB images, assume all pixels are content
-                                    content_pixels = np.ones((emoji_array.shape[0], emoji_array.shape[1]), dtype=bool)
+                                    # For RGB images, look for non-white pixels (assuming white is background)
+                                    content_pixels = np.any(emoji_array < 250, axis=2)
                                 
-                                # Find content boundaries
                                 if np.any(content_pixels):
-                                    # Find rows and columns with content
                                     content_rows = np.any(content_pixels, axis=1)
                                     content_cols = np.any(content_pixels, axis=0)
                                     
-                                    # Get content boundaries
+                                    # Find the first and last rows/columns with content
                                     content_top = np.argmax(content_rows) if np.any(content_rows) else 0
                                     content_bottom = len(content_rows) - np.argmax(content_rows[::-1]) if np.any(content_rows) else emoji_img.height
                                     content_left = np.argmax(content_cols) if np.any(content_cols) else 0
                                     content_right = len(content_cols) - np.argmax(content_cols[::-1]) if np.any(content_cols) else emoji_img.width
                                     
-                                    # Calculate content dimensions
-                                    content_height = content_bottom - content_top
-                                    content_width = content_right - content_left
-                                    
-                                    print(f"🔍 Saliency analysis: content_top={content_top}, content_bottom={content_bottom}")
-                                    print(f"🔍 Content dimensions: {content_width}x{content_height}")
-                                    print(f"🔍 Original emoji size: {emoji_img.size}")
-                                    
-                                    # Crop the emoji to its actual content boundaries
-                                    # This removes empty space and makes the emoji the right size
-                                    if content_width > 0 and content_height > 0:
-                                        # Crop to content area
+                                    # Crop to content area to remove padding
+                                    if content_right > content_left and content_bottom > content_top:
                                         emoji_img = emoji_img.crop((content_left, content_top, content_right, content_bottom))
-                                        print(f"🔍 Cropped emoji to content: {emoji_img.size}")
-                                        
-                                        # Scale the cropped emoji to fit properly within the text line
-                                        # Target size should be smaller than chunk_size for proper text alignment
-                                        target_height = int(chunk_size * 0.8)  # 80% of text line height
-                                        target_width = int(chunk_size * 0.8)  # 80% of text line width
-                                        
-                                        # Scale based on the larger dimension
-                                        height_scale = target_height / emoji_img.height
-                                        width_scale = target_width / emoji_img.width
-                                        scale_factor = min(height_scale, width_scale, 1.0)  # Don't scale up
-                                        
-                                        if scale_factor < 1.0:
-                                            new_width = int(emoji_img.width * scale_factor)
-                                            new_height = int(emoji_img.height * scale_factor)
-                                            emoji_img = emoji_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                                            print(f"🔍 Scaled emoji to fit: {emoji_img.size} (scale_factor={scale_factor:.2f})")
-                                        else:
-                                            print(f"🔍 Emoji already fits: {emoji_img.size}")
-                                    
-                                    # Position emoji to align with text baseline
-                                    # Since we cropped to content, we need to position it properly
-                                    text_baseline = current_y + chunk_size
-                                    emoji_y = text_baseline - emoji_img.height
-                                    
-                                    # Ensure emoji doesn't go above the text area
-                                    emoji_y = max(current_y, emoji_y)
-                                    
-                                    print(f"🔍 Baseline positioning: current_y={current_y}, chunk_size={chunk_size}, text_baseline={text_baseline}")
-                                    print(f"🔍 Calculated emoji_y={emoji_y}, emoji_height={emoji_img.height}")
-                                    print(f"🔍 Final emoji size: {emoji_img.size}")
-                                else:
-                                    # Fallback: no content detected, use default centering
-                                    emoji_box_top = current_y
-                                    emoji_box_bottom = current_y + chunk_size
-                                    emoji_y = current_y + (chunk_size - emoji_img.height) // 2
-                                    print(f"🔍 Fallback positioning: no content detected")
                                 
-                                print(f"🎨 Rendering individual emoji: '{emoji_segment}' at position ({int(current_x_offset)}, {emoji_y}) with size {emoji_img.size}")
+                                # Position emoji to align with text baseline
+                                text_baseline = current_y + chunk_size
+                                emoji_y = text_baseline - emoji_img.height
+                                emoji_y = max(current_y, emoji_y)
+                                
+                                # Position emoji without extra spacing
                                 draw._image.paste(emoji_img, (int(current_x_offset), emoji_y), emoji_img)
-                                # Move x position for next emoji
-                                current_x_offset += emoji_img.width
+                                
+                                # Debug box removed for clean rendering
+                                
+                                # Move x position using the calculated width (same as measurement)
+                                emoji_width = TextRendererUtility._get_emoji_rendered_width(emoji_segment, chunk_size, emoji_png_renderer)
+                                current_x_offset += emoji_width
                             else:
                                 # Fallback to font rendering for this emoji
                                 TextRendererUtility._draw_text_with_color_support(
                                     draw, (current_x_offset, current_y), emoji_segment, current_font, current_font_color_rgb, font_manager
                                 )
+                                
+                                # Debug box removed for clean rendering
+                                
                                 # Estimate width for positioning
                                 current_x_offset += chunk_size
                         else:
+                            # Position non-emoji text without extra spacing
+                            
                             # Render non-emoji text
                             TextRendererUtility._draw_text_with_color_support(
                                 draw, (current_x_offset, current_y), emoji_segment, current_font, current_font_color_rgb, font_manager
                             )
+                            
+                            # Debug box removed for clean rendering
+                            
                             # Measure and advance position
                             segment_width = TextRendererUtility._measure_chunk_width(emoji_segment, styles_dict, font_manager, chunk_size)
                             current_x_offset += segment_width
@@ -239,9 +274,13 @@ class TextRendererUtility:
                     # Update current_x to the final position
                     current_x = current_x_offset
                 else:
+                    # Position text chunk without extra spacing
+                    
                     TextRendererUtility._draw_text_with_color_support(
                         draw, (current_x, current_y), chunk, current_font, current_font_color_rgb, font_manager
                     )
+                    
+                    # Debug box removed for clean rendering
 
                 if chunk_width > 0 and chunk.strip():
                     if styles_dict.get("u", False):
@@ -251,6 +290,8 @@ class TextRendererUtility:
                         strikeout_y = current_y + current_font.getsize(chunk)[1] // 2
                         draw.line((current_x, strikeout_y, current_x + chunk_width, strikeout_y), fill=current_font_color_rgb, width=1)
 
-                current_x += chunk_width
+                # Advance position after text chunk (only for non-emoji chunks)
+                if not (chunk_width > 0 and font_manager.emoji_support.has_emoji(chunk)):
+                    current_x += chunk_width
 
             current_y += line_height

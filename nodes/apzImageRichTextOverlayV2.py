@@ -54,6 +54,7 @@ class APZmediaImageRichTextOverlayV2:
                 "enable_hashtag_support": (["false", "true"], {"default": "true"}),  # Enable hashtag support
                 "enable_emoji_support": (["false", "true"], {"default": "true"}),  # Enable emoji support
                 "custom_emoji_font_url": ("STRING", {"default": "", "multiline": False}),  # Optional custom emoji font URL
+                "show_debug_boxes": (["false", "true"], {"default": "false"}),  # Show debug boxes around text elements
             }
         }
 
@@ -62,7 +63,7 @@ class APZmediaImageRichTextOverlayV2:
     FUNCTION = "apz_add_text_overlay_v2"
     CATEGORY = "APZmedia/Text"
 
-    def apz_add_text_overlay_v2(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, show_error_indicators, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url):
+    def apz_add_text_overlay_v2(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, show_error_indicators, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url, show_debug_boxes):
         print(f"📝 APZmediaImageRichTextOverlayV2 processing:")
         print(f"   Text: '{theText[:50]}{'...' if len(theText) > 50 else ''}'")
         print(f"   Font paths - Regular: {font or 'Default'}, Italic: {italic_font or 'Default'}, Bold: {bold_font or 'Default'}")
@@ -76,6 +77,7 @@ class APZmediaImageRichTextOverlayV2:
         italic_font_color_rgb = color_utility.hex_to_rgb(italic_font_color)
         bold_font_color_rgb = color_utility.hex_to_rgb(bold_font_color)
         hashtag_color_rgb = color_utility.hex_to_rgb(hashtag_color)
+        print(f"🎨 Hashtag color: {hashtag_color} -> RGB: {hashtag_color_rgb}")
         
         # Initialize emoji support with custom URL if provided
         custom_url = custom_emoji_font_url.strip() if custom_emoji_font_url else None
@@ -143,7 +145,7 @@ class APZmediaImageRichTextOverlayV2:
                     draw, wrapped_lines, box_left, box_top, padding,
                     box_right - box_left, box_bottom - box_top, font_manager,
                     color_utility, alignment, vertical_alignment, line_height_ratio,
-                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
+                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, hashtag_color_rgb, show_debug_boxes
                 )
             else:
                 # Handle case where no font size works - try enhanced scaling fallback

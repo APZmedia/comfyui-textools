@@ -34,7 +34,7 @@ def tensor_to_pil(image_tensor):
     pil_images = []
     for img in image_tensor:
         img_np = img.numpy()  # Convert to NumPy array
-        print(f"Shape of img_np: {img_np.shape}")  # Print the shape of the NumPy array to the console
+        # Debug logging removed for performance  # Print the shape of the NumPy array to the console
         img_np = img_np.astype(np.uint8)  # Convert to uint8 if necessary
         pil_image = Image.fromarray(img_np,'RGB')  # Convert to PIL Image
         pil_images.append(pil_image)
@@ -54,7 +54,7 @@ def pil_to_tensor(image_pil):
         arrays = []
         for img in image_pil:
             img_np = np.array(img)  # Convert PIL image to NumPy array
-            print(f"Shape of img_np in pil to tensor: {img_np.shape}")
+            # Debug logging removed for performance
             arrays.append(img_np.astype(np.float32) / 255.0)
         return arrays
 
@@ -62,7 +62,7 @@ def pil_to_tensor(image_pil):
     for img in image_pil:
         img_np = np.array(img)  # Convert PIL image to NumPy array
         # img_np = np.expand_dims(img_np, axis=0)
-        print(f"Shape of img_np in pil to tensor: {img_np.shape}")  # Print the shape of the NumPy array to the console
+        # Debug logging removed for performance  # Print the shape of the NumPy array to the console
         tensor = torch.from_numpy(img_np).float() / 255.0  # Convert to tensor and normalize to [0, 1]
         tensors.append(tensor)
 

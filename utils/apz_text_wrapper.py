@@ -11,6 +11,23 @@ def _get_word_width(word, font, font_manager=None):
         except Exception:
             base_font_size = 16
 
+    # For spaces, use a simple and consistent measurement
+    if word == ' ':
+        try:
+            if font_manager:
+                measure_font = font_manager.get_font_for_style({}, base_font_size, word)
+                bbox = measure_font.getbbox(word)
+                space_width = bbox[2] - bbox[0]
+                # Ensure space width is reasonable and consistent
+                return max(space_width, 2)  # Minimum 2px for space
+            else:
+                bbox = font.getbbox(word)
+                space_width = bbox[2] - bbox[0]
+                return max(space_width, 2)  # Minimum 2px for space
+        except Exception:
+            # Fallback for space width
+            return max(base_font_size // 4, 2)  # Minimum 2px
+
     if font_manager:
         emoji_support = getattr(font_manager, "emoji_support", None)
         if emoji_support and emoji_support.has_emoji(word):
@@ -19,8 +36,12 @@ def _get_word_width(word, font, font_manager=None):
                 if not segment:
                     continue
                 if is_emoji:
-                    emoji_count = max(len(segment), 1)
-                    total_width += base_font_size * emoji_count
+                    # Use the helper function to ensure consistency with rendering
+                    from .apz_emoji_png_renderer import EmojiPNGRenderer
+                    from .apz_text_renderer_utility import TextRendererUtility
+                    emoji_png_renderer = EmojiPNGRenderer()
+                    emoji_width = TextRendererUtility._get_emoji_rendered_width(segment, base_font_size, emoji_png_renderer)
+                    total_width += emoji_width
                 else:
                     try:
                         measure_font = font_manager.get_font_for_style({}, base_font_size, segment)

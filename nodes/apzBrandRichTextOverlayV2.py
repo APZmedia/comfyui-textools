@@ -164,7 +164,7 @@ class APZmediaBrandRichTextOverlayV2:
                     draw, wrapped_lines, box_left, box_top, padding,
                     box_right - box_left, box_bottom - box_top, font_manager,
                     color_utility, alignment, vertical_alignment, line_height_ratio,
-                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb
+                    font_color_rgb, italic_font_color_rgb, bold_font_color_rgb, hashtag_color_rgb
                 )
             else:
                 # Handle case where no font size works - try enhanced scaling fallback

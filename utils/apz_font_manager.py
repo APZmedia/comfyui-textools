@@ -12,11 +12,7 @@ class FontManager:
         self.url_utility = URLFileUtility()
         
         # Log font initialization
-        print(f"🔤 FontManager initialized:")
-        print(f"   Regular font: {regular_font_path or 'Default (PIL)'}")
-        print(f"   Italic font: {italic_font_path or 'Default (PIL)'}")
-        print(f"   Bold font: {bold_font_path or 'Default (PIL)'}")
-        print(f"   Max font size: {max_font_size}")
+        # FontManager initialization logging removed for performance
         
         # Validate and handle font paths
         if not regular_font_path or regular_font_path.strip() == "":
@@ -136,7 +132,7 @@ class FontManager:
 
     def load_font(self, font_path, font_size):
         # Log font loading attempt
-        print(f"🔤 Loading font: {font_path or 'Default (PIL)'} at size {font_size}")
+        # Font loading logging removed for performance
         
         # Load font from cache if available
         if (font_path, font_size) not in self.font_cache:
@@ -168,13 +164,13 @@ class FontManager:
                     for fallback_font in fallback_fonts:
                         if os.path.exists(fallback_font):
                             font = ImageFont.truetype(fallback_font, font_size)
-                            print(f"✅ Using fallback font: {fallback_font}")
+                            # Fallback font logging removed for performance
                             self.font_cache[(font_path, font_size)] = font
                             return font
                     
                     # If no fallback font found, use default (but it won't scale properly)
                     font = ImageFont.load_default()
-                    print(f"⚠️ Using PIL default font (no fallback found)")
+                    # Debug logging removed for performance
                     self.font_cache[(font_path, font_size)] = font
                     return font
                 except Exception as e:
@@ -208,13 +204,13 @@ class FontManager:
             # Try to load the font
             try:
                 font = ImageFont.truetype(actual_font_path, font_size)
-                print(f"✅ Successfully loaded font: {actual_font_path}")
+                # Font loading success logging removed for performance
                 self.font_cache[(font_path, font_size)] = font
                 return font
             except Exception as e:
-                print(f"❌ Failed to load font {actual_font_path}: {e}")
+                # Debug logging removed for performance
                 font = ImageFont.load_default()
-                print(f"⚠️ Using PIL default font as fallback")
+                # Debug logging removed for performance
                 self.font_cache[(font_path, font_size)] = font
                 return font
         
@@ -245,7 +241,7 @@ class FontManager:
         """
         # Log style selection
         style_type = "bold" if style.get('b', False) else "italic" if style.get('i', False) else "regular"
-        print(f"🔤 Getting {style_type} font for text: '{text[:20]}{'...' if len(text) > 20 else ''}' at size {font_size}")
+        # Font retrieval logging removed for performance
         
         # First, get the base font based on style
         if style.get('b', False):
@@ -257,13 +253,14 @@ class FontManager:
         
         # Use emoji fonts for emoji text (this is how emojis work in real life)
         if text and self.emoji_support.has_emoji(text):
-            print(f"😀 Text contains emojis, checking emoji font support")
+            # Emoji detection logging removed for performance
             emoji_font = self.emoji_support.get_emoji_font(font_size)
             if emoji_font and self.emoji_support.test_emoji_support(emoji_font):
-                print(f"✅ Using emoji font for emoji text")
+                # Emoji font usage logging removed for performance
                 return emoji_font
             else:
-                print(f"⚠️ Emoji font not available, using base font")
+                # Emoji font fallback logging removed for performance
+                pass
         
         return base_font
     
