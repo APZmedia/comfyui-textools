@@ -64,6 +64,7 @@ class APZmediaImageRichTextOverlayV2:
     CATEGORY = "APZmedia/Text"
 
     def apz_add_text_overlay_v2(self, image, theText, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, show_error_indicators, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url, show_debug_boxes):
+        print(f"🔤 Raw text field received: {repr(theText)}")
         print(f"📝 APZmediaImageRichTextOverlayV2 processing:")
         print(f"   Text: '{theText[:50]}{'...' if len(theText) > 50 else ''}'")
         print(f"   Font paths - Regular: {font or 'Default'}, Italic: {italic_font or 'Default'}, Bold: {bold_font or 'Default'}")
