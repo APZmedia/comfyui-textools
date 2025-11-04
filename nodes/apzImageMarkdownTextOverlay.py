@@ -68,6 +68,9 @@ class APZmediaImageMarkdownTextOverlay:
     def apz_add_markdown_text_overlay(self, image, theText, markdown_mode, theTextbox_width, theTextbox_height, max_font_size, font, italic_font, bold_font, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url):
         print(f"🔤 Raw text field received (full):")
         print(theText)
+        print(f"📏 Text length: {len(theText)}")
+        print(f"📏 Text bytes: {len(theText.encode('utf-8'))}")
+        print(f"🔍 Text repr (first 200 chars): {repr(theText[:200])}")
         print(f"📝 APZmediaImageMarkdownTextOverlay processing:")
         print(f"   Text: '{theText[:50]}{'...' if len(theText) > 50 else ''}'")
         print(f"   Markdown mode: {markdown_mode}")

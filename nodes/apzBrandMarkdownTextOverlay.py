@@ -76,6 +76,9 @@ class APZmediaBrandMarkdownTextOverlay:
     def apz_add_brand_markdown_text_overlay(self, image, brand_assets, theText, markdown_mode, theTextbox_width, theTextbox_height, max_font_size, font_type, font_variant, alignment, vertical_alignment, font_color, italic_font_color, bold_font_color, box_start_x, box_start_y, padding, line_height_ratio, show_bounding_box, bounding_box_color, line_width, line_opacity, box_background_color, box_opacity, hashtag_color, enable_hashtag_support, enable_emoji_support, custom_emoji_font_url, font_override_regular="", font_override_italic="", font_override_bold=""):
         print(f"🔤 Raw text field received (full):")
         print(theText)
+        print(f"📏 Text length: {len(theText)}")
+        print(f"📏 Text bytes: {len(theText.encode('utf-8'))}")
+        print(f"🔍 Text repr (first 200 chars): {repr(theText[:200])}")
         print(f"📝 APZmediaBrandMarkdownTextOverlay processing:")
         print(f"   Text: '{theText[:50]}{'...' if len(theText) > 50 else ''}'")
         print(f"   Markdown mode: {markdown_mode}")
